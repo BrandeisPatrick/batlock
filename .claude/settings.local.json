@@ -46,7 +46,9 @@
       "Bash(node:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:api.github.com)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }
