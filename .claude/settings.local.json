@@ -42,7 +42,11 @@
       "Bash(node_modules.bintailwindcss -i ./src/input.css -o ./styles.css --minify)",
       "Bash(cp:*)",
       "Bash(npm uninstall:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

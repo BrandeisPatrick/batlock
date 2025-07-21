@@ -6,7 +6,8 @@
     <title>Deadlock Match Analyzer</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
     <link rel="stylesheet" href="styles.css">
-    <script src="chart.js"></script>
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-white antialiased">
@@ -19,20 +20,27 @@
 
         <main>
             <!-- Input Section -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+            <div class="glass-effect p-6 rounded-lg shadow-lg mb-8">
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="text" id="matchIdInput" placeholder="Enter Match ID (e.g., 12345)" class="flex-grow bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
-                    <button id="fetchButton" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                        Analyze Match
+                    <input type="text" id="matchIdInput" placeholder="Enter Match ID (e.g., 38069822)" class="flex-grow enhanced-input text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
+                    <button id="fetchButton" class="enhanced-button text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
+                        🔍 Analyze Match
                     </button>
                 </div>
+                <p class="text-xs text-gray-500 mt-2">Try match ID: 38069822 for a sample analysis</p>
             </div>
 
             <!-- Loading and Error Messages -->
             <div id="loader" class="text-center my-8 hidden">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-cyan-400"></div>
                 <p class="mt-4 text-gray-300">Fetching and analyzing match data...</p>
-                <p class="mt-2 text-sm text-gray-400">Processing player data...</p>
+                <p class="mt-2 text-sm text-gray-400">Processing player statistics and performance data...</p>
+                <div class="mt-4">
+                    <div class="bg-gray-700 rounded-full h-2 w-64 mx-auto">
+                        <div class="bg-cyan-400 h-2 rounded-full animate-pulse" style="width: 70%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Using enhanced API with direct access...</p>
+                </div>
             </div>
             <div id="errorMessage" class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-lg relative hidden" role="alert">
                 <strong class="font-bold">Error:</strong>
@@ -64,6 +72,7 @@
     <script src="js/api.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/enhanced-ui.js"></script>
+    <script src="js/enhanced-match-ui.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

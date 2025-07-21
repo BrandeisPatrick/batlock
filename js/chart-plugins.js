@@ -2,6 +2,15 @@
 const dualSideLabelsPlugin = {
     id: 'dualSideLabels',
     afterDraw: (chart) => {
+        // Only apply to horizontal bar charts with team name data
+        if (chart.config.type !== 'bar' || 
+            !chart.config.options?.indexAxis || 
+            chart.config.options.indexAxis !== 'y' ||
+            !chart.config.data?.team1Names || 
+            !chart.config.data?.team2Names) {
+            return; // Skip for other chart types (radar, etc.)
+        }
+
         const { ctx, chartArea: { left, right } } = chart;
         const { team1Names, team2Names } = chart.config.data;
 

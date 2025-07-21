@@ -1,11 +1,15 @@
 // Initialize enhanced UI if available
 let enhancedUI = null;
+let matchUI = null;
 try {
     if (typeof EnhancedUI !== 'undefined') {
         enhancedUI = new EnhancedUI();
     }
+    if (typeof MatchUI !== 'undefined') {
+        matchUI = new MatchUI();
+    }
 } catch (e) {
-    console.log('EnhancedUI not loaded, using standard UI');
+    console.log('Enhanced UI components not loaded, using standard UI');
 }
 
 // Event Listeners
@@ -27,26 +31,145 @@ async function handleFetchData() {
     hideCharts();
 
     try {
-        const players = await getPlayersFromMatch(matchId);
-       
-        if (!players || players.length === 0) {
-            showError(`No players found for Match ID: ${matchId}. Displaying mock data.`);
-            await processAndDisplayStats(MOCK_MATCH_DATA.players);
-            return;
+        let enhancedSucceeded = false;
+        
+        // Use enhanced API if available
+        if (matchUI && deadlockAPI) {
+            console.log('🎯 Using enhanced match analysis...');
+            console.log('📋 MatchUI available:', !!matchUI);
+            console.log('🔌 DeadlockAPI available:', !!deadlockAPI);
+            console.log('🎮 Match ID:', matchId);
+            
+            try {
+                console.log('📡 Step 1: Fetching match metadata...');
+                
+                // Get complete match data with all player stats
+                const allPlayersData = await deadlockAPI.getAllPlayersFromMatch(matchId, 50);
+                
+                console.log('📊 Step 2: Match data received:', {
+                    hasData: !!allPlayersData,
+                    playersCount: allPlayersData?.players?.length || 0,
+                    teams: {
+                        team0: allPlayersData?.teams?.team0?.length || 0,
+                        team1: allPlayersData?.teams?.team1?.length || 0
+                    }
+                });
+                
+                if (allPlayersData && allPlayersData.players.length > 0) {
+                    console.log('🎨 Step 3: Rendering match analysis UI...');
+                    await matchUI.renderMatchAnalysis(allPlayersData, allPlayersData);
+                    console.log('✅ Enhanced match analysis completed successfully');
+                    enhancedSucceeded = true;
+                } else {
+                    console.warn('⚠️ No player data received, falling back to standard method');
+                }
+            } catch (enhancedError) {
+                console.error('❌ Enhanced match analysis failed:', enhancedError);
+                console.error('🔍 Error details:', {
+                    message: enhancedError.message,
+                    stack: enhancedError.stack,
+                    name: enhancedError.name
+                });
+                console.log('🔄 Falling back to standard method...');
+            }
+        } else {
+            console.log('⚙️ Enhanced components not available:', {
+                matchUI: !!matchUI,
+                deadlockAPI: !!deadlockAPI
+            });
         }
-       
-        await processAndDisplayStats(players);
+        
+        // Only use fallback if enhanced method didn't succeed
+        if (!enhancedSucceeded) {
+            console.log('🔄 Using fallback method...');
+            const players = await getPlayersFromMatch(matchId);
+           
+            if (!players || players.length === 0) {
+                showError(`No players found for Match ID: ${matchId}. Displaying mock data.`);
+                await processAndDisplayStats(MOCK_MATCH_DATA.players);
+                return;
+            }
+           
+            await processAndDisplayStats(players);
+        }
 
     } catch (error) {
         console.error('Error fetching data:', error);
         showError(`Failed to fetch data. ${error.message}. Displaying mock data as a fallback.`);
-        await processAndDisplayStats(MOCK_MATCH_DATA.players);
+        
+        // Try enhanced UI with mock data first if available
+        if (matchUI && MOCK_MATCH_DATA) {
+            try {
+                console.log('🎯 Using enhanced UI with mock data...');
+                
+                // Create enhanced mock data structure
+                const enhancedMockData = {
+                    matchId: 'mock-match-123',
+                    match_info: {
+                        duration_s: 1800, // 30 minutes
+                        winning_team: 0,
+                        game_mode: 1
+                    },
+                    teams: {
+                        team0: MOCK_MATCH_DATA.players.filter(p => p.team === 1).map((p, i) => ({
+                            accountId: p.steamId,
+                            displayName: p.displayName,
+                            playerSlot: i,
+                            team: 0,
+                            heroId: i + 1,
+                            kills: Math.floor(Math.random() * 10) + 5,
+                            deaths: Math.floor(Math.random() * 8) + 2,
+                            assists: Math.floor(Math.random() * 12) + 8,
+                            totalGames: Math.floor(Math.random() * 500) + 100,
+                            statistics: {
+                                winRate: Math.floor(Math.random() * 40) + 40,
+                                averageKDA: Math.round((Math.random() * 2 + 2) * 100) / 100,
+                                averageKills: Math.round((Math.random() * 4 + 6) * 10) / 10,
+                                averageDeaths: Math.round((Math.random() * 3 + 4) * 10) / 10,
+                                averageAssists: Math.round((Math.random() * 5 + 8) * 10) / 10,
+                                recentForm: ['W', 'L', 'W', 'W', 'L'].slice(0, 5)
+                            }
+                        })),
+                        team1: MOCK_MATCH_DATA.players.filter(p => p.team === 2).map((p, i) => ({
+                            accountId: p.steamId,
+                            displayName: p.displayName,
+                            playerSlot: i + 6,
+                            team: 1,
+                            heroId: i + 7,
+                            kills: Math.floor(Math.random() * 8) + 3,
+                            deaths: Math.floor(Math.random() * 10) + 4,
+                            assists: Math.floor(Math.random() * 10) + 6,
+                            totalGames: Math.floor(Math.random() * 400) + 150,
+                            statistics: {
+                                winRate: Math.floor(Math.random() * 35) + 35,
+                                averageKDA: Math.round((Math.random() * 1.5 + 2) * 100) / 100,
+                                averageKills: Math.round((Math.random() * 3 + 5) * 10) / 10,
+                                averageDeaths: Math.round((Math.random() * 4 + 5) * 10) / 10,
+                                averageAssists: Math.round((Math.random() * 4 + 7) * 10) / 10,
+                                recentForm: ['L', 'W', 'L', 'L', 'W'].slice(0, 5)
+                            }
+                        }))
+                    }
+                };
+                
+                await matchUI.renderMatchAnalysis(enhancedMockData, enhancedMockData);
+                console.log('✅ Enhanced UI with mock data completed');
+            } catch (mockError) {
+                console.error('❌ Enhanced UI with mock data failed:', mockError);
+                // Only use old display if enhanced UI fails completely
+                await processAndDisplayStats(MOCK_MATCH_DATA.players);
+            }
+        } else {
+            await processAndDisplayStats(MOCK_MATCH_DATA.players);
+        }
     } finally {
         showLoader(false);
     }
 }
 
 async function processAndDisplayStats(players) {
+    console.log('📊 processAndDisplayStats called with enhanced UI available:', !!matchUI);
+    
     const team1 = players.filter(p => p.team === 1);
     const team2 = players.filter(p => p.team === 2);
    
@@ -145,21 +268,26 @@ async function processAndDisplayStats(players) {
         enhancedUI.displayPlayerPerformance([...team1PlayersWithStats, ...team2PlayersWithStats]);
     }
    
-    // Always display the standard charts as well
-    const team1Labels = team1.map(p => p.displayName);
-    const team2Labels = team2.map(p => p.displayName);
-   
-    const team1MatchesData = team1Stats.map(s => s ? s.total : 0);
-    const team2MatchesData = team2Stats.map(s => s ? s.total : 0);
-    const team1WinRateData = team1Stats.map(s => s ? s.winRate : 0);
-    const team2WinRateData = team2Stats.map(s => s ? s.winRate : 0);
+    // Only display standard charts if enhanced UI is not available
+    if (!matchUI) {
+        console.log('📊 Using standard chart display (enhanced UI not available)');
+        const team1Labels = team1.map(p => p.displayName);
+        const team2Labels = team2.map(p => p.displayName);
+       
+        const team1MatchesData = team1Stats.map(s => s ? s.total : 0);
+        const team2MatchesData = team2Stats.map(s => s ? s.total : 0);
+        const team1WinRateData = team1Stats.map(s => s ? s.winRate : 0);
+        const team2WinRateData = team2Stats.map(s => s ? s.winRate : 0);
 
-    displayCharts(
-        team1Labels,
-        team2Labels,
-        team1MatchesData,
-        team2MatchesData,
-        team1WinRateData,
-        team2WinRateData
-    );
+        displayCharts(
+            team1Labels,
+            team2Labels,
+            team1MatchesData,
+            team2MatchesData,
+            team1WinRateData,
+            team2WinRateData
+        );
+    } else {
+        console.log('🎨 Skipping standard chart display (enhanced UI available)');
+    }
 }
