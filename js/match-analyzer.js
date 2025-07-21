@@ -296,7 +296,7 @@ class MatchAnalyzer {
         );
         
         return `
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="text-center">
                     <p class="text-sm text-gray-400 mb-1">Highest Win Rate</p>
                     <p class="text-lg font-semibold text-white">${highestWR.displayName || `Player ${highestWR.accountId}`}</p>
@@ -313,6 +313,19 @@ class MatchAnalyzer {
                     <p class="text-sm text-gray-400 mb-1">Most Experienced</p>
                     <p class="text-lg font-semibold text-white">${mostExperienced.displayName || `Player ${mostExperienced.accountId}`}</p>
                     <p class="text-2xl font-bold text-yellow-400">${mostExperienced.totalGames} games</p>
+                </div>
+            </div>
+            
+            <!-- Interactive Charts Section -->
+            <div class="mt-8">
+                <h4 class="text-lg font-bold text-white mb-4">Statistical Analysis</h4>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <canvas id="winRateChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="bg-gray-700 rounded-lg p-4">
+                        <canvas id="kdaComparisonChart" width="400" height="300"></canvas>
+                    </div>
                 </div>
             </div>
         `;
@@ -344,6 +357,82 @@ class MatchAnalyzer {
         // Create the charts
         this.createWinRateComparisonChart(allPlayersData);
         this.createKDAComparisonChart(allPlayersData);
+    }
+
+    /**
+     * Create win rate chart for progressive loading
+     */
+    createWinRateChart(allPlayersData) {
+        const ctx = document.getElementById('winRateChart').getContext('2d');
+        
+        const team0Data = allPlayersData.teams.team0
+            .filter(p => p.statistics)
+            .map(p => p.statistics.winRate);
+            
+        const team1Data = allPlayersData.teams.team1
+            .filter(p => p.statistics)
+            .map(p => p.statistics.winRate);
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: Array.from({length: Math.max(team0Data.length, team1Data.length, 6)}, (_, i) => `P${i + 1}`),
+                datasets: [{
+                    label: 'Team 1',
+                    data: [...team0Data, ...Array(Math.max(0, Math.max(team0Data.length, team1Data.length, 6) - team0Data.length)).fill(0)],
+                    borderColor: 'rgba(34, 197, 94, 0.8)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(34, 197, 94, 1)'
+                }, {
+                    label: 'Team 2',
+                    data: [...team1Data, ...Array(Math.max(0, Math.max(team0Data.length, team1Data.length, 6) - team1Data.length)).fill(0)],
+                    borderColor: 'rgba(239, 68, 68, 0.8)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(239, 68, 68, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Win Rate Comparison (%)',
+                        color: '#fff'
+                    },
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        pointLabels: {
+                            color: '#fff'
+                        },
+                        ticks: {
+                            color: '#fff',
+                            backdropColor: 'transparent'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -496,6 +585,15 @@ class MatchAnalyzer {
         
         // Phase 1: Display match overview and basic player cards immediately
         const resultsDiv = document.getElementById('results');
+        
+        if (!resultsDiv) {
+            throw new Error('Results div not found. Make sure there is a div with id="results" in the HTML.');
+        }
+        
+        // Show results div and hide fallback charts
+        resultsDiv.classList.remove('hidden');
+        const chartsContainer = document.getElementById('chartsContainer');
+        if (chartsContainer) chartsContainer.classList.add('hidden');
         
         // Create initial structure with match info
         const initialContent = `
