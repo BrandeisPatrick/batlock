@@ -103,6 +103,7 @@ const testEnhancedUI = () => {
     // Test if MatchAnalyzer is available
     if (typeof MatchAnalyzer === 'undefined') {
         console.error('❌ MatchAnalyzer class not found - make sure match-analyzer.js is loaded');
+        console.log('💡 To fix: Include <script src="js/match-analyzer.js"></script> in your HTML');
         return;
     }
     
