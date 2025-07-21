@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deadlock Match Analyzer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
     <link rel="stylesheet" href="styles.css">
+    <script src="chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-white antialiased">
 
@@ -32,6 +32,7 @@
             <div id="loader" class="text-center my-8 hidden">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-cyan-400"></div>
                 <p class="mt-4 text-gray-300">Fetching and analyzing match data...</p>
+                <p class="mt-2 text-sm text-gray-400">Processing player data...</p>
             </div>
             <div id="errorMessage" class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded-lg relative hidden" role="alert">
                 <strong class="font-bold">Error:</strong>
@@ -57,8 +58,11 @@
     </div>
 
     <script src="js/chart-plugins.js"></script>
+    <script src="js/deadlock-api-service.js"></script>
+    <script src="js/data-models.js"></script>
     <script src="js/api.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/enhanced-ui.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

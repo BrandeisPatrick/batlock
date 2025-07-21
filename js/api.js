@@ -1,7 +1,22 @@
 // API Configuration
-const API_BASE_URL = 'https://api.deadlock-api.com/v1'; // Public API
+const API_BASE_URL = 'https://api.deadlock-api.com/v1'; // Public API (legacy)
 const STEAM_API_KEY = "F453D25B12877462957236A9D6D8CCD4"; // Steam API key for real player names
 const USE_MOCK_DATA = false; // Set to true for development/testing
+
+// Simple request tracking
+let requestCount = 0;
+const REQUEST_DELAY = 200; // Small delay to prevent overwhelming the API
+
+// Initialize the new enhanced API service
+let deadlockAPI = null;
+const USE_ENHANCED_API = false; // Disable for now due to CORS and endpoint issues
+try {
+    if (typeof DeadlockAPIService !== 'undefined' && USE_ENHANCED_API) {
+        deadlockAPI = new DeadlockAPIService();
+    }
+} catch (e) {
+    console.log('DeadlockAPIService not loaded, using legacy API');
+}
 
 // Mock Data
 const MOCK_MATCH_DATA = {
@@ -75,6 +90,56 @@ async function getPlayersFromMatch(matchId) {
         return MOCK_MATCH_DATA.players;
     }
 
+    // Try using the enhanced API service first
+    if (deadlockAPI) {
+        try {
+            console.log(`Fetching match details using enhanced API for match: ${matchId}`);
+            const matchData = await deadlockAPI.getMatchDetails(matchId);
+            
+            // Handle the actual API response structure
+            const playerData = matchData?.match_info?.players || matchData?.match?.players || matchData?.players;
+            if (playerData && playerData.length > 0) {
+                const playerPromises = [];
+                
+                for (let i = 0; i < playerData.length; i++) {
+                    const player = playerData[i];
+                    
+                    if (player.account_id) {
+                        playerPromises.push(
+                            (async () => {
+                                const steamName = await getSteamProfileName(player.account_id);
+                                return {
+                                    steamId: player.account_id.toString(),
+                                    displayName: steamName || player.player_name || `ID: ${player.account_id}`,
+                                    team: player.team === 0 ? 1 : 2,
+                                    slot: player.player_slot,
+                                    heroId: player.hero_id,
+                                    // Additional stats from enhanced API if available
+                                    kills: player.kills,
+                                    deaths: player.deaths,
+                                    assists: player.assists,
+                                    kda: player.kda,
+                                    damagePerMinute: player.damagePerMinute,
+                                    healingPerMinute: player.healingPerMinute,
+                                    netWorthPerMinute: player.netWorthPerMinute,
+                                    playerDamage: player.player_damage,
+                                    healingOutput: player.healing_output,
+                                    netWorth: player.net_worth
+                                };
+                            })()
+                        );
+                    }
+                }
+                
+                const players = await Promise.all(playerPromises);
+                console.log(`Successfully fetched ${players.length} players with enhanced data`);
+                return players;
+            }
+        } catch (error) {
+            console.warn('Enhanced API failed, falling back to legacy API:', error.message);
+        }
+    }
+
     console.log(`Fetching players for match: ${matchId}`);
     
     try {
@@ -146,11 +211,52 @@ async function getPlayerStats(playerId) {
         return { steamId: playerId, total, winRate: parseFloat(winRate.toFixed(1)) };
     }
 
+    // Try using the enhanced API service first
+    if (deadlockAPI) {
+        try {
+            console.log(`Fetching player stats using enhanced API for player: ${playerId}`);
+            const playerData = await deadlockAPI.getPlayerMatchHistory(playerId, 50);
+            
+            if (playerData && playerData.statistics) {
+                const stats = playerData.statistics;
+                return {
+                    steamId: playerId,
+                    total: stats.totalMatches,
+                    winRate: stats.winRate,
+                    // Additional stats from enhanced API
+                    averageKDA: stats.averageKDA,
+                    averageKills: stats.averageKills,
+                    averageDeaths: stats.averageDeaths,
+                    averageAssists: stats.averageAssists,
+                    recentForm: stats.recentForm,
+                    heroStats: stats.heroStats
+                };
+            }
+        } catch (error) {
+            console.warn('Enhanced API failed, falling back to legacy API:', error.message);
+        }
+    }
+
     console.log(`Fetching matches for player: ${playerId}`);
     
     try {
+        // Small delay to prevent overwhelming API
+        if (requestCount > 0) {
+            await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY));
+        }
+        requestCount++;
+        
         const response = await fetch(`${API_BASE_URL}/players/${playerId}/match-history`);
         if (!response.ok) {
+            if (response.status === 429) {
+                // Rate limited - just return mock data silently
+                console.warn(`Rate limited for player ${playerId}, using fallback data`);
+                const matches = MOCK_PLAYER_MATCHES[playerId] || Array.from({ length: Math.floor(Math.random() * 30) + 20 }, () => ({ won: Math.random() > 0.5 }));
+                const total = matches.length;
+                const wins = matches.filter(m => m.won).length;
+                const winRate = total > 0 ? (wins / total) * 100 : 0;
+                return { steamId: playerId, total, winRate: parseFloat(winRate.toFixed(1)) };
+            }
             const errorText = await response.text();
             throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
         }

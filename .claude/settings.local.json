@@ -32,7 +32,17 @@
       "WebFetch(domain:assets.deadlock-api.com)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build-css-prod:*)",
+      "Bash(node_modules.bintailwindcss -i ./src/input.css -o ./styles.css --minify)",
+      "Bash(cp:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
