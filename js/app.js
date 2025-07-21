@@ -29,32 +29,34 @@ async function handleFetchData() {
     try {
         let enhancedSucceeded = false;
         
-        // Use match analyzer if available
+        // Use progressive loading with match analyzer if available
         if (matchAnalyzer && deadlockAPI) {
-            console.log('🎯 Using enhanced match analysis...');
+            console.log('🎯 Using progressive match analysis...');
             console.log('📋 MatchAnalyzer available:', !!matchAnalyzer);
             console.log('🔌 DeadlockAPI available:', !!deadlockAPI);
             console.log('🎮 Match ID:', matchId);
             
             try {
-                console.log('📡 Step 1: Fetching match metadata...');
+                console.log('📡 Step 1: Fetching match metadata for immediate display...');
                 
-                // Get complete match data with all player stats
-                const allPlayersData = await deadlockAPI.getAllPlayersFromMatch(matchId, 50);
+                // Get match metadata first (fast)
+                const matchMetadata = await deadlockAPI.getMatchMetadata(matchId);
                 
-                console.log('📊 Step 2: Match data received:', {
-                    hasData: !!allPlayersData,
-                    playersCount: allPlayersData?.players?.length || 0,
-                    teams: {
-                        team0: allPlayersData?.teams?.team0?.length || 0,
-                        team1: allPlayersData?.teams?.team1?.length || 0
-                    }
+                console.log('📊 Step 2: Match metadata received:', {
+                    hasData: !!matchMetadata,
+                    playersCount: matchMetadata?.playersSummary?.length || 0,
+                    matchInfo: !!matchMetadata?.match_info
                 });
                 
-                if (allPlayersData && allPlayersData.players.length > 0) {
-                    console.log('🎨 Step 3: Rendering match analysis UI...');
-                    await matchAnalyzer.renderMatchAnalysis(allPlayersData, allPlayersData);
-                    console.log('✅ Enhanced match analysis completed successfully');
+                if (matchMetadata && matchMetadata.playersSummary && matchMetadata.playersSummary.length > 0) {
+                    console.log('🎨 Step 3: Rendering immediate match display...');
+                    
+                    // Hide loader and show initial content immediately
+                    showLoader(false);
+                    
+                    // Start progressive loading
+                    await matchAnalyzer.renderProgressiveMatchAnalysis(matchMetadata, deadlockAPI);
+                    console.log('✅ Progressive match analysis completed successfully');
                     enhancedSucceeded = true;
                 } else {
                     console.warn('⚠️ No player data received, falling back to standard method');

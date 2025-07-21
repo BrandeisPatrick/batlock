@@ -485,6 +485,274 @@ class MatchAnalyzer {
             }
         });
     }
+
+    /**
+     * Progressive loading implementation - shows match immediately then loads player data
+     * @param {Object} matchMetadata - Initial match data with basic player info
+     * @param {Object} apiService - API service for fetching additional data
+     */
+    async renderProgressiveMatchAnalysis(matchMetadata, apiService) {
+        console.log('🚀 Starting progressive match analysis...');
+        
+        // Phase 1: Display match overview and basic player cards immediately
+        const resultsDiv = document.getElementById('results');
+        
+        // Create initial structure with match info
+        const initialContent = `
+            <div id="match-overview">
+                ${this.createMatchOverview(matchMetadata)}
+            </div>
+            
+            <div id="loading-status" class="bg-gray-700 rounded-lg p-4 mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin h-5 w-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
+                    <span class="text-cyan-400">Loading detailed player statistics...</span>
+                </div>
+                <div id="progress-bar" class="w-full bg-gray-600 rounded-full h-2 mt-3">
+                    <div id="progress-fill" class="bg-cyan-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div id="progress-text" class="text-sm text-gray-400 mt-2">Preparing player data...</div>
+            </div>
+            
+            <div id="player-cards-section">
+                <h3 class="text-xl font-bold text-white mb-4">Match Players</h3>
+                <div id="team-sections" class="space-y-6">
+                    ${this.createInitialPlayerCards(matchMetadata.playersSummary)}
+                </div>
+            </div>
+            
+            <div id="team-comparison" class="hidden">
+                <!-- Team comparison will be updated as data loads -->
+            </div>
+            
+            <div id="match-insights" class="hidden">
+                <!-- Match insights will appear once all data is loaded -->
+            </div>
+        `;
+        
+        resultsDiv.innerHTML = initialContent;
+        console.log('✅ Phase 1: Initial display rendered');
+        
+        // Phase 2: Start fetching player statistics in background
+        console.log('📊 Phase 2: Starting background data fetching...');
+        
+        const players = matchMetadata.playersSummary;
+        const totalPlayers = players.length;
+        let completedPlayers = 0;
+        
+        // Create team structures
+        const enhancedTeams = {
+            team0: players.filter(p => p.team === 0),
+            team1: players.filter(p => p.team === 1)
+        };
+        
+        // Update progress
+        const updateProgress = (completed, total, currentPlayer = null) => {
+            const percentage = Math.round((completed / total) * 100);
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            if (progressFill) progressFill.style.width = `${percentage}%`;
+            if (progressText) {
+                if (currentPlayer) {
+                    progressText.textContent = `Loading ${currentPlayer} (${completed}/${total})`;
+                } else if (completed === total) {
+                    progressText.textContent = 'All player data loaded! Generating insights...';
+                } else {
+                    progressText.textContent = `${completed}/${total} players loaded`;
+                }
+            }
+        };
+        
+        // Fetch player data with progressive updates
+        const enhancedPlayersData = await Promise.all(
+            players.map(async (player, index) => {
+                try {
+                    console.log(`📊 Loading data for player ${index + 1}/${totalPlayers}: ${player.accountId}`);
+                    
+                    // Update progress
+                    const playerName = player.displayName || `Player ${player.accountId}`;
+                    updateProgress(completedPlayers, totalPlayers, playerName);
+                    
+                    // Add delay to avoid rate limiting and show progressive loading
+                    if (index > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                    
+                    // Fetch detailed player statistics
+                    const playerStats = await apiService.getPlayerMatchHistory(player.accountId, 50, 0, true);
+                    
+                    const enhancedPlayer = {
+                        ...player,
+                        totalGames: playerStats.totalMatches || 0,
+                        statistics: playerStats.statistics || {
+                            winRate: 0,
+                            averageKDA: 0,
+                            averageKills: 0,
+                            averageDeaths: 0,
+                            averageAssists: 0,
+                            recentForm: []
+                        }
+                    };
+                    
+                    // Update the specific player card
+                    this.updatePlayerCard(enhancedPlayer);
+                    
+                    completedPlayers++;
+                    updateProgress(completedPlayers, totalPlayers);
+                    
+                    console.log(`✅ Loaded data for player ${completedPlayers}/${totalPlayers}`);
+                    return enhancedPlayer;
+                    
+                } catch (error) {
+                    console.warn(`⚠️ Failed to load data for player ${player.accountId}:`, error.message);
+                    completedPlayers++;
+                    updateProgress(completedPlayers, totalPlayers);
+                    
+                    // Return player with basic data only
+                    return {
+                        ...player,
+                        totalGames: 0,
+                        statistics: {
+                            winRate: 0,
+                            averageKDA: 0,
+                            averageKills: 0,
+                            averageDeaths: 0,
+                            averageAssists: 0,
+                            recentForm: []
+                        }
+                    };
+                }
+            })
+        );
+        
+        // Phase 3: Update team structures and comparisons
+        console.log('🔄 Phase 3: Updating team comparisons...');
+        
+        const finalTeamData = {
+            team0: enhancedPlayersData.filter(p => p.team === 0),
+            team1: enhancedPlayersData.filter(p => p.team === 1)
+        };
+        
+        // Update team comparison
+        document.getElementById('team-comparison').innerHTML = this.createTeamComparison(finalTeamData.team0, finalTeamData.team1);
+        document.getElementById('team-comparison').classList.remove('hidden');
+        
+        // Phase 4: Generate final insights and charts
+        console.log('📈 Phase 4: Generating insights and charts...');
+        
+        const finalMatchData = {
+            ...matchMetadata,
+            teams: finalTeamData
+        };
+        
+        const insights = this.createMatchInsights({ teams: finalTeamData });
+        document.getElementById('match-insights').innerHTML = insights;
+        document.getElementById('match-insights').classList.remove('hidden');
+        
+        // Hide loading status
+        const loadingStatus = document.getElementById('loading-status');
+        if (loadingStatus) {
+            loadingStatus.style.opacity = '0';
+            setTimeout(() => loadingStatus.remove(), 500);
+        }
+        
+        // Create charts
+        setTimeout(() => {
+            try {
+                this.createWinRateChart(finalMatchData);
+                this.createKDAComparisonChart(finalMatchData);
+            } catch (chartError) {
+                console.warn('⚠️ Chart creation error:', chartError.message);
+            }
+        }, 1000);
+        
+        console.log('🎉 Progressive match analysis completed!');
+    }
+    
+    /**
+     * Create initial player cards with loading placeholders
+     */
+    createInitialPlayerCards(players) {
+        const team0 = players.filter(p => p.team === 0);
+        const team1 = players.filter(p => p.team === 1);
+        
+        return `
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold text-green-400 mb-3">Team 1 (${team0.length} players)</h4>
+                <div class="space-y-3" id="team0-cards">
+                    ${team0.map(player => this.createLoadingPlayerCard(player, 'green')).join('')}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold text-red-400 mb-3">Team 2 (${team1.length} players)</h4>
+                <div class="space-y-3" id="team1-cards">
+                    ${team1.map(player => this.createLoadingPlayerCard(player, 'red')).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Create a loading placeholder player card
+     */
+    createLoadingPlayerCard(player, teamColor) {
+        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
+        const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+        
+        return `
+            <div id="player-card-${player.accountId}" class="glass-effect bg-gray-800/80 backdrop-blur-sm rounded-lg p-3 border ${borderColor} transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                            <span class="text-xl font-bold text-gray-300">H${player.heroId}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold ${textColor}">${player.displayName || `Player ${player.accountId}`}</h4>
+                            <p class="text-sm text-gray-400">Match KDA: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="animate-pulse">
+                            <div class="h-4 bg-gray-600 rounded w-20 mb-1"></div>
+                            <div class="h-3 bg-gray-700 rounded w-16"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Loading stats...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    /**
+     * Update a specific player card with loaded data
+     */
+    updatePlayerCard(player) {
+        const cardElement = document.getElementById(`player-card-${player.accountId}`);
+        if (!cardElement) return;
+        
+        const teamColor = player.team === 0 ? 'green' : 'red';
+        const newCardHTML = this.createPlayerCard(player, teamColor);
+        
+        // Create a temporary container to parse the new HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newCardHTML;
+        const newCard = tempDiv.firstElementChild;
+        
+        // Replace the old card with the new one
+        cardElement.parentNode.replaceChild(newCard, cardElement);
+        
+        // Add a subtle animation to show the update
+        newCard.style.opacity = '0';
+        newCard.style.transform = 'scale(0.95)';
+        
+        setTimeout(() => {
+            newCard.style.transition = 'all 0.3s ease';
+            newCard.style.opacity = '1';
+            newCard.style.transform = 'scale(1)';
+        }, 50);
+    }
 }
 
 // Export for use in other files
