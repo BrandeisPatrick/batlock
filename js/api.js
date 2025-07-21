@@ -1,7 +1,7 @@
-// API Configuration
-const API_BASE_URL = 'https://api.deadlock-api.com/v1'; // Public API (legacy)
-const STEAM_API_KEY = "F453D25B12877462957236A9D6D8CCD4"; // Steam API key for real player names
-const USE_MOCK_DATA = false; // Set to true for development/testing
+// Import API configuration
+// This assumes api-config.js is loaded before api.js in index.html
+// If not, you might need a more robust import mechanism (e.g., ES modules)
+const API_CONFIG = window.API_CONFIG || {};
 
 // Simple request tracking
 let requestCount = 0;
@@ -9,13 +9,12 @@ const REQUEST_DELAY = 200; // Small delay to prevent overwhelming the API
 
 // Initialize the new enhanced API service
 let deadlockAPI = null;
-const USE_ENHANCED_API = false; // Disable for now due to CORS and endpoint issues
 try {
-    if (typeof DeadlockAPIService !== 'undefined' && USE_ENHANCED_API) {
+    if (typeof DeadlockAPIService !== 'undefined' && API_CONFIG.features.useEnhancedAPI) {
         deadlockAPI = new DeadlockAPIService();
     }
 } catch (e) {
-    console.log('DeadlockAPIService not loaded, using legacy API');
+    console.log('DeadlockAPIService not loaded or enhanced API disabled, using legacy API');
 }
 
 // Mock Data
@@ -49,7 +48,7 @@ const MOCK_PLAYER_MATCHES = {
 
 // Steam Profile Name Fetching (using CORS proxy)
 async function getSteamProfileName(steamId) {
-    if (!STEAM_API_KEY) {
+    if (!API_CONFIG.legacyAPI.steamAPIKey) {
         return null; // Return null if no Steam API key is provided
     }
     
@@ -60,7 +59,7 @@ async function getSteamProfileName(steamId) {
         // Use CORS proxy to bypass browser restrictions
         const corsProxy = 'https://api.allorigins.win/raw?url=';
         const steamApiUrl = encodeURIComponent(
-            `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${steamId64}`
+            `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_CONFIG.legacyAPI.steamAPIKey}&steamids=${steamId64}`
         );
         
         const response = await fetch(`${corsProxy}${steamApiUrl}`);
@@ -84,7 +83,7 @@ async function getSteamProfileName(steamId) {
 
 // API Fetching Functions
 async function getPlayersFromMatch(matchId) {
-    if (USE_MOCK_DATA) {
+    if (API_CONFIG.features.useMockData) {
         console.log(`Using mock data for match: ${matchId}`);
         await new Promise(resolve => setTimeout(resolve, 500));
         return MOCK_MATCH_DATA.players;
@@ -143,7 +142,7 @@ async function getPlayersFromMatch(matchId) {
     console.log(`Fetching players for match: ${matchId}`);
     
     try {
-        const response = await fetch(`${API_BASE_URL}/matches/${matchId}/metadata`);
+        const response = await fetch(`${API_CONFIG.legacyAPI.baseUrl}/matches/${matchId}/metadata`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -198,7 +197,7 @@ async function getPlayersFromMatch(matchId) {
 }
 
 async function getPlayerStats(playerId) {
-    if (USE_MOCK_DATA) {
+    if (API_CONFIG.features.useMockData) {
         console.log(`Using mock data for player: ${playerId}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         const matches = MOCK_PLAYER_MATCHES[playerId] || [];
@@ -246,7 +245,7 @@ async function getPlayerStats(playerId) {
         }
         requestCount++;
         
-        const response = await fetch(`${API_BASE_URL}/players/${playerId}/match-history`);
+        const response = await fetch(`${API_CONFIG.legacyAPI.baseUrl}/players/${playerId}/match-history`);
         if (!response.ok) {
             if (response.status === 429) {
                 // Rate limited - just return mock data silently

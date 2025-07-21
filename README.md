@@ -12,21 +12,19 @@ A web application to analyze team performance in Deadlock matches by comparing p
 ## Setup
 
 ### Option 1: Use Mock Data (Default)
-The app works out of the box with mock data. Simply open `index.html` in your browser.
+The app works out of the box with mock data. To enable mock data, set `features.useMockData` to `true` in `config/api-config.js`.
 
 ### Option 2: Use Public API (Recommended)
-The app is configured to use the public Deadlock API at `https://api.deadlock-api.com/v1` automatically.
+The app is configured to use the public Deadlock API at `https://api.deadlock-api.com/api/v1` by default. This can be configured in `config/api-config.js`.
 
 **Optional: Get Real Player Names**
 To show actual Steam usernames instead of Steam IDs:
 1. Get a Steam API key from [Steam Community](https://steamcommunity.com/dev/apikey)
-2. In `js/api.js`, set: `const STEAM_API_KEY = "your_steam_api_key_here";`
+2. In `config/api-config.js`, set `legacyAPI.steamAPIKey` to your Steam API key.
 
 ### Option 3: Alternative APIs
 
-If Tracker Network adds Deadlock support:
-- Sign up at https://tracker.gg/developers
-- Update API endpoints in `js/api.js`
+All API endpoints and feature flags are configured in `config/api-config.js`. You can modify `mainAPI.baseUrl`, `assetsAPI.baseUrl`, `streamkitAPI.baseUrl`, and `legacyAPI.baseUrl` to point to different API instances. You can also enable/disable features like `useEnhancedAPI`, `enableAssets`, etc., via the `features` object in `config/api-config.js`.
 
 ## Usage
 
@@ -36,16 +34,23 @@ If Tracker Network adds Deadlock support:
 
 ## API Configuration
 
-The app supports multiple data sources:
+All API endpoints, feature flags, and other API-related settings are centralized in `config/api-config.js`. This file allows you to configure:
 
-1. **Public API** (`https://api.deadlock-api.com/v1`) - Community-hosted API
-2. **Mock Data** - Fallback for development and testing
+- **Main API Endpoints**: `mainAPI.baseUrl` for the primary Deadlock API.
+- **Assets API**: `assetsAPI.baseUrl` for hero icons, portraits, etc.
+- **Streamkit API**: `streamkitAPI.baseUrl` for live match data overlays.
+- **Legacy API**: `legacyAPI.baseUrl` and `legacyAPI.steamAPIKey` for backward compatibility and Steam profile name fetching.
+- **Cache Settings**: `cache` object for API response caching.
+- **Request Settings**: `request` object for timeouts and retries.
+- **Feature Flags**: `features` object to enable/disable various functionalities like `useEnhancedAPI`, `enableAssets`, `useMockData`, etc.
 
 ## File Structure
 
 ```
 ├── index.html          # Main HTML file
 ├── styles.css          # Custom styles
+├── config/
+│   └── api-config.js   # Centralized API configuration
 ├── js/
 │   ├── app.js          # Main application logic
 │   ├── api.js          # API calls and data fetching
