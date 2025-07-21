@@ -1,7 +1,4 @@
-// Import API configuration
-// This assumes api-config.js is loaded before api.js in index.html
-// If not, you might need a more robust import mechanism (e.g., ES modules)
-const API_CONFIG = window.API_CONFIG || {};
+// API_CONFIG is loaded from config/api-config.js and is available on the window object.
 
 // Simple request tracking
 let requestCount = 0;
@@ -57,7 +54,7 @@ async function getSteamProfileName(steamId) {
         const steamId64 = (BigInt(steamId) + BigInt('76561197960265728')).toString();
         
         // Use CORS proxy to bypass browser restrictions
-        const corsProxy = 'https://api.allorigins.win/raw?url=';
+        const corsProxy = 'https://corsproxy.io/';
         const steamApiUrl = encodeURIComponent(
             `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_CONFIG.legacyAPI.steamAPIKey}&steamids=${steamId64}`
         );
@@ -93,10 +90,10 @@ async function getPlayersFromMatch(matchId) {
     if (deadlockAPI) {
         try {
             console.log(`Fetching match details using enhanced API for match: ${matchId}`);
-            const matchData = await deadlockAPI.getMatchDetails(matchId);
+            const matchData = await deadlockAPI.getMatchMetadata(matchId);
             
             // Handle the actual API response structure
-            const playerData = matchData?.match_info?.players || matchData?.match?.players || matchData?.players;
+            const playerData = matchData?.match_info?.players || matchData?.playersSummary;
             if (playerData && playerData.length > 0) {
                 const playerPromises = [];
                 
@@ -214,7 +211,8 @@ async function getPlayerStats(playerId) {
     if (deadlockAPI) {
         try {
             console.log(`Fetching player stats using enhanced API for player: ${playerId}`);
-            const playerData = await deadlockAPI.getPlayerMatchHistory(playerId, 50);
+            // Use only_stored_history=true to bypass rate limits
+            const playerData = await deadlockAPI.getPlayerMatchHistory(playerId, 50, 0, true);
             
             if (playerData && playerData.statistics) {
                 const stats = playerData.statistics;
@@ -228,7 +226,8 @@ async function getPlayerStats(playerId) {
                     averageDeaths: stats.averageDeaths,
                     averageAssists: stats.averageAssists,
                     recentForm: stats.recentForm,
-                    heroStats: stats.heroStats
+                    heroStats: stats.heroStats,
+                    matchesAnalyzed: playerData.matchesAnalyzed
                 };
             }
         } catch (error) {

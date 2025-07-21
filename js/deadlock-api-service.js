@@ -7,8 +7,7 @@ class DeadlockAPIService {
         // Use v1 endpoints which are actually available
         this.baseUrl = 'https://api.deadlock-api.com/v1';
         this.assetsUrl = 'https://assets.deadlock-api.com';
-        // Use CORS proxy for browser requests
-        this.corsProxy = 'https://api.allorigins.win/raw?url=';
+        // No CORS proxy needed - API has proper CORS headers!
         this.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -38,9 +37,9 @@ class DeadlockAPIService {
         this.lastRequestTime = Date.now();
 
         try {
-            // Use CORS proxy for browser requests
-            const proxiedUrl = `${this.corsProxy}${encodeURIComponent(url)}`;
-            const response = await fetch(proxiedUrl, {
+            // Direct API call - no CORS proxy needed!
+            // The API has proper CORS headers (Access-Control-Allow-Origin: *)
+            const response = await fetch(url, {
                 ...options,
                 headers: this.headers
             });
@@ -108,16 +107,71 @@ class DeadlockAPIService {
      * @param {string} playerId - The player's Steam ID
      * @param {number} limit - Number of matches to fetch (default: 50)
      * @param {number} offset - Offset for pagination (default: 0)
+     * @param {boolean} onlyStoredHistory - Use ClickHouse stored data to bypass rate limits (default: true)
      * @returns {Promise<Object>} Player match history
      */
-    async getPlayerMatchHistory(playerId, limit = 50, offset = 0) {
-        const url = `${this.baseUrl}/players/${playerId}/match-history?limit=${limit}&offset=${offset}`;
+    async getPlayerMatchHistory(playerId, limit = 50, offset = 0, onlyStoredHistory = true) {
+        let url = `${this.baseUrl}/players/${playerId}/match-history?limit=${limit}&offset=${offset}`;
+        
+        // Add only_stored_history parameter to bypass rate limiting
+        if (onlyStoredHistory) {
+            url += '&only_stored_history=true';
+        }
+        
         const data = await this.fetchWithCache(url);
         
+        // Handle both array and object response formats
+        const matches = Array.isArray(data) ? data : (data.matches || []);
+        
         // Calculate additional statistics
-        if (data && data.matches) {
-            const stats = this.calculatePlayerStats(data.matches);
-            data.statistics = stats;
+        if (matches.length > 0) {
+            const stats = this.calculatePlayerStats(matches);
+            
+            // Return consistent format
+            return {
+                matches: matches,
+                statistics: stats,
+                totalMatches: matches.length,
+                matchesAnalyzed: Math.min(matches.length, limit)
+            };
+        }
+        
+        return data;
+    }
+
+    /**
+     * Get match metadata including all player information
+     * @param {string} matchId - The match ID
+     * @returns {Promise<Object>} Match metadata with player details
+     */
+    async getMatchMetadata(matchId) {
+        const url = `${this.baseUrl}/matches/${matchId}/metadata`;
+        const data = await this.fetchWithCache(url);
+        
+        if (data && data.match_info && data.match_info.players) {
+            // Extract player IDs and basic info
+            const players = data.match_info.players.map(player => {
+                // Find the player's final stats from their stats array
+                const finalStats = player.stats && player.stats.length > 0 
+                    ? player.stats[player.stats.length - 1] 
+                    : {};
+                
+                return {
+                    accountId: player.account_id,
+                    playerSlot: player.player_slot,
+                    team: player.player_slot < 6 ? 0 : 1,
+                    heroId: player.hero_id,
+                    kills: finalStats.kills || 0,
+                    deaths: finalStats.deaths || 0,
+                    assists: finalStats.assists || 0,
+                    netWorth: finalStats.net_worth || 0,
+                    lastHits: finalStats.creep_kills || 0,
+                    denies: finalStats.denies || 0,
+                    heroLevel: finalStats.level || 0
+                };
+            });
+            
+            data.playersSummary = players;
         }
         
         return data;
@@ -135,6 +189,66 @@ class DeadlockAPIService {
             url += `&region=${region}`;
         }
         return await this.fetchWithCache(url);
+    }
+
+    /**
+     * Get statistics for all players in a match
+     * @param {string} matchId - The match ID
+     * @param {number} matchHistoryLimit - Number of past matches to analyze per player (default: 50)
+     * @returns {Promise<Object>} All players' statistics from the match
+     */
+    async getAllPlayersFromMatch(matchId, matchHistoryLimit = 50) {
+        try {
+            // First get match metadata to get all player IDs
+            const matchData = await this.getMatchMetadata(matchId);
+            
+            if (!matchData || !matchData.playersSummary) {
+                throw new Error('Could not retrieve match data');
+            }
+            
+            const players = matchData.playersSummary;
+            const allPlayerStats = [];
+            
+            // Fetch stats for each player with minimal delay
+            for (const player of players) {
+                try {
+                    const playerStats = await this.getPlayerMatchHistory(
+                        player.accountId, 
+                        matchHistoryLimit, 
+                        0, 
+                        true // Use only_stored_history to bypass rate limits
+                    );
+                    
+                    allPlayerStats.push({
+                        ...player,
+                        statistics: playerStats.statistics,
+                        totalGames: playerStats.totalMatches
+                    });
+                    
+                    // Small delay to be polite to the server
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    console.error(`Failed to get stats for player ${player.accountId}:`, error);
+                    allPlayerStats.push({
+                        ...player,
+                        error: error.message
+                    });
+                }
+            }
+            
+            return {
+                matchId,
+                matchInfo: matchData.match_info,
+                players: allPlayerStats,
+                teams: {
+                    team0: allPlayerStats.filter(p => p.team === 0),
+                    team1: allPlayerStats.filter(p => p.team === 1)
+                }
+            };
+        } catch (error) {
+            console.error('Error fetching all players from match:', error);
+            throw error;
+        }
     }
 
     /**
@@ -218,8 +332,15 @@ class DeadlockAPIService {
         let totalAssists = 0;
 
         matches.forEach((match, index) => {
+            // Support both API response formats
+            const kills = match.player_kills || match.kills || 0;
+            const deaths = match.player_deaths || match.deaths || 0;
+            const assists = match.player_assists || match.assists || 0;
+            const matchResult = match.match_result;
+            const heroId = match.hero_id;
+            
             // Win/loss tracking
-            if (match.match_result === 1) {
+            if (matchResult === 1) {
                 stats.wins++;
             } else {
                 stats.losses++;
@@ -227,16 +348,15 @@ class DeadlockAPIService {
 
             // Recent form (last 10 matches)
             if (index < 10) {
-                stats.recentForm.push(match.match_result === 1 ? 'W' : 'L');
+                stats.recentForm.push(matchResult === 1 ? 'W' : 'L');
             }
 
             // KDA tracking
-            totalKills += match.kills || 0;
-            totalDeaths += match.deaths || 0;
-            totalAssists += match.assists || 0;
+            totalKills += kills;
+            totalDeaths += deaths;
+            totalAssists += assists;
 
             // Hero-specific stats
-            const heroId = match.hero_id;
             if (heroId) {
                 if (!stats.heroStats[heroId]) {
                     stats.heroStats[heroId] = {
@@ -251,14 +371,14 @@ class DeadlockAPIService {
                 }
                 
                 stats.heroStats[heroId].matches++;
-                if (match.match_result === 1) {
+                if (matchResult === 1) {
                     stats.heroStats[heroId].wins++;
                 } else {
                     stats.heroStats[heroId].losses++;
                 }
-                stats.heroStats[heroId].totalKills += match.kills || 0;
-                stats.heroStats[heroId].totalDeaths += match.deaths || 0;
-                stats.heroStats[heroId].totalAssists += match.assists || 0;
+                stats.heroStats[heroId].totalKills += kills;
+                stats.heroStats[heroId].totalDeaths += deaths;
+                stats.heroStats[heroId].totalAssists += assists;
             }
         });
 
