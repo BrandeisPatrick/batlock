@@ -1,9 +1,9 @@
 /**
- * Enhanced Match UI - Improved visualization for Deadlock match analysis
+ * Match Analyzer - Enhanced visualization for Deadlock match analysis
  */
 
-// Enhanced UI Components
-class MatchUI {
+// Match Analyzer Component
+class MatchAnalyzer {
     constructor() {
         this.currentMatchData = null;
         this.playerStatsCache = new Map();
@@ -137,39 +137,43 @@ class MatchUI {
         const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
 
         return `
-            <div class="bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-4 border ${borderColor} hover:border-opacity-50 transition-all">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <p class="font-semibold text-white">${player.displayName || `Player ${player.accountId}`}</p>
+            <div class="bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 border ${borderColor} hover:border-opacity-50 transition-all">
+                <div class="flex items-center justify-between gap-4">
+                    <!-- Player Info -->
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-white truncate">${player.displayName || `Player ${player.accountId}`}</p>
                         <p class="text-xs text-gray-400">Hero ${player.heroId} • ${player.totalGames || 0} games</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold ${winRateColor}">${stats.winRate}%</p>
-                        <p class="text-xs text-gray-400">Win Rate</p>
+                    
+                    <!-- Stats Section -->
+                    <div class="flex items-center gap-4 flex-shrink-0">
+                        <!-- Win Rate -->
+                        <div class="text-center">
+                            <p class="text-lg font-bold ${winRateColor}">${stats.winRate}%</p>
+                            <p class="text-xs text-gray-400">Win Rate</p>
+                        </div>
+                        
+                        <!-- KDA -->
+                        <div class="text-center">
+                            <p class="text-lg font-bold text-cyan-400">${stats.averageKDA}</p>
+                            <p class="text-xs text-gray-400">KDA</p>
+                        </div>
+                        
+                        <!-- K/D -->
+                        <div class="text-center">
+                            <p class="text-sm font-semibold text-gray-300">${stats.averageKills}/<span class="text-red-400">${stats.averageDeaths}</span></p>
+                            <p class="text-xs text-gray-400">K/D</p>
+                        </div>
+                        
+                        <!-- Recent Form -->
+                        ${recentForm ? `
+                            <div class="text-center">
+                                <p class="text-sm font-mono tracking-wider">${recentForm}</p>
+                                <p class="text-xs text-gray-400">Form</p>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-3 gap-2 mb-3">
-                    <div class="text-center">
-                        <p class="text-sm font-semibold text-cyan-400">${stats.averageKDA}</p>
-                        <p class="text-xs text-gray-500">KDA</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-sm font-semibold text-green-400">${stats.averageKills}</p>
-                        <p class="text-xs text-gray-500">Kills</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-sm font-semibold text-red-400">${stats.averageDeaths}</p>
-                        <p class="text-xs text-gray-500">Deaths</p>
-                    </div>
-                </div>
-
-                ${recentForm ? `
-                    <div class="mt-3 pt-3 border-t border-gray-700">
-                        <p class="text-xs text-gray-400 mb-1">Recent Form</p>
-                        <p class="text-sm font-mono">${recentForm}</p>
-                    </div>
-                ` : ''}
             </div>
         `;
     }
@@ -241,7 +245,7 @@ class MatchUI {
                 <!-- Team 1 Players -->
                 <div class="mb-8">
                     <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 - Winners</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="space-y-3">
                         ${team0Cards}
                     </div>
                 </div>
@@ -249,7 +253,7 @@ class MatchUI {
                 <!-- Team 2 Players -->
                 <div>
                     <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="space-y-3">
                         ${team1Cards}
                     </div>
                 </div>
@@ -484,4 +488,4 @@ class MatchUI {
 }
 
 // Export for use in other files
-window.MatchUI = MatchUI;
+window.MatchAnalyzer = MatchAnalyzer;

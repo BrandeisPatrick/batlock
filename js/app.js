@@ -1,15 +1,11 @@
-// Initialize enhanced UI if available
-let enhancedUI = null;
-let matchUI = null;
+// Initialize match analyzer
+let matchAnalyzer = null;
 try {
-    if (typeof EnhancedUI !== 'undefined') {
-        enhancedUI = new EnhancedUI();
-    }
-    if (typeof MatchUI !== 'undefined') {
-        matchUI = new MatchUI();
+    if (typeof MatchAnalyzer !== 'undefined') {
+        matchAnalyzer = new MatchAnalyzer();
     }
 } catch (e) {
-    console.log('Enhanced UI components not loaded, using standard UI');
+    console.log('Match analyzer not loaded, using standard UI');
 }
 
 // Event Listeners
@@ -33,10 +29,10 @@ async function handleFetchData() {
     try {
         let enhancedSucceeded = false;
         
-        // Use enhanced API if available
-        if (matchUI && deadlockAPI) {
+        // Use match analyzer if available
+        if (matchAnalyzer && deadlockAPI) {
             console.log('🎯 Using enhanced match analysis...');
-            console.log('📋 MatchUI available:', !!matchUI);
+            console.log('📋 MatchAnalyzer available:', !!matchAnalyzer);
             console.log('🔌 DeadlockAPI available:', !!deadlockAPI);
             console.log('🎮 Match ID:', matchId);
             
@@ -57,7 +53,7 @@ async function handleFetchData() {
                 
                 if (allPlayersData && allPlayersData.players.length > 0) {
                     console.log('🎨 Step 3: Rendering match analysis UI...');
-                    await matchUI.renderMatchAnalysis(allPlayersData, allPlayersData);
+                    await matchAnalyzer.renderMatchAnalysis(allPlayersData, allPlayersData);
                     console.log('✅ Enhanced match analysis completed successfully');
                     enhancedSucceeded = true;
                 } else {
@@ -74,7 +70,7 @@ async function handleFetchData() {
             }
         } else {
             console.log('⚙️ Enhanced components not available:', {
-                matchUI: !!matchUI,
+                matchAnalyzer: !!matchAnalyzer,
                 deadlockAPI: !!deadlockAPI
             });
         }
@@ -97,10 +93,10 @@ async function handleFetchData() {
         console.error('Error fetching data:', error);
         showError(`Failed to fetch data. ${error.message}. Displaying mock data as a fallback.`);
         
-        // Try enhanced UI with mock data first if available
-        if (matchUI && MOCK_MATCH_DATA) {
+        // Try match analyzer with mock data first if available
+        if (matchAnalyzer && MOCK_MATCH_DATA) {
             try {
-                console.log('🎯 Using enhanced UI with mock data...');
+                console.log('🎯 Using match analyzer with mock data...');
                 
                 // Create enhanced mock data structure
                 const enhancedMockData = {
@@ -152,11 +148,11 @@ async function handleFetchData() {
                     }
                 };
                 
-                await matchUI.renderMatchAnalysis(enhancedMockData, enhancedMockData);
-                console.log('✅ Enhanced UI with mock data completed');
+                await matchAnalyzer.renderMatchAnalysis(enhancedMockData, enhancedMockData);
+                console.log('✅ Match analyzer with mock data completed');
             } catch (mockError) {
-                console.error('❌ Enhanced UI with mock data failed:', mockError);
-                // Only use old display if enhanced UI fails completely
+                console.error('❌ Match analyzer with mock data failed:', mockError);
+                // Only use old display if match analyzer fails completely
                 await processAndDisplayStats(MOCK_MATCH_DATA.players);
             }
         } else {
@@ -168,7 +164,7 @@ async function handleFetchData() {
 }
 
 async function processAndDisplayStats(players) {
-    console.log('📊 processAndDisplayStats called with enhanced UI available:', !!matchUI);
+    console.log('📊 processAndDisplayStats called with match analyzer available:', !!matchAnalyzer);
     
     const team1 = players.filter(p => p.team === 1);
     const team2 = players.filter(p => p.team === 2);
@@ -206,71 +202,12 @@ async function processAndDisplayStats(players) {
         ...team2Stats[index]
     }));
    
-    // Check if we have enhanced data (KDA, damage, etc.)
-    const hasEnhancedData = players.some(p => p.kda !== undefined || p.damagePerMinute !== undefined);
+    // Note: Enhanced data visualization is handled by the main MatchAnalyzer flow
+    // This function is only used for basic fallback display
    
-    if (hasEnhancedData && enhancedUI) {
-        // Use enhanced UI for richer visualization
-        const container = document.getElementById('chartsContainer');
-        container.innerHTML = ''; // Clear existing content
-        container.classList.remove('hidden');
-        
-        // Create team summary cards
-        const summaryContainer = document.createElement('div');
-        summaryContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
-        
-        // Calculate team stats if available
-        const team1TotalStats = team1PlayersWithStats.reduce((acc, p) => ({
-            totalKills: acc.totalKills + (p.kills || 0),
-            totalDeaths: acc.totalDeaths + (p.deaths || 0),
-            totalAssists: acc.totalAssists + (p.assists || 0),
-            totalDamage: acc.totalDamage + (p.playerDamage || 0),
-            totalHealing: acc.totalHealing + (p.healingOutput || 0),
-            averageKDA: acc.averageKDA + (p.kda || 0)
-        }), { totalKills: 0, totalDeaths: 0, totalAssists: 0, totalDamage: 0, totalHealing: 0, averageKDA: 0 });
-        team1TotalStats.averageKDA = team1TotalStats.averageKDA / team1.length;
-        
-        const team2TotalStats = team2PlayersWithStats.reduce((acc, p) => ({
-            totalKills: acc.totalKills + (p.kills || 0),
-            totalDeaths: acc.totalDeaths + (p.deaths || 0),
-            totalAssists: acc.totalAssists + (p.assists || 0),
-            totalDamage: acc.totalDamage + (p.playerDamage || 0),
-            totalHealing: acc.totalHealing + (p.healingOutput || 0),
-            averageKDA: acc.averageKDA + (p.kda || 0)
-        }), { totalKills: 0, totalDeaths: 0, totalAssists: 0, totalDamage: 0, totalHealing: 0, averageKDA: 0 });
-        team2TotalStats.averageKDA = team2TotalStats.averageKDA / team2.length;
-        
-        summaryContainer.appendChild(enhancedUI.createTeamSummaryCard(1, team1PlayersWithStats, team1TotalStats));
-        summaryContainer.appendChild(enhancedUI.createTeamSummaryCard(2, team2PlayersWithStats, team2TotalStats));
-        container.appendChild(summaryContainer);
-        
-        // Create player cards for each team
-        const playersContainer = document.createElement('div');
-        playersContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 mb-8';
-        
-        const team1Container = document.createElement('div');
-        team1Container.innerHTML = '<h3 class="text-lg font-bold text-blue-400 mb-3">Team 1 Players</h3>';
-        team1PlayersWithStats.forEach(player => {
-            team1Container.appendChild(enhancedUI.createPlayerCard(player));
-        });
-        
-        const team2Container = document.createElement('div');
-        team2Container.innerHTML = '<h3 class="text-lg font-bold text-orange-400 mb-3">Team 2 Players</h3>';
-        team2PlayersWithStats.forEach(player => {
-            team2Container.appendChild(enhancedUI.createPlayerCard(player));
-        });
-        
-        playersContainer.appendChild(team1Container);
-        playersContainer.appendChild(team2Container);
-        container.appendChild(playersContainer);
-        
-        // Display performance comparison charts
-        enhancedUI.displayPlayerPerformance([...team1PlayersWithStats, ...team2PlayersWithStats]);
-    }
-   
-    // Only display standard charts if enhanced UI is not available
-    if (!matchUI) {
-        console.log('📊 Using standard chart display (enhanced UI not available)');
+    // Only display standard charts if match analyzer is not available
+    if (!matchAnalyzer) {
+        console.log('📊 Using standard chart display (match analyzer not available)');
         const team1Labels = team1.map(p => p.displayName);
         const team2Labels = team2.map(p => p.displayName);
        
@@ -288,6 +225,6 @@ async function processAndDisplayStats(players) {
             team2WinRateData
         );
     } else {
-        console.log('🎨 Skipping standard chart display (enhanced UI available)');
+        console.log('🎨 Skipping standard chart display (match analyzer available)');
     }
 }

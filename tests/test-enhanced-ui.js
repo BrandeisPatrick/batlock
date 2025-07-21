@@ -100,26 +100,26 @@ const testPlayersData = {
 const testEnhancedUI = () => {
     console.log('🎨 Testing Enhanced Match UI Components\n');
     
-    // Test if MatchUI is available
-    if (typeof MatchUI === 'undefined') {
-        console.error('❌ MatchUI class not found - make sure enhanced-match-ui.js is loaded');
+    // Test if MatchAnalyzer is available
+    if (typeof MatchAnalyzer === 'undefined') {
+        console.error('❌ MatchAnalyzer class not found - make sure match-analyzer.js is loaded');
         return;
     }
     
-    const matchUI = new MatchUI();
+    const matchAnalyzer = new MatchAnalyzer();
     
-    console.log('✅ MatchUI class loaded successfully');
+    console.log('✅ MatchAnalyzer class loaded successfully');
     
     // Test creating match overview
     console.log('\n1. Testing Match Overview Creation:');
-    const overview = matchUI.createMatchOverview(testMatchData);
+    const overview = matchAnalyzer.createMatchOverview(testMatchData);
     console.log('   Overview HTML length:', overview.length, 'characters');
     console.log('   Contains match ID:', overview.includes('38069822') ? '✅' : '❌');
     console.log('   Contains duration:', overview.includes('28:05') ? '✅' : '❌');
     
     // Test creating team comparison
     console.log('\n2. Testing Team Comparison Creation:');
-    const teamComparison = matchUI.createTeamComparison(
+    const teamComparison = matchAnalyzer.createTeamComparison(
         testPlayersData.teams.team0,
         testPlayersData.teams.team1
     );
@@ -129,7 +129,7 @@ const testEnhancedUI = () => {
     
     // Test creating player cards
     console.log('\n3. Testing Player Card Creation:');
-    const playerCard = matchUI.createPlayerCard(testPlayersData.teams.team0[0], 'green');
+    const playerCard = matchAnalyzer.createPlayerCard(testPlayersData.teams.team0[0], 'green');
     console.log('   Player card HTML length:', playerCard.length, 'characters');
     console.log('   Contains player name:', playerCard.includes('Player One') ? '✅' : '❌');
     console.log('   Contains win rate:', playerCard.includes('44%') ? '✅' : '❌');
@@ -137,7 +137,7 @@ const testEnhancedUI = () => {
     
     // Test creating match insights
     console.log('\n4. Testing Match Insights Creation:');
-    const insights = matchUI.createMatchInsights(testPlayersData);
+    const insights = matchAnalyzer.createMatchInsights(testPlayersData);
     console.log('   Insights HTML length:', insights.length, 'characters');
     console.log('   Contains highest win rate:', insights.includes('Highest Win Rate') ? '✅' : '❌');
     console.log('   Contains best KDA:', insights.includes('Best KDA') ? '✅' : '❌');
