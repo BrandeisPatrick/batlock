@@ -48,7 +48,8 @@
       "WebFetch(domain:api.github.com)",
       "Bash(mv:*)",
       "Bash(git merge:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(tail:*)"
     ],
     "deny": []
   }
