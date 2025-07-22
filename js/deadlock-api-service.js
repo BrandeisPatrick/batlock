@@ -22,11 +22,13 @@ class DeadlockAPIService {
      * Generic fetch wrapper with error handling and caching
      */
     async fetchWithCache(url, options = {}) {
+        console.log('🌐 API: Making request to:', url);
         
         const cacheKey = url;
         const cached = this.cache.get(cacheKey);
         
         if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+            console.log('💾 API: Using cached data for:', url);
             return cached.data;
         }
 
@@ -56,6 +58,7 @@ class DeadlockAPIService {
             }
 
             const data = await response.json();
+            console.log('✅ API: Successfully received data from:', url, 'Size:', JSON.stringify(data).length, 'chars');
             
             // Cache successful responses
             this.cache.set(cacheKey, {
@@ -65,6 +68,7 @@ class DeadlockAPIService {
 
             return data;
         } catch (error) {
+            console.error('❌ API: Error fetching from:', url, 'Error:', error.message);
             throw error;
         }
     }

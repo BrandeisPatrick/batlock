@@ -112,7 +112,7 @@ class MatchAnalyzer {
      */
     createGameStatsSection(team0Players, team1Players) {
         return `
-            <section class="game-stats-section bg-gray-800 rounded-lg p-6 mb-8">
+            <section class="game-stats-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">🎮 Match Performance</h2>
                 
                 <!-- Team Headers -->
@@ -166,7 +166,7 @@ class MatchAnalyzer {
                     <td class="py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
                                     H${player0.heroId || '?'}
                                 </div>
                                 <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
@@ -176,18 +176,18 @@ class MatchAnalyzer {
                     <td class="text-center py-3 px-2">
                         ${player0 ? `<span class="font-mono">${player0.kills || 0}/${player0.deaths || 0}/${player0.assists || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-orange-400">
-                        ${player0 ? `${this.formatNumber(player0.playerDamage || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="${this.getStatValueClass(player0.playerDamage || 0, 'damage')}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-green-400">
-                        ${player0 ? `${this.formatNumber(player0.healingOutput || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="${this.getStatValueClass(player0.healingOutput || 0, 'healing')}">${this.formatNumber(player0.healingOutput || 0)}</span>` : '-'}
                     </td>
                     
                     <!-- Team 2 Player -->
                     <td class="py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
                                     H${player1.heroId || '?'}
                                 </div>
                                 <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
@@ -197,11 +197,11 @@ class MatchAnalyzer {
                     <td class="text-center py-3 px-2">
                         ${player1 ? `<span class="font-mono">${player1.kills || 0}/${player1.deaths || 0}/${player1.assists || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-orange-400">
-                        ${player1 ? `${this.formatNumber(player1.playerDamage || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="${this.getStatValueClass(player1.playerDamage || 0, 'damage')}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-green-400">
-                        ${player1 ? `${this.formatNumber(player1.healingOutput || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="${this.getStatValueClass(player1.healingOutput || 0, 'healing')}">${this.formatNumber(player1.healingOutput || 0)}</span>` : '-'}
                     </td>
                 </tr>
             `;
@@ -215,7 +215,7 @@ class MatchAnalyzer {
      */
     createLaneEconomicsSection(team0Players, team1Players) {
         return `
-            <section class="lane-economics-section bg-gray-800 rounded-lg p-6 mb-8">
+            <section class="lane-economics-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.2s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">💰 Lane Economics & Farm</h2>
                 
                 <!-- Lane Headers -->
@@ -274,42 +274,42 @@ class MatchAnalyzer {
                     <td class="py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
                                     H${player0.heroId || '?'}
                                 </div>
                                 <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2 text-yellow-400">
-                        ${player0 ? `$${this.formatNumber(player0.netWorth || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="${this.getStatValueClass(player0.netWorth || 0, 'networth')}">$${this.formatNumber(player0.netWorth || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-blue-400">
-                        ${player0 ? `${player0.lastHits || 0}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="${this.getStatValueClass(player0.lastHits || 0, 'lasthits')}">${player0.lastHits || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-purple-400">
-                        ${player0 ? `${player0.denies || 0}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="${this.getStatValueClass(player0.denies || 0, 'denies')}">${player0.denies || 0}</span>` : '-'}
                     </td>
                     
                     <!-- Team 2 Player -->
                     <td class="py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
                                     H${player1.heroId || '?'}
                                 </div>
                                 <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2 text-yellow-400">
-                        ${player1 ? `$${this.formatNumber(player1.netWorth || 0)}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="${this.getStatValueClass(player1.netWorth || 0, 'networth')}">$${this.formatNumber(player1.netWorth || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-blue-400">
-                        ${player1 ? `${player1.lastHits || 0}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="${this.getStatValueClass(player1.lastHits || 0, 'lasthits')}">${player1.lastHits || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2 text-purple-400">
-                        ${player1 ? `${player1.denies || 0}` : '-'}
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="${this.getStatValueClass(player1.denies || 0, 'denies')}">${player1.denies || 0}</span>` : '-'}
                     </td>
                 </tr>
             `;
@@ -425,7 +425,7 @@ class MatchAnalyzer {
             .join('');
         
         return `
-            <section class="historical-data-section mb-8">
+            <section class="historical-data-section animate-fadeInUp mb-8" style="animation-delay: 0.4s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">📊 Player Historical Performance</h2>
                 
                 <!-- Two-column layout wrapper -->
@@ -471,6 +471,48 @@ class MatchAnalyzer {
             return (num / 1000).toFixed(1) + 'K';
         }
         return num.toString();
+    }
+
+    /**
+     * Get CSS class for stat values based on performance level
+     */
+    getStatValueClass(value, statType) {
+        if (!value || value === 0) return 'text-gray-400';
+        
+        let highThreshold, mediumThreshold;
+        
+        switch (statType) {
+            case 'damage':
+                highThreshold = 50000;
+                mediumThreshold = 25000;
+                break;
+            case 'healing':
+                highThreshold = 15000;
+                mediumThreshold = 7500;
+                break;
+            case 'networth':
+                highThreshold = 40000;
+                mediumThreshold = 25000;
+                break;
+            case 'lasthits':
+                highThreshold = 400;
+                mediumThreshold = 250;
+                break;
+            case 'denies':
+                highThreshold = 50;
+                mediumThreshold = 25;
+                break;
+            default:
+                return 'text-gray-300';
+        }
+        
+        if (value >= highThreshold) {
+            return 'stat-value-high';
+        } else if (value >= mediumThreshold) {
+            return 'stat-value-medium';
+        } else {
+            return 'stat-value-low';
+        }
     }
 
     /**
@@ -564,10 +606,19 @@ class MatchAnalyzer {
      * Create the main match analysis view
      */
     async renderMatchAnalysis(matchData, allPlayersData) {
+        console.log('🎯 Starting renderMatchAnalysis...');
+        console.log('📊 Match data:', {
+            hasMatchData: !!matchData,
+            hasTeams: !!allPlayersData?.teams,
+            team0Count: allPlayersData?.teams?.team0?.length || 0,
+            team1Count: allPlayersData?.teams?.team1?.length || 0
+        });
         
         const container = document.getElementById('chartsContainer');
+        console.log('📦 Charts container found:', !!container);
         
         if (!container) {
+            console.error('❌ Charts container not found - this should be the results div temporarily renamed');
             throw new Error('Charts container not found');
         }
         
@@ -586,18 +637,65 @@ class MatchAnalyzer {
         
         
         // Create the new three-section layout
+        console.log('🏗️ Creating sections...');
+        console.log('📊 Creating game stats section with teams:', team0Players.length, 'vs', team1Players.length);
         const gameStatsSection = this.createGameStatsSection(team0Players, team1Players);
-        const laneEconomicsSection = this.createLaneEconomicsSection(team0Players, team1Players);
-        const historicalDataSection = this.createHistoricalDataSection(team0Players, team1Players);
-        const teamComparison = this.createTeamComparison(team0Players, team1Players);
+        console.log('✅ Game stats section created');
         
-        container.innerHTML = `
+        console.log('💰 Creating lane economics section...');
+        const laneEconomicsSection = this.createLaneEconomicsSection(team0Players, team1Players);
+        console.log('✅ Lane economics section created');
+        
+        console.log('📈 Creating historical data section...');
+        const historicalDataSection = this.createHistoricalDataSection(team0Players, team1Players);
+        console.log('✅ Historical data section created');
+        
+        console.log('⚖️ Creating team comparison...');
+        const teamComparison = this.createTeamComparison(team0Players, team1Players);
+        console.log('✅ Team comparison created');
+        
+        console.log('📝 Assembling final HTML...');
+        const finalHTML = `
             ${overview}
             ${teamComparison}
             ${gameStatsSection}
             ${laneEconomicsSection}
             ${historicalDataSection}
         `;
+        
+        console.log('📤 Setting container innerHTML...', 'HTML length:', finalHTML.length);
+        container.innerHTML = finalHTML;
+        console.log('✅ Container HTML set successfully');
+        
+        // Debug: Check if content is actually in DOM
+        setTimeout(() => {
+            const sections = container.querySelectorAll('section');
+            const tables = container.querySelectorAll('table');
+            console.log('🔍 DOM Check:', {
+                containerVisible: container.offsetHeight > 0,
+                containerWidth: container.offsetWidth,
+                containerHeight: container.offsetHeight,
+                sectionsFound: sections.length,
+                tablesFound: tables.length,
+                firstSectionVisible: sections[0]?.offsetHeight || 0,
+                containerClasses: container.className,
+                containerStyle: container.style.cssText
+            });
+            
+            // Make container very visible for debugging
+            container.style.border = '3px solid red';
+            container.style.minHeight = '500px';
+            container.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
+            
+            sections.forEach((section, i) => {
+                console.log(`📋 Section ${i + 1}:`, {
+                    className: section.className,
+                    visible: section.offsetHeight > 0,
+                    height: section.offsetHeight,
+                    innerHTML: section.innerHTML.substring(0, 100) + '...'
+                });
+            });
+        }, 100);
         
         // Add interactive charts after rendering
         this.createInteractiveCharts(allPlayersData);
@@ -915,9 +1013,17 @@ class MatchAnalyzer {
      * @param {Object} apiService - API service for fetching additional data
      */
     async renderProgressiveMatchAnalysis(matchMetadata, apiService) {
+        console.log('🚀 Starting progressive match analysis...');
+        console.log('📊 Match metadata received:', {
+            hasMatchData: !!matchMetadata,
+            hasPlayersData: !!matchMetadata?.playersSummary,
+            playersCount: matchMetadata?.playersSummary?.length,
+            matchInfo: !!matchMetadata?.match_info
+        });
         
         // Phase 1: Display match overview and basic player cards immediately
         const resultsDiv = document.getElementById('results');
+        console.log('📋 Results div found:', !!resultsDiv);
         
         if (!resultsDiv) {
             throw new Error('Results div not found. Make sure there is a div with id="results" in the HTML.');
@@ -938,8 +1044,8 @@ class MatchAnalyzer {
                         <div class="animate-spin h-5 w-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
                         <span class="text-cyan-400">Loading detailed player statistics...</span>
                     </div>
-                    <div id="progress-bar" class="w-full bg-gray-600 rounded-full h-2 mt-3">
-                        <div id="progress-fill" class="bg-cyan-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    <div id="progress-bar" class="progress-indicator w-full h-3 mt-3">
+                        <div id="progress-fill" class="progress-fill h-full" style="width: 0%"></div>
                     </div>
                     <div id="progress-text" class="text-sm text-gray-400 mt-2">Preparing player data...</div>
                 </div>
@@ -948,10 +1054,13 @@ class MatchAnalyzer {
         `;
         
         resultsDiv.innerHTML = initialContent;
+        console.log('✅ Initial content loaded to results div');
         
         // Phase 2: Start fetching player statistics in background
+        console.log('🔄 Phase 2: Starting background data fetching...');
         
         const players = matchMetadata.playersSummary;
+        console.log('👥 Players to process:', players?.length || 0);
         const totalPlayers = players.length;
         let completedPlayers = 0;
         
@@ -980,9 +1089,11 @@ class MatchAnalyzer {
         };
         
         // Fetch player data with progressive updates
+        console.log('📊 Starting to fetch individual player data...');
         const enhancedPlayersData = await Promise.all(
             players.map(async (player, index) => {
                 try {
+                    console.log(`👤 Processing player ${index + 1}/${totalPlayers}: ${player.accountId}`);
                                 
                     // Update progress
                     const playerName = player.displayName || `Player ${player.accountId}`;
@@ -994,7 +1105,13 @@ class MatchAnalyzer {
                     }
                     
                     // Fetch detailed player statistics
+                    console.log(`📡 Fetching stats for player: ${player.accountId}`);
                     const playerStats = await apiService.getPlayerMatchHistory(player.accountId, 50, 0, true);
+                    console.log(`✅ Received stats for player ${player.accountId}:`, {
+                        hasStats: !!playerStats,
+                        hasStatistics: !!playerStats?.statistics,
+                        matchCount: playerStats?.totalMatches || 0
+                    });
                     
                     const enhancedPlayer = {
                         ...player,
@@ -1010,6 +1127,7 @@ class MatchAnalyzer {
                     };
                     
                     // Update the specific player card
+                    console.log(`🎨 Updating player card for: ${player.accountId}`);
                     this.updatePlayerCard(enhancedPlayer);
                     
                     completedPlayers++;
@@ -1018,6 +1136,11 @@ class MatchAnalyzer {
                             return enhancedPlayer;
                     
                 } catch (error) {
+                    console.error(`❌ Failed to load data for player ${player.accountId}:`, {
+                        error: error.message,
+                        stack: error.stack,
+                        playerData: player
+                    });
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
                     
@@ -1032,13 +1155,21 @@ class MatchAnalyzer {
                             averageDeaths: 0,
                             averageAssists: 0,
                             recentForm: []
-                        }
+                        },
+                        error: error.message
                     };
                 }
             })
         );
         
+        console.log('📋 All players processed:', {
+            totalPlayers: enhancedPlayersData.length,
+            playersWithErrors: enhancedPlayersData.filter(p => p.error).length,
+            playersWithStats: enhancedPlayersData.filter(p => p.statistics && !p.error).length
+        });
+        
         // Phase 3: Update team structures and comparisons
+        console.log('🔄 Phase 3: Creating final team structures...');
         
         const finalTeamData = {
             team0: enhancedPlayersData.filter(p => p.team === 0),
@@ -1064,16 +1195,29 @@ class MatchAnalyzer {
         
         // Now render the final layout using the main renderMatchAnalysis method
         // but targeting the results div instead of chartsContainer
+        console.log('🎨 Phase 4: Rendering final layout...');
         const resultsContainer = document.getElementById('results');
+        console.log('📦 Results container found for final render:', !!resultsContainer);
+        
         if (resultsContainer) {
             // Temporarily change the container ID so renderMatchAnalysis targets the right place
             const originalId = resultsContainer.id;
             resultsContainer.id = 'chartsContainer';
+            console.log('🔄 Temporarily changed container ID to chartsContainer');
             
-            await this.renderMatchAnalysis(finalMatchData, { teams: finalTeamData, matchInfo: matchMetadata.match_info });
+            try {
+                await this.renderMatchAnalysis(finalMatchData, { teams: finalTeamData, matchInfo: matchMetadata.match_info });
+                console.log('✅ Final match analysis rendered successfully');
+            } catch (renderError) {
+                console.error('❌ Error rendering final match analysis:', renderError);
+                throw renderError;
+            }
             
             // Restore original ID
             resultsContainer.id = originalId;
+            console.log('🔄 Restored original container ID');
+        } else {
+            console.error('❌ Results container not found for final render');
         }
         
     }

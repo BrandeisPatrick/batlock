@@ -1,9 +1,37 @@
 /* Enhanced UI Styles for Deadlock Match Analyzer */
 
+/* Root Variables for Consistent Theming */
+:root {
+    --primary-bg: #0f172a;
+    --secondary-bg: #1e293b;
+    --card-bg: rgba(15, 23, 42, 0.8);
+    --glass-bg: rgba(30, 41, 59, 0.6);
+    --border-color: rgba(148, 163, 184, 0.2);
+    --accent-cyan: #22d3ee;
+    --accent-emerald: #10b981;
+    --accent-rose: #f43f5e;
+    --accent-amber: #f59e0b;
+    --accent-purple: #a855f7;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 40px -4px rgba(0, 0, 0, 0.4), 0 8px 16px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced Body and Background */
+body {
+    background: linear-gradient(135deg, var(--primary-bg) 0%, #0c1420 50%, var(--primary-bg) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
 /* Animated progress bars */
 .progress-bar {
     position: relative;
     overflow: hidden;
+    border-radius: 9999px;
+    background: var(--secondary-bg);
 }
 
 .progress-bar::after {
@@ -13,7 +41,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.4), transparent);
     animation: progress-shimmer 2s infinite;
 }
 
@@ -22,11 +50,56 @@
     100% { left: 100%; }
 }
 
-/* Enhanced player cards */
+/* Pulsing animations for loading */
+@keyframes gentle-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.animate-gentle-pulse {
+    animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+/* Fade in animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-fadeInScale {
+    animation: fadeInScale 0.4s ease-out;
+}
+
+/* Enhanced player cards with modern glass effects */
 .player-card {
-    transition: all 0.3s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-lg);
 }
 
 .player-card::before {
@@ -36,8 +109,8 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.1), transparent);
+    transition: left 0.6s ease;
 }
 
 .player-card:hover::before {
@@ -45,8 +118,132 @@
 }
 
 .player-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+    border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* Enhanced glass effect components */
+.glass-effect {
+    background: rgba(30, 41, 59, 0.8) !important;
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Ensure main results container is visible */
+#results {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Ensure sections are visible */
+section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Fix any hidden classes */
+.hidden {
+    display: none !important;
+}
+
+/* Make sure text is visible */
+.game-stats-section *,
+.lane-economics-section *,
+.historical-data-section * {
+    color: inherit !important;
+}
+
+.game-stats-section h2,
+.lane-economics-section h2,
+.historical-data-section h2 {
+    color: #f8fafc !important;
+    display: block !important;
+}
+
+/* Debug styles - temporary visible styling to confirm content is there */
+.game-stats-section,
+.lane-economics-section,
+.historical-data-section {
+    border: 2px solid #22d3ee !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+    padding: 1.5rem !important;
+    margin: 1rem 0 !important;
+}
+
+/* Ensure tables are visible */
+.game-stats-section table,
+.lane-economics-section table {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: #f8fafc !important;
+    border: 1px solid #374151 !important;
+}
+
+.game-stats-section th,
+.game-stats-section td,
+.lane-economics-section th,
+.lane-economics-section td {
+    color: #f8fafc !important;
+    padding: 0.75rem 0.5rem !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Make team comparison visible */
+.team-comparison {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border: 2px solid #10b981 !important;
+    padding: 1.5rem !important;
+    margin: 1rem 0 !important;
+    color: #f8fafc !important;
+}
+
+.enhanced-input {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.enhanced-input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+}
+
+.enhanced-button {
+    background: linear-gradient(135deg, var(--accent-cyan), #0891b2);
+    border: none;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.enhanced-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.enhanced-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
 }
 
 /* Win rate indicators */
@@ -241,33 +438,195 @@
     border: 1px solid rgba(75, 85, 99, 0.3);
 }
 
-/* Section-specific styling */
+/* Enhanced Section Styling */
 .game-stats-section,
 .lane-economics-section,
 .historical-data-section {
+    background: rgba(30, 41, 59, 0.9) !important;
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
     margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease-out;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 200px;
+}
+
+.game-stats-section::before,
+.lane-economics-section::before,
+.historical-data-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan), var(--accent-purple));
+    border-radius: 1rem 1rem 0 0;
+}
+
+/* Enhanced Section Headers */
+.game-stats-section h2,
+.lane-economics-section h2,
+.historical-data-section h2 {
+    color: var(--text-primary);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin-top: 0.5rem;
+    position: relative;
 }
 
 /* Table styling for stats sections */
 .game-stats-section table,
 .lane-economics-section table {
-    background: rgba(31, 41, 55, 0.5);
-    border-radius: 0.5rem;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    border-radius: 0.75rem;
     overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 
 .game-stats-section thead th,
 .lane-economics-section thead th {
-    background: rgba(55, 65, 81, 0.8);
+    background: linear-gradient(135deg, var(--secondary-bg), rgba(30, 41, 59, 0.8));
+    color: var(--text-primary);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-size: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    position: relative;
+}
+
+.game-stats-section tbody tr,
+.lane-economics-section tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .game-stats-section tbody tr:hover,
 .lane-economics-section tbody tr:hover {
-    background: rgba(55, 65, 81, 0.3);
+    background: rgba(34, 211, 238, 0.05);
+    transform: scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced stat cells */
+.game-stats-section td,
+.lane-economics-section td {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Stat value highlighting */
+.stat-value-high {
+    color: var(--accent-emerald);
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.stat-value-medium {
+    color: var(--accent-amber);
+    font-weight: 600;
+}
+
+.stat-value-low {
+    color: var(--accent-rose);
+    font-weight: 600;
+}
+
+/* Enhanced Hero Icons and Visual Elements */
+.hero-icon {
+    background: linear-gradient(135deg, var(--glass-bg), rgba(30, 41, 59, 0.9));
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, var(--accent-cyan), transparent);
+    animation: rotate 3s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hero-icon:hover::before {
+    opacity: 0.2;
+}
+
+.hero-icon:hover {
+    transform: scale(1.1);
+    border-color: var(--accent-cyan);
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Enhanced Loading States */
+.loading-shimmer {
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(34, 211, 238, 0.1), 
+        transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Enhanced Progress Indicators */
+.progress-indicator {
+    position: relative;
+    background: var(--secondary-bg);
+    border-radius: 9999px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    animation: progress-shine 2s ease-in-out infinite;
+}
+
+@keyframes progress-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
 }
 
 /* Mobile responsiveness for tables */
@@ -276,7 +635,25 @@
     .lane-economics-section .overflow-x-auto {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-        scrollbar-color: #374151 #1f2937;
+        scrollbar-color: var(--accent-cyan) var(--secondary-bg);
+        border-radius: 0.5rem;
+    }
+    
+    .game-stats-section .overflow-x-auto::-webkit-scrollbar,
+    .lane-economics-section .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .game-stats-section .overflow-x-auto::-webkit-scrollbar-track,
+    .lane-economics-section .overflow-x-auto::-webkit-scrollbar-track {
+        background: var(--secondary-bg);
+        border-radius: 4px;
+    }
+    
+    .game-stats-section .overflow-x-auto::-webkit-scrollbar-thumb,
+    .lane-economics-section .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: var(--accent-cyan);
+        border-radius: 4px;
     }
     
     .game-stats-section table,
@@ -290,6 +667,11 @@
     .lane-economics-section td {
         padding: 0.5rem 0.25rem;
         font-size: 0.8rem;
+    }
+    
+    /* Enhanced mobile animations */
+    .player-card:hover {
+        transform: translateY(-2px) scale(1.01);
     }
 }
 

@@ -4,10 +4,32 @@ let matchAnalyzer = null;
 try {
     if (typeof MatchAnalyzer !== 'undefined') {
         matchAnalyzer = new MatchAnalyzer();
+        console.log('✅ MatchAnalyzer initialized successfully');
+    } else {
+        console.warn('⚠️ MatchAnalyzer class not available');
     }
 } catch (e) {
-    console.log('Match analyzer not loaded, using standard UI');
+    console.error('❌ Error initializing MatchAnalyzer:', e.message);
 }
+
+// Check if enhanced styles are loading
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎨 Checking CSS loading...');
+    const testElement = document.createElement('div');
+    testElement.className = 'glass-effect';
+    document.body.appendChild(testElement);
+    const computedStyle = window.getComputedStyle(testElement);
+    const hasBackdropFilter = computedStyle.backdropFilter !== 'none';
+    document.body.removeChild(testElement);
+    console.log('🎨 Enhanced CSS loaded:', hasBackdropFilter ? 'YES' : 'NO');
+    
+    console.log('🌐 Available global objects:', {
+        MatchAnalyzer: typeof MatchAnalyzer,
+        DeadlockAPIService: typeof DeadlockAPIService,
+        deadlockAPI: typeof deadlockAPI,
+        Chart: typeof Chart
+    });
+});
 
 // Event Listeners
 fetchButton.addEventListener('click', handleFetchData);
@@ -35,6 +57,8 @@ async function handleFetchData() {
             console.log('📋 MatchAnalyzer available:', !!matchAnalyzer);
             console.log('🔌 DeadlockAPI available:', !!deadlockAPI);
             console.log('🎮 Match ID:', matchId);
+            console.log('🧩 MatchAnalyzer methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(matchAnalyzer)));
+            console.log('🔧 DeadlockAPI methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(deadlockAPI)));
             
             try {
                 console.log('📡 Step 1: Fetching match metadata for immediate display...');
