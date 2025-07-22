@@ -23,13 +23,16 @@ class MatchAnalyzer {
         // Handle both possible data structure formats
         const matchInfo = matchData.matchInfo || matchData.match_info;
         
+        // Fix 1: Robust match ID handling
+        const matchId = matchData.matchId ?? matchData.id ?? 'Unknown';
+        
         if (!matchInfo) {
             console.warn('⚠️ No match info found, using fallback data');
             return `
                 <div class="bg-gray-800 rounded-lg p-6 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-center">
                         <div>
-                            <h2 class="text-2xl font-bold text-cyan-400">Match ${matchData.matchId}</h2>
+                            <h2 class="text-2xl font-bold text-cyan-400">Match ${matchId}</h2>
                             <p class="text-gray-400 mt-1">Duration: Unknown</p>
                         </div>
                         <div class="mt-4 md:mt-0 text-center">
@@ -48,7 +51,7 @@ class MatchAnalyzer {
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-bold text-cyan-400">Match ${matchData.matchId}</h2>
+                        <h2 class="text-2xl font-bold text-cyan-400">Match ${matchId}</h2>
                         <p class="text-gray-400 mt-1">Duration: ${duration}:${String(seconds).padStart(2, '0')}</p>
                     </div>
                     <div class="mt-4 md:mt-0 text-center">
@@ -112,20 +115,24 @@ class MatchAnalyzer {
     }
 
     /**
-     * Create individual player cards with enhanced stats
+     * Create individual player cards with enhanced stats and consistent layout
      */
     createPlayerCard(player, teamColor) {
         const stats = player.statistics;
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
+        const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
         
         if (!stats) {
             return `
-                <div class="bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-4 border ${borderColor}">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <p class="font-semibold text-white">${player.displayName || `Player ${player.accountId}`}</p>
-                            <p class="text-xs text-gray-400">Hero ${player.heroId}</p>
+                <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
+                            <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                            <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
                         </div>
                     </div>
                     <p class="text-center text-gray-500">Loading stats...</p>
@@ -133,45 +140,63 @@ class MatchAnalyzer {
             `;
         }
 
-        const recentForm = stats.recentForm ? stats.recentForm.slice(0, 5).join(' ') : '';
+        const recentForm = stats.recentForm || [];
+        const formIndicators = recentForm.slice(0, 5).map(result => 
+            `<span class="inline-block w-2 h-2 rounded-full ${result === 'W' ? 'bg-green-400' : 'bg-red-400'}"></span>`
+        ).join(' ');
+        
         const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
+        const kdaColor = stats.averageKDA >= 3 ? 'text-green-400' : 
+                        stats.averageKDA >= 2 ? 'text-yellow-400' : 'text-red-400';
 
+        // Fix 3: Unified card heights and consistent padding
         return `
-            <div class="bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 border ${borderColor} hover:border-opacity-50 transition-all">
-                <div class="flex items-center justify-between gap-4">
-                    <!-- Player Info -->
-                    <div class="flex-1 min-w-0">
-                        <p class="font-semibold text-white truncate">${player.displayName || `Player ${player.accountId}`}</p>
-                        <p class="text-xs text-gray-400">Hero ${player.heroId} • ${player.totalGames || 0} games</p>
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
+                <!-- Top: Player info with hero icon -->
+                <div class="flex items-center space-x-4 mb-4">
+                    <!-- Fix 5: Enhanced hero icon placeholder (ready for actual icons) -->
+                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
+                        <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
                     </div>
-                    
-                    <!-- Stats Section -->
-                    <div class="flex items-center gap-4 flex-shrink-0">
-                        <!-- Win Rate -->
-                        <div class="text-center">
-                            <p class="text-lg font-bold ${winRateColor}">${stats.winRate}%</p>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                        <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        <p class="text-xs text-gray-500">${player.totalGames || 0} total games</p>
+                    </div>
+                </div>
+                
+                <!-- Bottom: Stats grid with consistent spacing -->
+                <div class="stats space-y-3">
+                    <!-- Primary stats row -->
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-gray-700/50 rounded-lg p-3">
+                            <p class="text-xl font-bold ${winRateColor}">${stats.winRate}%</p>
                             <p class="text-xs text-gray-400">Win Rate</p>
                         </div>
-                        
-                        <!-- KDA -->
-                        <div class="text-center">
-                            <p class="text-lg font-bold text-cyan-400">${stats.averageKDA}</p>
-                            <p class="text-xs text-gray-400">KDA</p>
+                        <div class="bg-gray-700/50 rounded-lg p-3">
+                            <p class="text-xl font-bold ${kdaColor}">${stats.averageKDA}</p>
+                            <p class="text-xs text-gray-400">Avg KDA</p>
                         </div>
-                        
-                        <!-- K/D -->
-                        <div class="text-center">
-                            <p class="text-sm font-semibold text-gray-300">${stats.averageKills}/<span class="text-red-400">${stats.averageDeaths}</span></p>
-                            <p class="text-xs text-gray-400">K/D</p>
+                    </div>
+                    
+                    <!-- Secondary stats row -->
+                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
+                        <div>
+                            <p class="font-semibold text-cyan-400">${stats.averageKills}/${stats.averageDeaths}</p>
+                            <p class="text-xs text-gray-500">Avg K/D</p>
                         </div>
-                        
-                        <!-- Recent Form -->
-                        ${recentForm ? `
-                            <div class="text-center">
-                                <p class="text-sm font-mono tracking-wider">${recentForm}</p>
-                                <p class="text-xs text-gray-400">Form</p>
-                            </div>
-                        ` : ''}
+                        <div>
+                            <p class="font-semibold text-yellow-400">${stats.averageAssists}</p>
+                            <p class="text-xs text-gray-500">Avg Assists</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent form -->
+                    <div class="text-center border-t border-gray-600 pt-3">
+                        <p class="text-xs text-gray-400 mb-2">Recent Form</p>
+                        <div class="flex justify-center items-center space-x-1">
+                            ${formIndicators || '<span class="text-xs text-gray-500">No data</span>'}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -215,9 +240,10 @@ class MatchAnalyzer {
         );
         
         console.log('🃏 Creating player cards...');
-        // Create player cards for both teams
+        // Create player cards for both teams, expecting 6 players each
         const team0Cards = allPlayersData.teams.team0
             .sort((a, b) => a.playerSlot - b.playerSlot)
+            .slice(0, 6) // Ensure exactly 6 players
             .map((player, index) => {
                 console.log(`📊 Creating card for Team 0 Player ${index + 1}:`, player.accountId);
                 return this.createPlayerCard(player, 'green');
@@ -226,6 +252,7 @@ class MatchAnalyzer {
             
         const team1Cards = allPlayersData.teams.team1
             .sort((a, b) => a.playerSlot - b.playerSlot)
+            .slice(0, 6) // Ensure exactly 6 players
             .map((player, index) => {
                 console.log(`📊 Creating card for Team 1 Player ${index + 1}:`, player.accountId);
                 return this.createPlayerCard(player, 'red');
@@ -233,7 +260,7 @@ class MatchAnalyzer {
             .join('');
         
         console.log('🖼️ Rendering complete UI to container...');
-        // Render the complete UI
+        // MODIFIED: Tailored grid for 6 players per team (2 columns, 3 rows per team on md screens)
         container.innerHTML = `
             ${overview}
             ${teamComparison}
@@ -242,19 +269,22 @@ class MatchAnalyzer {
             <div class="mb-8">
                 <h3 class="text-2xl font-bold text-white mb-6">Player Performance Analysis</h3>
                 
-                <!-- Team 1 Players -->
-                <div class="mb-8">
-                    <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 - Winners</h4>
-                    <div class="space-y-3">
-                        ${team0Cards}
+                <!-- Fix 2 & 4: Flex container for teams with 3-column grid -->
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Team 1 Players -->
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 - Winners</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                            ${team0Cards}
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Team 2 Players -->
-                <div>
-                    <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2</h4>
-                    <div class="space-y-3">
-                        ${team1Cards}
+                    
+                    <!-- Team 2 Players -->
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                            ${team1Cards}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -595,36 +625,38 @@ class MatchAnalyzer {
         const chartsContainer = document.getElementById('chartsContainer');
         if (chartsContainer) chartsContainer.classList.add('hidden');
         
-        // Create initial structure with match info
+        // Create initial structure with match info and improved spacing
         const initialContent = `
-            <div id="match-overview">
-                ${this.createMatchOverview(matchMetadata)}
-            </div>
-            
-            <div id="loading-status" class="bg-gray-700 rounded-lg p-4 mb-6">
-                <div class="flex items-center space-x-3">
-                    <div class="animate-spin h-5 w-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
-                    <span class="text-cyan-400">Loading detailed player statistics...</span>
+            <div class="p-6 space-y-8">
+                <div id="match-overview">
+                    ${this.createMatchOverview(matchMetadata)}
                 </div>
-                <div id="progress-bar" class="w-full bg-gray-600 rounded-full h-2 mt-3">
-                    <div id="progress-fill" class="bg-cyan-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                
+                <div id="loading-status" class="bg-gray-700 rounded-lg p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="animate-spin h-5 w-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
+                        <span class="text-cyan-400">Loading detailed player statistics...</span>
+                    </div>
+                    <div id="progress-bar" class="w-full bg-gray-600 rounded-full h-2 mt-3">
+                        <div id="progress-fill" class="bg-cyan-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-text" class="text-sm text-gray-400 mt-2">Preparing player data...</div>
                 </div>
-                <div id="progress-text" class="text-sm text-gray-400 mt-2">Preparing player data...</div>
-            </div>
-            
-            <div id="player-cards-section">
-                <h3 class="text-xl font-bold text-white mb-4">Match Players</h3>
-                <div id="team-sections" class="space-y-6">
-                    ${this.createInitialPlayerCards(matchMetadata.playersSummary)}
+                
+                <div id="player-cards-section">
+                    <h3 class="text-2xl font-bold text-white mb-6">Player Performance Analysis</h3>
+                    <div id="team-sections">
+                        ${this.createInitialPlayerCards(matchMetadata.playersSummary)}
+                    </div>
                 </div>
-            </div>
-            
-            <div id="team-comparison" class="hidden">
-                <!-- Team comparison will be updated as data loads -->
-            </div>
-            
-            <div id="match-insights" class="hidden">
-                <!-- Match insights will appear once all data is loaded -->
+                
+                <div id="team-comparison" class="hidden">
+                    <!-- Team comparison will be updated as data loads -->
+                </div>
+                
+                <div id="match-insights" class="hidden">
+                    <!-- Match insights will appear once all data is loaded -->
+                </div>
             </div>
         `;
         
@@ -728,8 +760,8 @@ class MatchAnalyzer {
         console.log('🔄 Phase 3: Updating team comparisons...');
         
         const finalTeamData = {
-            team0: enhancedPlayersData.filter(p => p.team === 0),
-            team1: enhancedPlayersData.filter(p => p.team === 1)
+            team0: enhancedPlayersData.filter(p => p.team === 0).slice(0, 6), // Limit to 6 players
+            team1: enhancedPlayersData.filter(p => p.team === 1).slice(0, 6)  // Limit to 6 players
         };
         
         // Update team comparison
@@ -772,51 +804,94 @@ class MatchAnalyzer {
      * Create initial player cards with loading placeholders
      */
     createInitialPlayerCards(players) {
-        const team0 = players.filter(p => p.team === 0);
-        const team1 = players.filter(p => p.team === 1);
+        const team0 = players.filter(p => p.team === 0).slice(0, 6); // Limit to 6 players
+        const team1 = players.filter(p => p.team === 1).slice(0, 6); // Limit to 6 players
         
+        // Fix 2 & 4: Flex container for teams with 3-column grid
         return `
-            <div class="mb-6">
-                <h4 class="text-lg font-semibold text-green-400 mb-3">Team 1 (${team0.length} players)</h4>
-                <div class="space-y-3" id="team0-cards">
-                    ${team0.map(player => this.createLoadingPlayerCard(player, 'green')).join('')}
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 (${team0.length} players)</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        ${team0.map(player => this.createLoadingPlayerCard(player, 'green')).join('')}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="mb-6">
-                <h4 class="text-lg font-semibold text-red-400 mb-3">Team 2 (${team1.length} players)</h4>
-                <div class="space-y-3" id="team1-cards">
-                    ${team1.map(player => this.createLoadingPlayerCard(player, 'red')).join('')}
+                
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2 (${team1.length} players)</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        ${team1.map(player => this.createLoadingPlayerCard(player, 'red')).join('')}
+                    </div>
                 </div>
             </div>
         `;
     }
     
     /**
-     * Create a loading placeholder player card
+     * Create a loading placeholder player card with consistent layout
      */
     createLoadingPlayerCard(player, teamColor) {
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         
         return `
-            <div id="player-card-${player.accountId}" class="glass-effect bg-gray-800/80 backdrop-blur-sm rounded-lg p-3 border ${borderColor} transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                            <span class="text-xl font-bold text-gray-300">H${player.heroId}</span>
+            <div id="player-card-${player.accountId}" class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300">
+                <!-- Top: Player info with hero icon -->
+                <div class="flex items-center space-x-4 mb-4">
+                    <!-- Enhanced hero icon matching the final design -->
+                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
+                        <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                        <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        <p class="text-xs text-gray-500">Loading...</p>
+                    </div>
+                </div>
+                
+                <!-- Bottom: Loading placeholder stats grid -->
+                <div class="stats space-y-3">
+                    <!-- Primary stats row with loading animation -->
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-gray-700/50 rounded-lg p-3">
+                            <div class="animate-pulse">
+                                <div class="h-6 bg-gray-600 rounded w-12 mx-auto mb-1"></div>
+                                <div class="h-3 bg-gray-700 rounded w-16 mx-auto"></div>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-bold ${textColor}">${player.displayName || `Player ${player.accountId}`}</h4>
-                            <p class="text-sm text-gray-400">Match KDA: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        <div class="bg-gray-700/50 rounded-lg p-3">
+                            <div class="animate-pulse">
+                                <div class="h-6 bg-gray-600 rounded w-12 mx-auto mb-1"></div>
+                                <div class="h-3 bg-gray-700 rounded w-16 mx-auto"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-right">
+                    
+                    <!-- Secondary stats row -->
+                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
                         <div class="animate-pulse">
-                            <div class="h-4 bg-gray-600 rounded w-20 mb-1"></div>
-                            <div class="h-3 bg-gray-700 rounded w-16"></div>
+                            <div class="h-4 bg-gray-600 rounded w-10 mx-auto mb-1"></div>
+                            <div class="h-3 bg-gray-700 rounded w-12 mx-auto"></div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Loading stats...</p>
+                        <div class="animate-pulse">
+                            <div class="h-4 bg-gray-600 rounded w-8 mx-auto mb-1"></div>
+                            <div class="h-3 bg-gray-700 rounded w-14 mx-auto"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent form placeholder -->
+                    <div class="text-center border-t border-gray-600 pt-3">
+                        <p class="text-xs text-gray-400 mb-2">Loading stats...</p>
+                        <div class="flex justify-center items-center space-x-1">
+                            <div class="animate-pulse flex space-x-1">
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
