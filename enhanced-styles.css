@@ -241,7 +241,59 @@
     border: 1px solid rgba(75, 85, 99, 0.3);
 }
 
-/* Two-column team layout */
+/* Section-specific styling */
+.game-stats-section,
+.lane-economics-section,
+.historical-data-section {
+    margin-bottom: 2rem;
+}
+
+/* Table styling for stats sections */
+.game-stats-section table,
+.lane-economics-section table {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.game-stats-section thead th,
+.lane-economics-section thead th {
+    background: rgba(55, 65, 81, 0.8);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+
+.game-stats-section tbody tr:hover,
+.lane-economics-section tbody tr:hover {
+    background: rgba(55, 65, 81, 0.3);
+}
+
+/* Mobile responsiveness for tables */
+@media (max-width: 768px) {
+    .game-stats-section .overflow-x-auto,
+    .lane-economics-section .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #374151 #1f2937;
+    }
+    
+    .game-stats-section table,
+    .lane-economics-section table {
+        min-width: 600px;
+    }
+    
+    .game-stats-section th,
+    .game-stats-section td,
+    .lane-economics-section th,
+    .lane-economics-section td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Two-column team layout for historical data */
 .teams-container {
     position: relative;
 }

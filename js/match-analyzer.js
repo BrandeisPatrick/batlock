@@ -13,12 +13,6 @@ class MatchAnalyzer {
      * Create the enhanced match overview section
      */
     createMatchOverview(matchData) {
-        console.log('🔍 Match data structure in createMatchOverview:', {
-            hasMatchData: !!matchData,
-            hasMatchInfo: !!matchData?.matchInfo,
-            hasMatch_info: !!matchData?.match_info,
-            keys: matchData ? Object.keys(matchData) : []
-        });
         
         // Handle both possible data structure formats
         const matchInfo = matchData.matchInfo || matchData.match_info;
@@ -27,7 +21,6 @@ class MatchAnalyzer {
         const matchId = matchData.matchId ?? matchData.id ?? 'Unknown';
         
         if (!matchInfo) {
-            console.warn('⚠️ No match info found, using fallback data');
             return `
                 <div class="bg-gray-800 rounded-lg p-6 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-center">
@@ -115,9 +108,375 @@ class MatchAnalyzer {
     }
 
     /**
-     * Create individual player cards with enhanced stats and consistent layout
+     * Create Section 1: Game Stats (KDA, Damage, Healing)
      */
-    createPlayerCard(player, teamColor) {
+    createGameStatsSection(team0Players, team1Players) {
+        return `
+            <section class="game-stats-section bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">🎮 Match Performance</h2>
+                
+                <!-- Team Headers -->
+                <div class="grid grid-cols-2 gap-6 mb-4">
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-green-400">Team 1</h3>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-red-400">Team 2</h3>
+                    </div>
+                </div>
+                
+                <!-- Stats Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-600">
+                                <th class="text-left py-3 px-2">Player</th>
+                                <th class="text-center py-3 px-2">K/D/A</th>
+                                <th class="text-center py-3 px-2">Damage</th>
+                                <th class="text-center py-3 px-2">Healing</th>
+                                <th class="text-center py-3 px-2 border-l border-gray-600">Player</th>
+                                <th class="text-center py-3 px-2">K/D/A</th>
+                                <th class="text-center py-3 px-2">Damage</th>
+                                <th class="text-center py-3 px-2">Healing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.createGameStatsRows(team0Players, team1Players)}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        `;
+    }
+
+    /**
+     * Create rows for the game stats table
+     */
+    createGameStatsRows(team0Players, team1Players) {
+        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        let rows = '';
+        
+        for (let i = 0; i < maxPlayers; i++) {
+            const player0 = team0Players[i];
+            const player1 = team1Players[i];
+            
+            rows += `
+                <tr class="border-b border-gray-700 hover:bg-gray-700/30">
+                    <!-- Team 1 Player -->
+                    <td class="py-3 px-2">
+                        ${player0 ? `
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                    H${player0.heroId || '?'}
+                                </div>
+                                <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
+                            </div>
+                        ` : '<span class="text-gray-500">Empty Slot</span>'}
+                    </td>
+                    <td class="text-center py-3 px-2">
+                        ${player0 ? `<span class="font-mono">${player0.kills || 0}/${player0.deaths || 0}/${player0.assists || 0}</span>` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-orange-400">
+                        ${player0 ? `${this.formatNumber(player0.playerDamage || 0)}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-green-400">
+                        ${player0 ? `${this.formatNumber(player0.healingOutput || 0)}` : '-'}
+                    </td>
+                    
+                    <!-- Team 2 Player -->
+                    <td class="py-3 px-2 border-l border-gray-600">
+                        ${player1 ? `
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                    H${player1.heroId || '?'}
+                                </div>
+                                <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
+                            </div>
+                        ` : '<span class="text-gray-500">Empty Slot</span>'}
+                    </td>
+                    <td class="text-center py-3 px-2">
+                        ${player1 ? `<span class="font-mono">${player1.kills || 0}/${player1.deaths || 0}/${player1.assists || 0}</span>` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-orange-400">
+                        ${player1 ? `${this.formatNumber(player1.playerDamage || 0)}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-green-400">
+                        ${player1 ? `${this.formatNumber(player1.healingOutput || 0)}` : '-'}
+                    </td>
+                </tr>
+            `;
+        }
+        
+        return rows;
+    }
+
+    /**
+     * Create Section 2: Lane Economics (Denies, Economics by Lane)
+     */
+    createLaneEconomicsSection(team0Players, team1Players) {
+        return `
+            <section class="lane-economics-section bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">💰 Lane Economics & Farm</h2>
+                
+                <!-- Lane Headers -->
+                <div class="grid grid-cols-2 gap-6 mb-4">
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-green-400">Team 1</h3>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-red-400">Team 2</h3>
+                    </div>
+                </div>
+                
+                <!-- Economics Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-600">
+                                <th class="text-left py-3 px-2">Player</th>
+                                <th class="text-center py-3 px-2">Net Worth</th>
+                                <th class="text-center py-3 px-2">Last Hits</th>
+                                <th class="text-center py-3 px-2">Denies</th>
+                                <th class="text-center py-3 px-2 border-l border-gray-600">Player</th>
+                                <th class="text-center py-3 px-2">Net Worth</th>
+                                <th class="text-center py-3 px-2">Last Hits</th>
+                                <th class="text-center py-3 px-2">Denies</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${this.createLaneEconomicsRows(team0Players, team1Players)}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Lane Comparison Summary -->
+                <div class="mt-6 pt-6 border-t border-gray-600">
+                    ${this.createLaneComparisonSummary(team0Players, team1Players)}
+                </div>
+            </section>
+        `;
+    }
+
+    /**
+     * Create rows for the lane economics table
+     */
+    createLaneEconomicsRows(team0Players, team1Players) {
+        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        let rows = '';
+        
+        for (let i = 0; i < maxPlayers; i++) {
+            const player0 = team0Players[i];
+            const player1 = team1Players[i];
+            
+            rows += `
+                <tr class="border-b border-gray-700 hover:bg-gray-700/30">
+                    <!-- Team 1 Player -->
+                    <td class="py-3 px-2">
+                        ${player0 ? `
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                    H${player0.heroId || '?'}
+                                </div>
+                                <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
+                            </div>
+                        ` : '<span class="text-gray-500">Empty Slot</span>'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-yellow-400">
+                        ${player0 ? `$${this.formatNumber(player0.netWorth || 0)}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-blue-400">
+                        ${player0 ? `${player0.lastHits || 0}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-purple-400">
+                        ${player0 ? `${player0.denies || 0}` : '-'}
+                    </td>
+                    
+                    <!-- Team 2 Player -->
+                    <td class="py-3 px-2 border-l border-gray-600">
+                        ${player1 ? `
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
+                                    H${player1.heroId || '?'}
+                                </div>
+                                <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
+                            </div>
+                        ` : '<span class="text-gray-500">Empty Slot</span>'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-yellow-400">
+                        ${player1 ? `$${this.formatNumber(player1.netWorth || 0)}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-blue-400">
+                        ${player1 ? `${player1.lastHits || 0}` : '-'}
+                    </td>
+                    <td class="text-center py-3 px-2 text-purple-400">
+                        ${player1 ? `${player1.denies || 0}` : '-'}
+                    </td>
+                </tr>
+            `;
+        }
+        
+        return rows;
+    }
+
+    /**
+     * Create lane comparison summary
+     */
+    createLaneComparisonSummary(team0Players, team1Players) {
+        const team0Stats = this.calculateTeamEconomics(team0Players);
+        const team1Stats = this.calculateTeamEconomics(team1Players);
+        
+        return `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div class="bg-gray-700/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Net Worth</h4>
+                    <div class="flex justify-center items-center space-x-4">
+                        <span class="text-lg font-bold ${team0Stats.totalNetWorth > team1Stats.totalNetWorth ? 'text-green-400' : 'text-gray-300'}">
+                            $${this.formatNumber(team0Stats.totalNetWorth)}
+                        </span>
+                        <span class="text-gray-500">vs</span>
+                        <span class="text-lg font-bold ${team1Stats.totalNetWorth > team0Stats.totalNetWorth ? 'text-red-400' : 'text-gray-300'}">
+                            $${this.formatNumber(team1Stats.totalNetWorth)}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Last Hits</h4>
+                    <div class="flex justify-center items-center space-x-4">
+                        <span class="text-lg font-bold ${team0Stats.totalLastHits > team1Stats.totalLastHits ? 'text-green-400' : 'text-gray-300'}">
+                            ${team0Stats.totalLastHits}
+                        </span>
+                        <span class="text-gray-500">vs</span>
+                        <span class="text-lg font-bold ${team1Stats.totalLastHits > team0Stats.totalLastHits ? 'text-red-400' : 'text-gray-300'}">
+                            ${team1Stats.totalLastHits}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700/50 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Denies</h4>
+                    <div class="flex justify-center items-center space-x-4">
+                        <span class="text-lg font-bold ${team0Stats.totalDenies > team1Stats.totalDenies ? 'text-green-400' : 'text-gray-300'}">
+                            ${team0Stats.totalDenies}
+                        </span>
+                        <span class="text-gray-500">vs</span>
+                        <span class="text-lg font-bold ${team1Stats.totalDenies > team0Stats.totalDenies ? 'text-red-400' : 'text-gray-300'}">
+                            ${team1Stats.totalDenies}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Calculate team economics totals
+     */
+    calculateTeamEconomics(players) {
+        return players.reduce((totals, player) => {
+            if (player) {
+                totals.totalNetWorth += player.netWorth || 0;
+                totals.totalLastHits += player.lastHits || 0;
+                totals.totalDenies += player.denies || 0;
+            }
+            return totals;
+        }, {
+            totalNetWorth: 0,
+            totalLastHits: 0,
+            totalDenies: 0
+        });
+    }
+
+    /**
+     * Create Section 3: Historical Player Data (existing player cards)
+     */
+    createHistoricalDataSection(team0Players, team1Players) {
+        // Pad teams to 6 players if needed
+        const team0Padded = [...team0Players];
+        const team1Padded = [...team1Players];
+        
+        while (team0Padded.length < 6) {
+            team0Padded.push(null);
+        }
+        while (team1Padded.length < 6) {
+            team1Padded.push(null);
+        }
+        
+        const team0Cards = team0Padded
+            .slice(0, 6)
+            .map((player, index) => {
+                if (player) {
+                    return this.createHistoricalPlayerCard(player, 'green');
+                } else {
+                    return this.createEmptyPlayerSlot('green', index + 1);
+                }
+            })
+            .join('');
+            
+        const team1Cards = team1Padded
+            .slice(0, 6)
+            .map((player, index) => {
+                if (player) {
+                    return this.createHistoricalPlayerCard(player, 'red');
+                } else {
+                    return this.createEmptyPlayerSlot('red', index + 1);
+                }
+            })
+            .join('');
+        
+        return `
+            <section class="historical-data-section mb-8">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">📊 Player Historical Performance</h2>
+                
+                <!-- Two-column layout wrapper -->
+                <div class="teams-container" id="teamsContainer">
+                    <!-- Two-column grid layout -->
+                    <div class="teams-grid">
+                        <!-- Team 1 Column -->
+                        <div class="team-column">
+                            <div class="team-header team-header-green">
+                                <h4 class="text-lg font-semibold text-green-400">
+                                    Team 1 Historical Stats
+                                </h4>
+                            </div>
+                            <div class="team-cards">
+                                ${team0Cards}
+                            </div>
+                        </div>
+                        
+                        <!-- Team 2 Column -->
+                        <div class="team-column">
+                            <div class="team-header team-header-red">
+                                <h4 class="text-lg font-semibold text-red-400">
+                                    Team 2 Historical Stats
+                                </h4>
+                            </div>
+                            <div class="team-cards">
+                                ${team1Cards}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    /**
+     * Format numbers for display (e.g., 12000 -> 12K)
+     */
+    formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+    }
+
+    /**
+     * Create historical player cards (renamed from createPlayerCard)
+     */
+    createHistoricalPlayerCard(player, teamColor) {
         const stats = player.statistics;
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
@@ -149,12 +508,10 @@ class MatchAnalyzer {
         const kdaColor = stats.averageKDA >= 3 ? 'text-green-400' : 
                         stats.averageKDA >= 2 ? 'text-yellow-400' : 'text-red-400';
 
-        // Fix 3: Unified card heights and consistent padding
         return `
             <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
-                    <!-- Fix 5: Enhanced hero icon placeholder (ready for actual icons) -->
                     <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
                         <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
                     </div>
@@ -207,156 +564,47 @@ class MatchAnalyzer {
      * Create the main match analysis view
      */
     async renderMatchAnalysis(matchData, allPlayersData) {
-        console.log('🎨 renderMatchAnalysis called with:', {
-            hasMatchData: !!matchData,
-            hasAllPlayersData: !!allPlayersData,
-            matchId: matchData?.matchId || allPlayersData?.matchId
-        });
         
         const container = document.getElementById('chartsContainer');
         
         if (!container) {
-            console.error('❌ Charts container not found in DOM');
             throw new Error('Charts container not found');
         }
         
-        console.log('🧹 Clearing existing content...');
         // Clear existing content
         container.innerHTML = '';
         container.classList.remove('hidden');
         
-        console.log('📋 Creating match overview...');
         // Create match overview
         const overview = this.createMatchOverview(matchData);
         
-        console.log('⚖️ Creating team comparison...', {
-            team0Count: allPlayersData?.teams?.team0?.length || 0,
-            team1Count: allPlayersData?.teams?.team1?.length || 0
-        });
-        // Create team comparison
-        const teamComparison = this.createTeamComparison(
-            allPlayersData.teams.team0,
-            allPlayersData.teams.team1
-        );
-        
-        console.log('🃏 Creating player cards...');
-        // Create player cards for both teams, expecting 6 players each
-        
-        // Ensure we always have exactly 6 slots per team - take first 6 unique players
+        // Prepare team data for the new sections
         const team0Players = [...allPlayersData.teams.team0]
-            .sort((a, b) => a.playerSlot - b.playerSlot)
-            .slice(0, 6); // Limit to 6 players max
+            .sort((a, b) => a.playerSlot - b.playerSlot);
         const team1Players = [...allPlayersData.teams.team1]
-            .sort((a, b) => a.playerSlot - b.playerSlot)
-            .slice(0, 6); // Limit to 6 players max
+            .sort((a, b) => a.playerSlot - b.playerSlot);
         
         
-        // Pad teams to 6 players if needed
-        while (team0Players.length < 6) {
-            team0Players.push(null);
-        }
-        while (team1Players.length < 6) {
-            team1Players.push(null);
-        }
+        // Create the new three-section layout
+        const gameStatsSection = this.createGameStatsSection(team0Players, team1Players);
+        const laneEconomicsSection = this.createLaneEconomicsSection(team0Players, team1Players);
+        const historicalDataSection = this.createHistoricalDataSection(team0Players, team1Players);
+        const teamComparison = this.createTeamComparison(team0Players, team1Players);
         
-        const team0Cards = team0Players
-            .slice(0, 6) // Ensure exactly 6 players
-            .map((player, index) => {
-                if (player) {
-                    return this.createPlayerCard(player, 'green');
-                } else {
-                    return this.createEmptyPlayerSlot('green', index + 1);
-                }
-            })
-            .join('');
-            
-        const team1Cards = team1Players
-            .slice(0, 6) // Ensure exactly 6 players
-            .map((player, index) => {
-                if (player) {
-                    return this.createPlayerCard(player, 'red');
-                } else {
-                    return this.createEmptyPlayerSlot('red', index + 1);
-                }
-            })
-            .join('');
-        
-        console.log('🖼️ Rendering complete UI to container...');
-        // MODIFIED: Tailored grid for 6 players per team (2 columns, 3 rows per team on md screens)
         container.innerHTML = `
             ${overview}
             ${teamComparison}
-            
-            <!-- Players Section -->
-            <div class="mb-8">
-                <h3 class="text-2xl font-bold text-white mb-6">Player Performance Analysis</h3>
-                
-                <!-- Two-column layout wrapper -->
-                <div class="teams-container" id="teamsContainer">
-                    <!-- Desktop: Two-column grid layout -->
-                    <div class="teams-grid">
-                        <!-- Team 1 Column -->
-                        <div class="team-column">
-                            <div class="team-header team-header-green">
-                                <h4 class="text-lg font-semibold text-green-400">
-                                    Team 1 ${allPlayersData.matchInfo?.winning_team === 0 ? '👑 Winners' : ''}
-                                </h4>
-                            </div>
-                            <div class="team-cards">
-                                ${team0Cards}
-                            </div>
-                        </div>
-                        
-                        <!-- Team 2 Column -->
-                        <div class="team-column">
-                            <div class="team-header team-header-red">
-                                <h4 class="text-lg font-semibold text-red-400">
-                                    Team 2 ${allPlayersData.matchInfo?.winning_team === 1 ? '👑 Winners' : ''}
-                                </h4>
-                            </div>
-                            <div class="team-cards">
-                                ${team1Cards}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Mobile: Tab navigation -->
-                    <div class="teams-tabs">
-                        <div class="tab-buttons">
-                            <button class="team-tab-btn team1-tab active" data-team="team1">
-                                Team 1 ${allPlayersData.matchInfo?.winning_team === 0 ? '👑' : ''}
-                            </button>
-                            <button class="team-tab-btn team2-tab" data-team="team2">
-                                Team 2 ${allPlayersData.matchInfo?.winning_team === 1 ? '👑' : ''}
-                            </button>
-                        </div>
-                        <div class="tab-panels">
-                            <div class="team-panel team1-panel active" data-team="team1">
-                                ${team0Cards}
-                            </div>
-                            <div class="team-panel team2-panel" data-team="team2">
-                                ${team1Cards}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Additional Stats Section -->
-            <div class="bg-gray-800 rounded-lg p-6">
-                <h3 class="text-xl font-bold text-white mb-4">Match Insights</h3>
-                ${this.createMatchInsights(allPlayersData)}
-            </div>
+            ${gameStatsSection}
+            ${laneEconomicsSection}
+            ${historicalDataSection}
         `;
         
-        console.log('📊 Creating interactive charts...');
         // Add interactive charts after rendering
         this.createInteractiveCharts(allPlayersData);
         
         // Add mobile tab functionality
         this.initializeTeamTabs();
         
-        console.log('✅ renderMatchAnalysis completed successfully');
     }
 
     /**
@@ -667,7 +915,6 @@ class MatchAnalyzer {
      * @param {Object} apiService - API service for fetching additional data
      */
     async renderProgressiveMatchAnalysis(matchMetadata, apiService) {
-        console.log('🚀 Starting progressive match analysis...');
         
         // Phase 1: Display match overview and basic player cards immediately
         const resultsDiv = document.getElementById('results');
@@ -676,10 +923,8 @@ class MatchAnalyzer {
             throw new Error('Results div not found. Make sure there is a div with id="results" in the HTML.');
         }
         
-        // Show results div and hide fallback charts
+        // Show results div
         resultsDiv.classList.remove('hidden');
-        const chartsContainer = document.getElementById('chartsContainer');
-        if (chartsContainer) chartsContainer.classList.add('hidden');
         
         // Create initial structure with match info and improved spacing
         const initialContent = `
@@ -699,28 +944,12 @@ class MatchAnalyzer {
                     <div id="progress-text" class="text-sm text-gray-400 mt-2">Preparing player data...</div>
                 </div>
                 
-                <div id="player-cards-section">
-                    <h3 class="text-2xl font-bold text-white mb-6">Player Performance Analysis</h3>
-                    <div id="team-sections">
-                        ${this.createInitialPlayerCards(matchMetadata.playersSummary)}
-                    </div>
-                </div>
-                
-                <div id="team-comparison" class="hidden">
-                    <!-- Team comparison will be updated as data loads -->
-                </div>
-                
-                <div id="match-insights" class="hidden">
-                    <!-- Match insights will appear once all data is loaded -->
-                </div>
             </div>
         `;
         
         resultsDiv.innerHTML = initialContent;
-        console.log('✅ Phase 1: Initial display rendered');
         
         // Phase 2: Start fetching player statistics in background
-        console.log('📊 Phase 2: Starting background data fetching...');
         
         const players = matchMetadata.playersSummary;
         const totalPlayers = players.length;
@@ -754,8 +983,7 @@ class MatchAnalyzer {
         const enhancedPlayersData = await Promise.all(
             players.map(async (player, index) => {
                 try {
-                    console.log(`📊 Loading data for player ${index + 1}/${totalPlayers}: ${player.accountId}`);
-                    
+                                
                     // Update progress
                     const playerName = player.displayName || `Player ${player.accountId}`;
                     updateProgress(completedPlayers, totalPlayers, playerName);
@@ -787,11 +1015,9 @@ class MatchAnalyzer {
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
                     
-                    console.log(`✅ Loaded data for player ${completedPlayers}/${totalPlayers}`);
-                    return enhancedPlayer;
+                            return enhancedPlayer;
                     
                 } catch (error) {
-                    console.warn(`⚠️ Failed to load data for player ${player.accountId}:`, error.message);
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
                     
@@ -813,30 +1039,21 @@ class MatchAnalyzer {
         );
         
         // Phase 3: Update team structures and comparisons
-        console.log('🔄 Phase 3: Updating team comparisons...');
         
         const finalTeamData = {
             team0: enhancedPlayersData.filter(p => p.team === 0),
             team1: enhancedPlayersData.filter(p => p.team === 1)
         };
         
-        console.log(`📊 Before final render - Team 0: ${finalTeamData.team0.length} players, Team 1: ${finalTeamData.team1.length} players`);
         
-        // Update team comparison
-        document.getElementById('team-comparison').innerHTML = this.createTeamComparison(finalTeamData.team0, finalTeamData.team1);
-        document.getElementById('team-comparison').classList.remove('hidden');
+        // Team comparison will be rendered in the final layout
         
-        // Phase 4: Generate final insights and charts
-        console.log('📈 Phase 4: Generating insights and charts...');
+        // Phase 4: Generate final insights and render with new three-section layout
         
         const finalMatchData = {
             ...matchMetadata,
             teams: finalTeamData
         };
-        
-        const insights = this.createMatchInsights({ teams: finalTeamData });
-        document.getElementById('match-insights').innerHTML = insights;
-        document.getElementById('match-insights').classList.remove('hidden');
         
         // Hide loading status
         const loadingStatus = document.getElementById('loading-status');
@@ -845,17 +1062,20 @@ class MatchAnalyzer {
             setTimeout(() => loadingStatus.remove(), 500);
         }
         
-        // Create charts
-        setTimeout(() => {
-            try {
-                this.createWinRateChart(finalMatchData);
-                this.createKDAComparisonChart(finalMatchData);
-            } catch (chartError) {
-                console.warn('⚠️ Chart creation error:', chartError.message);
-            }
-        }, 1000);
+        // Now render the final layout using the main renderMatchAnalysis method
+        // but targeting the results div instead of chartsContainer
+        const resultsContainer = document.getElementById('results');
+        if (resultsContainer) {
+            // Temporarily change the container ID so renderMatchAnalysis targets the right place
+            const originalId = resultsContainer.id;
+            resultsContainer.id = 'chartsContainer';
+            
+            await this.renderMatchAnalysis(finalMatchData, { teams: finalTeamData, matchInfo: matchMetadata.match_info });
+            
+            // Restore original ID
+            resultsContainer.id = originalId;
+        }
         
-        console.log('🎉 Progressive match analysis completed!');
     }
     
     /**

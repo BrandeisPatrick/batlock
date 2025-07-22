@@ -22,13 +22,11 @@ class DeadlockAPIService {
      * Generic fetch wrapper with error handling and caching
      */
     async fetchWithCache(url, options = {}) {
-        console.log('🌐 Making API request to:', url);
         
         const cacheKey = url;
         const cached = this.cache.get(cacheKey);
         
         if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-            console.log('💾 Using cached data for:', url);
             return cached.data;
         }
 
@@ -36,13 +34,11 @@ class DeadlockAPIService {
         const timeSinceLastRequest = Date.now() - this.lastRequestTime;
         if (timeSinceLastRequest < this.rateLimitDelay) {
             const waitTime = this.rateLimitDelay - timeSinceLastRequest;
-            console.log(`⏱️ Rate limiting: waiting ${waitTime}ms before request`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
         this.lastRequestTime = Date.now();
 
         try {
-            console.log('📡 Sending fetch request...');
             // Direct API call - no CORS proxy needed!
             // The API has proper CORS headers (Access-Control-Allow-Origin: *)
             const response = await fetch(url, {
@@ -50,25 +46,16 @@ class DeadlockAPIService {
                 headers: this.headers
             });
 
-            console.log('📨 Response received:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok,
-                headers: Object.fromEntries(response.headers.entries())
-            });
 
             if (!response.ok) {
                 // Check for rate limit error
                 if (response.status === 429) {
-                    console.warn('🚫 Rate limit hit, waiting before retry...');
                     await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 minute
                 }
                 throw new Error(`API request failed: ${response.status} ${response.statusText}`);
             }
 
-            console.log('📋 Parsing JSON response...');
             const data = await response.json();
-            console.log('✅ JSON parsed successfully, data size:', JSON.stringify(data).length, 'characters');
             
             // Cache successful responses
             this.cache.set(cacheKey, {
@@ -78,12 +65,6 @@ class DeadlockAPIService {
 
             return data;
         } catch (error) {
-            console.error('❌ API fetch error for URL:', url);
-            console.error('🔍 Error details:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            });
             throw error;
         }
     }
@@ -224,36 +205,22 @@ class DeadlockAPIService {
     async getAllPlayersFromMatch(matchId, matchHistoryLimit = 50) {
         
         try {
-            console.log('📡 Fetching match metadata from API...');
             // First get match metadata to get all player IDs
             const matchData = await this.getMatchMetadata(matchId);
             
-            console.log('📋 Match metadata response:', {
-                hasMatchData: !!matchData,
-                hasMatchInfo: !!matchData?.match_info,
-                hasPlayersSummary: !!matchData?.playersSummary,
-                playersCount: matchData?.playersSummary?.length || 0
-            });
             
             if (!matchData || !matchData.playersSummary) {
                 throw new Error('Could not retrieve match data');
             }
             
             const players = matchData.playersSummary;
-            console.log('👥 Players found in match:', players.map(p => ({ 
-                accountId: p.accountId, 
-                team: p.team,
-                heroId: p.heroId 
-            })));
             
             const allPlayerStats = [];
             
-            console.log(`📊 Fetching match history for ${players.length} players...`);
             
             // Fetch stats for each player with minimal delay
             for (let i = 0; i < players.length; i++) {
                 const player = players[i];
-                console.log(`🎮 Processing player ${i + 1}/${players.length}: ${player.accountId}`);
                 
                 try {
                     const playerStats = await this.getPlayerMatchHistory(
@@ -263,12 +230,6 @@ class DeadlockAPIService {
                         true // Use only_stored_history to bypass rate limits
                     );
                     
-                    console.log(`📈 Stats for player ${player.accountId}:`, {
-                        hasStats: !!playerStats,
-                        hasStatistics: !!playerStats?.statistics,
-                        totalMatches: playerStats?.totalMatches || 0,
-                        winRate: playerStats?.statistics?.winRate || 'N/A'
-                    });
                     
                     allPlayerStats.push({
                         ...player,
@@ -279,7 +240,6 @@ class DeadlockAPIService {
                     // Small delay to be polite to the server
                     await new Promise(resolve => setTimeout(resolve, 100));
                 } catch (error) {
-                    console.error(`❌ Failed to get stats for player ${player.accountId}:`, error);
                     allPlayerStats.push({
                         ...player,
                         error: error.message
@@ -300,8 +260,6 @@ class DeadlockAPIService {
             
             return result;
         } catch (error) {
-            console.error('❌ Error in getAllPlayersFromMatch:', error);
-            console.error('🔍 Error stack:', error.stack);
             throw error;
         }
     }

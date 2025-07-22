@@ -1,5 +1,6 @@
 // Initialize match analyzer
 let matchAnalyzer = null;
+
 try {
     if (typeof MatchAnalyzer !== 'undefined') {
         matchAnalyzer = new MatchAnalyzer();
@@ -24,7 +25,6 @@ async function handleFetchData() {
 
     showLoader(true);
     showError(null);
-    hideCharts();
 
     try {
         let enhancedSucceeded = false;
@@ -77,18 +77,9 @@ async function handleFetchData() {
             });
         }
         
-        // Only use fallback if enhanced method didn't succeed
+        // Show error if enhanced method didn't succeed
         if (!enhancedSucceeded) {
-            console.log('🔄 Using fallback method...');
-            const players = await getPlayersFromMatch(matchId);
-           
-            if (!players || players.length === 0) {
-                showError(`No players found for Match ID: ${matchId}. Displaying mock data.`);
-                await processAndDisplayStats(MOCK_MATCH_DATA.players);
-                return;
-            }
-           
-            await processAndDisplayStats(players);
+            showError('Failed to load match data with enhanced analysis. Please try again.');
         }
 
     } catch (error) {
@@ -154,79 +145,13 @@ async function handleFetchData() {
                 console.log('✅ Match analyzer with mock data completed');
             } catch (mockError) {
                 console.error('❌ Match analyzer with mock data failed:', mockError);
-                // Only use old display if match analyzer fails completely
-                await processAndDisplayStats(MOCK_MATCH_DATA.players);
+                showError('Failed to display match data. Please refresh and try again.');
             }
         } else {
-            await processAndDisplayStats(MOCK_MATCH_DATA.players);
+            showError('Match analyzer not available. Please refresh the page.');
         }
     } finally {
         showLoader(false);
     }
 }
 
-async function processAndDisplayStats(players) {
-    console.log('📊 processAndDisplayStats called with match analyzer available:', !!matchAnalyzer);
-    
-    const team1 = players.filter(p => p.team === 0);
-    const team2 = players.filter(p => p.team === 1);
-   
-    // Process players in parallel (faster) with error handling
-    const team1Stats = await Promise.all(
-        team1.map(async (player) => {
-            try {
-                return await getPlayerStats(player.steamId);
-            } catch (error) {
-                console.warn(`Failed to get stats for ${player.steamId}:`, error.message);
-                return { steamId: player.steamId, total: 0, winRate: 0 };
-            }
-        })
-    );
-    
-    const team2Stats = await Promise.all(
-        team2.map(async (player) => {
-            try {
-                return await getPlayerStats(player.steamId);
-            } catch (error) {
-                console.warn(`Failed to get stats for ${player.steamId}:`, error.message);
-                return { steamId: player.steamId, total: 0, winRate: 0 };
-            }
-        })
-    );
-   
-    // Merge player data with stats
-    const team1PlayersWithStats = team1.map((player, index) => ({
-        ...player,
-        ...team1Stats[index]
-    }));
-    const team2PlayersWithStats = team2.map((player, index) => ({
-        ...player,
-        ...team2Stats[index]
-    }));
-   
-    // Note: Enhanced data visualization is handled by the main MatchAnalyzer flow
-    // This function is only used for basic fallback display
-   
-    // Only display standard charts if match analyzer is not available
-    if (!matchAnalyzer) {
-        console.log('📊 Using standard chart display (match analyzer not available)');
-        const team1Labels = team1.map(p => p.displayName);
-        const team2Labels = team2.map(p => p.displayName);
-       
-        const team1MatchesData = team1Stats.map(s => s ? s.total : 0);
-        const team2MatchesData = team2Stats.map(s => s ? s.total : 0);
-        const team1WinRateData = team1Stats.map(s => s ? s.winRate : 0);
-        const team2WinRateData = team2Stats.map(s => s ? s.winRate : 0);
-
-        displayCharts(
-            team1Labels,
-            team2Labels,
-            team1MatchesData,
-            team2MatchesData,
-            team1WinRateData,
-            team2WinRateData
-        );
-    } else {
-        console.log('🎨 Skipping standard chart display (match analyzer available)');
-    }
-}
