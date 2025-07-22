@@ -17,16 +17,18 @@ try {
 // Mock Data
 const MOCK_MATCH_DATA = {
     players: [
-        { steamId: 'player1', displayName: 'Ghost', team: 1 },
-        { steamId: 'player2', displayName: 'Spectre', team: 1 },
-        { steamId: 'player3', displayName: 'Viper', team: 1 },
-        { steamId: 'player4', displayName: 'Phoenix', team: 1 },
-        { steamId: 'player5', displayName: 'Jett', team: 1 },
-        { steamId: 'player6', displayName: 'Sova', team: 2 },
-        { steamId: 'player7', displayName: 'Sage', team: 2 },
-        { steamId: 'player8', displayName: 'Raze', team: 2 },
-        { steamId: 'player9', displayName: 'Breach', team: 2 },
-        { steamId: 'player10', displayName: 'Omen', team: 2 },
+        { steamId: 'player1', displayName: 'Ghost', team: 0 },
+        { steamId: 'player2', displayName: 'Spectre', team: 0 },
+        { steamId: 'player3', displayName: 'Viper', team: 0 },
+        { steamId: 'player4', displayName: 'Phoenix', team: 0 },
+        { steamId: 'player5', displayName: 'Jett', team: 0 },
+        { steamId: 'player6', displayName: 'Sova', team: 0 },
+        { steamId: 'player7', displayName: 'Sage', team: 1 },
+        { steamId: 'player8', displayName: 'Raze', team: 1 },
+        { steamId: 'player9', displayName: 'Breach', team: 1 },
+        { steamId: 'player10', displayName: 'Omen', team: 1 },
+        { steamId: 'player11', displayName: 'Cypher', team: 1 },
+        { steamId: 'player12', displayName: 'Reyna', team: 1 },
     ]
 };
 
@@ -41,6 +43,8 @@ const MOCK_PLAYER_MATCHES = {
     'player8': Array.from({ length: 49 }, () => ({ won: Math.random() > 0.3 })),
     'player9': Array.from({ length: 50 }, () => ({ won: Math.random() > 0.51 })),
     'player10': Array.from({ length: 22 }, () => ({ won: Math.random() > 0.4 })),
+    'player11': Array.from({ length: 45 }, () => ({ won: Math.random() > 0.55 })),
+    'player12': Array.from({ length: 38 }, () => ({ won: Math.random() > 0.48 })),
 };
 
 // Steam Profile Name Fetching (using CORS proxy)
@@ -107,7 +111,7 @@ async function getPlayersFromMatch(matchId) {
                                 return {
                                     steamId: player.account_id.toString(),
                                     displayName: steamName || player.player_name || `ID: ${player.account_id}`,
-                                    team: player.team === 0 ? 1 : 2,
+                                    team: player.team,
                                     slot: player.player_slot,
                                     heroId: player.hero_id,
                                     // Additional stats from enhanced API if available
@@ -165,7 +169,7 @@ async function getPlayersFromMatch(matchId) {
                             return {
                                 steamId: player.account_id.toString(),
                                 displayName: steamName || player.player_name || `ID: ${player.account_id}`,
-                                team: player.team === 0 ? 1 : 2, // API uses 0 and 1, convert to 1 and 2
+                                team: player.team, // Keep original team numbering (0 and 1)
                                 slot: player.player_slot,
                                 heroId: player.hero_id || player.heroId
                             };

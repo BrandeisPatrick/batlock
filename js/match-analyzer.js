@@ -241,21 +241,43 @@ class MatchAnalyzer {
         
         console.log('🃏 Creating player cards...');
         // Create player cards for both teams, expecting 6 players each
-        const team0Cards = allPlayersData.teams.team0
+        
+        // Ensure we always have exactly 6 slots per team - take first 6 unique players
+        const team0Players = [...allPlayersData.teams.team0]
             .sort((a, b) => a.playerSlot - b.playerSlot)
+            .slice(0, 6); // Limit to 6 players max
+        const team1Players = [...allPlayersData.teams.team1]
+            .sort((a, b) => a.playerSlot - b.playerSlot)
+            .slice(0, 6); // Limit to 6 players max
+        
+        
+        // Pad teams to 6 players if needed
+        while (team0Players.length < 6) {
+            team0Players.push(null);
+        }
+        while (team1Players.length < 6) {
+            team1Players.push(null);
+        }
+        
+        const team0Cards = team0Players
             .slice(0, 6) // Ensure exactly 6 players
             .map((player, index) => {
-                console.log(`📊 Creating card for Team 0 Player ${index + 1}:`, player.accountId);
-                return this.createPlayerCard(player, 'green');
+                if (player) {
+                    return this.createPlayerCard(player, 'green');
+                } else {
+                    return this.createEmptyPlayerSlot('green', index + 1);
+                }
             })
             .join('');
             
-        const team1Cards = allPlayersData.teams.team1
-            .sort((a, b) => a.playerSlot - b.playerSlot)
+        const team1Cards = team1Players
             .slice(0, 6) // Ensure exactly 6 players
             .map((player, index) => {
-                console.log(`📊 Creating card for Team 1 Player ${index + 1}:`, player.accountId);
-                return this.createPlayerCard(player, 'red');
+                if (player) {
+                    return this.createPlayerCard(player, 'red');
+                } else {
+                    return this.createEmptyPlayerSlot('red', index + 1);
+                }
             })
             .join('');
         
@@ -269,21 +291,52 @@ class MatchAnalyzer {
             <div class="mb-8">
                 <h3 class="text-2xl font-bold text-white mb-6">Player Performance Analysis</h3>
                 
-                <!-- Fix 2 & 4: Flex container for teams with 3-column grid -->
-                <div class="flex flex-col lg:flex-row gap-6">
-                    <!-- Team 1 Players -->
-                    <div class="flex-1">
-                        <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 - Winners</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                            ${team0Cards}
+                <!-- Two-column layout wrapper -->
+                <div class="teams-container" id="teamsContainer">
+                    <!-- Desktop: Two-column grid layout -->
+                    <div class="teams-grid">
+                        <!-- Team 1 Column -->
+                        <div class="team-column">
+                            <div class="team-header team-header-green">
+                                <h4 class="text-lg font-semibold text-green-400">
+                                    Team 1 ${allPlayersData.matchInfo?.winning_team === 0 ? '👑 Winners' : ''}
+                                </h4>
+                            </div>
+                            <div class="team-cards">
+                                ${team0Cards}
+                            </div>
+                        </div>
+                        
+                        <!-- Team 2 Column -->
+                        <div class="team-column">
+                            <div class="team-header team-header-red">
+                                <h4 class="text-lg font-semibold text-red-400">
+                                    Team 2 ${allPlayersData.matchInfo?.winning_team === 1 ? '👑 Winners' : ''}
+                                </h4>
+                            </div>
+                            <div class="team-cards">
+                                ${team1Cards}
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Team 2 Players -->
-                    <div class="flex-1">
-                        <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                            ${team1Cards}
+                    <!-- Mobile: Tab navigation -->
+                    <div class="teams-tabs">
+                        <div class="tab-buttons">
+                            <button class="team-tab-btn team1-tab active" data-team="team1">
+                                Team 1 ${allPlayersData.matchInfo?.winning_team === 0 ? '👑' : ''}
+                            </button>
+                            <button class="team-tab-btn team2-tab" data-team="team2">
+                                Team 2 ${allPlayersData.matchInfo?.winning_team === 1 ? '👑' : ''}
+                            </button>
+                        </div>
+                        <div class="tab-panels">
+                            <div class="team-panel team1-panel active" data-team="team1">
+                                ${team0Cards}
+                            </div>
+                            <div class="team-panel team2-panel" data-team="team2">
+                                ${team1Cards}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -299,6 +352,9 @@ class MatchAnalyzer {
         console.log('📊 Creating interactive charts...');
         // Add interactive charts after rendering
         this.createInteractiveCharts(allPlayersData);
+        
+        // Add mobile tab functionality
+        this.initializeTeamTabs();
         
         console.log('✅ renderMatchAnalysis completed successfully');
     }
@@ -760,9 +816,11 @@ class MatchAnalyzer {
         console.log('🔄 Phase 3: Updating team comparisons...');
         
         const finalTeamData = {
-            team0: enhancedPlayersData.filter(p => p.team === 0).slice(0, 6), // Limit to 6 players
-            team1: enhancedPlayersData.filter(p => p.team === 1).slice(0, 6)  // Limit to 6 players
+            team0: enhancedPlayersData.filter(p => p.team === 0),
+            team1: enhancedPlayersData.filter(p => p.team === 1)
         };
+        
+        console.log(`📊 Before final render - Team 0: ${finalTeamData.team0.length} players, Team 1: ${finalTeamData.team1.length} players`);
         
         // Update team comparison
         document.getElementById('team-comparison').innerHTML = this.createTeamComparison(finalTeamData.team0, finalTeamData.team1);
@@ -804,23 +862,73 @@ class MatchAnalyzer {
      * Create initial player cards with loading placeholders
      */
     createInitialPlayerCards(players) {
-        const team0 = players.filter(p => p.team === 0).slice(0, 6); // Limit to 6 players
-        const team1 = players.filter(p => p.team === 1).slice(0, 6); // Limit to 6 players
+        const team0 = players.filter(p => p.team === 0);
+        const team1 = players.filter(p => p.team === 1);
         
-        // Fix 2 & 4: Flex container for teams with 3-column grid
+        
+        // Limit to 6 players per team
+        const team0Limited = team0.slice(0, 6);
+        const team1Limited = team1.slice(0, 6);
+        
+        // Pad teams to ensure 6 slots
+        while (team0Limited.length < 6) {
+            team0Limited.push(null);
+        }
+        while (team1Limited.length < 6) {
+            team1Limited.push(null);
+        }
+        
+        // Two-column layout matching the main view
         return `
-            <div class="flex flex-col lg:flex-row gap-6">
-                <div class="flex-1">
-                    <h4 class="text-lg font-semibold text-green-400 mb-4">Team 1 (${team0.length} players)</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                        ${team0.map(player => this.createLoadingPlayerCard(player, 'green')).join('')}
+            <div class="teams-container">
+                <!-- Desktop: Two-column grid layout -->
+                <div class="teams-grid">
+                    <!-- Team 1 Column -->
+                    <div class="team-column">
+                        <div class="team-header team-header-green">
+                            <h4 class="text-lg font-semibold text-green-400">
+                                Team 1
+                            </h4>
+                        </div>
+                        <div class="team-cards">
+                            ${team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : this.createEmptyLoadingSlot('green', index + 1)).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Team 2 Column -->
+                    <div class="team-column">
+                        <div class="team-header team-header-red">
+                            <h4 class="text-lg font-semibold text-red-400">
+                                Team 2
+                            </h4>
+                        </div>
+                        <div class="team-cards">
+                            ${team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : this.createEmptyLoadingSlot('red', index + 1)).join('')}
+                        </div>
                     </div>
                 </div>
                 
-                <div class="flex-1">
-                    <h4 class="text-lg font-semibold text-red-400 mb-4">Team 2 (${team1.length} players)</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                        ${team1.map(player => this.createLoadingPlayerCard(player, 'red')).join('')}
+                <!-- Mobile: Tab navigation -->
+                <div class="teams-tabs">
+                    <div class="tab-buttons">
+                        <button class="team-tab-btn team1-tab active" data-team="team1">
+                            Team 1
+                        </button>
+                        <button class="team-tab-btn team2-tab" data-team="team2">
+                            Team 2
+                        </button>
+                    </div>
+                    <div class="tab-panels">
+                        <div class="team-panel team1-panel active" data-team="team1">
+                            <div class="team-cards">
+                                ${team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : this.createEmptyLoadingSlot('green', index + 1)).join('')}
+                            </div>
+                        </div>
+                        <div class="team-panel team2-panel" data-team="team2">
+                            <div class="team-cards">
+                                ${team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : this.createEmptyLoadingSlot('red', index + 1)).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -925,6 +1033,72 @@ class MatchAnalyzer {
             newCard.style.opacity = '1';
             newCard.style.transform = 'scale(1)';
         }, 50);
+    }
+
+    /**
+     * Create an empty loading slot for missing players during initial load
+     */
+    createEmptyLoadingSlot(teamColor, slotNumber) {
+        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
+        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
+        
+        return `
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-center items-center opacity-50">
+                <div class="text-gray-500 text-center">
+                    <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
+                    <p class="text-sm">Empty</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Create an empty player slot for missing players
+     */
+    createEmptyPlayerSlot(teamColor, slotNumber) {
+        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
+        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
+        
+        return `
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-center items-center opacity-50">
+                <div class="text-gray-500 text-center">
+                    <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
+                    <p class="text-sm">Empty</p>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Initialize mobile team tab functionality
+     */
+    initializeTeamTabs() {
+        const tabButtons = document.querySelectorAll('.team-tab-btn');
+        const teamPanels = document.querySelectorAll('.team-panel');
+        
+        if (tabButtons.length === 0) return; // No tabs found
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetTeam = e.currentTarget.dataset.team;
+                
+                // Update button states
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                e.currentTarget.classList.add('active');
+                
+                // Update panel visibility
+                teamPanels.forEach(panel => {
+                    if (panel.dataset.team === targetTeam) {
+                        panel.classList.add('active');
+                    } else {
+                        panel.classList.remove('active');
+                    }
+                });
+            });
+        });
     }
 }
 

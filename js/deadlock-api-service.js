@@ -170,16 +170,16 @@ class DeadlockAPIService {
         
         if (data && data.match_info && data.match_info.players) {
             // Extract player IDs and basic info
-            const players = data.match_info.players.map(player => {
+            const players = data.match_info.players.map((player, index) => {
                 // Find the player's final stats from their stats array
                 const finalStats = player.stats && player.stats.length > 0 
                     ? player.stats[player.stats.length - 1] 
                     : {};
                 
-                return {
+                const playerData = {
                     accountId: player.account_id,
                     playerSlot: player.player_slot,
-                    team: player.player_slot < 6 ? 0 : 1,
+                    team: player.player_slot <= 6 ? 0 : 1, // Fix: API uses 1-12, so slots 1-6 = team 0, slots 7-12 = team 1
                     heroId: player.hero_id,
                     kills: finalStats.kills || 0,
                     deaths: finalStats.deaths || 0,
@@ -189,9 +189,13 @@ class DeadlockAPIService {
                     denies: finalStats.denies || 0,
                     heroLevel: finalStats.level || 0
                 };
+                
+                
+                return playerData;
             });
             
             data.playersSummary = players;
+            
         }
         
         return data;
@@ -218,7 +222,6 @@ class DeadlockAPIService {
      * @returns {Promise<Object>} All players' statistics from the match
      */
     async getAllPlayersFromMatch(matchId, matchHistoryLimit = 50) {
-        console.log('🔍 getAllPlayersFromMatch called with:', { matchId, matchHistoryLimit });
         
         try {
             console.log('📡 Fetching match metadata from API...');
@@ -294,14 +297,6 @@ class DeadlockAPIService {
                 }
             };
             
-            console.log('🎯 Final result summary:', {
-                matchId: result.matchId,
-                totalPlayers: result.players.length,
-                team0Count: result.teams.team0.length,
-                team1Count: result.teams.team1.length,
-                playersWithStats: result.players.filter(p => p.statistics).length,
-                playersWithErrors: result.players.filter(p => p.error).length
-            });
             
             return result;
         } catch (error) {

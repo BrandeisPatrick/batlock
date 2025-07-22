@@ -240,3 +240,102 @@
     background: rgba(31, 41, 55, 0.8);
     border: 1px solid rgba(75, 85, 99, 0.3);
 }
+
+/* Two-column team layout */
+.teams-container {
+    position: relative;
+}
+
+/* Desktop grid layout */
+.teams-grid {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .teams-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .teams-tabs {
+        display: none;
+    }
+}
+
+.team-column {
+    position: relative;
+}
+
+.team-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #111827;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom-width: 1px;
+}
+
+.team-header-green {
+    border-bottom-color: rgba(74, 222, 128, 0.3);
+}
+
+.team-header-red {
+    border-bottom-color: rgba(248, 113, 113, 0.3);
+}
+
+.team-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Mobile tab layout */
+.teams-tabs {
+    display: block;
+}
+
+.tab-buttons {
+    display: flex;
+    border-bottom: 1px solid #374151;
+    margin-bottom: 1rem;
+}
+
+.team-tab-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    color: #9ca3af;
+    background: none;
+    transition: all 0.3s ease;
+}
+
+.team-tab-btn.active {
+    color: #ffffff;
+}
+
+.team-tab-btn.team1-tab.active {
+    color: #4ade80;
+    border-color: #4ade80;
+}
+
+.team-tab-btn.team2-tab.active {
+    color: #f87171;
+    border-color: #f87171;
+}
+
+.team-panel {
+    display: none;
+}
+
+.team-panel.active {
+    display: block;
+}
+
+.team-panel > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

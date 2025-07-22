@@ -16,10 +16,10 @@ matchIdInput.addEventListener('keyup', (event) => {
 
 // Main Logic
 async function handleFetchData() {
-    const matchId = matchIdInput.value.trim();
+    let matchId = matchIdInput.value.trim();
     if (!matchId) {
-        showError('Please enter a Match ID.');
-        return;
+        matchId = '38069822'; // Use default match ID when input is empty
+        matchIdInput.value = matchId; // Update the input field to show the default value
     }
 
     showLoader(true);
@@ -109,7 +109,7 @@ async function handleFetchData() {
                         game_mode: 1
                     },
                     teams: {
-                        team0: MOCK_MATCH_DATA.players.filter(p => p.team === 1).map((p, i) => ({
+                        team0: MOCK_MATCH_DATA.players.filter(p => p.team === 0).map((p, i) => ({
                             accountId: p.steamId,
                             displayName: p.displayName,
                             playerSlot: i,
@@ -128,7 +128,7 @@ async function handleFetchData() {
                                 recentForm: ['W', 'L', 'W', 'W', 'L'].slice(0, 5)
                             }
                         })),
-                        team1: MOCK_MATCH_DATA.players.filter(p => p.team === 2).map((p, i) => ({
+                        team1: MOCK_MATCH_DATA.players.filter(p => p.team === 1).map((p, i) => ({
                             accountId: p.steamId,
                             displayName: p.displayName,
                             playerSlot: i + 6,
@@ -168,8 +168,8 @@ async function handleFetchData() {
 async function processAndDisplayStats(players) {
     console.log('📊 processAndDisplayStats called with match analyzer available:', !!matchAnalyzer);
     
-    const team1 = players.filter(p => p.team === 1);
-    const team2 = players.filter(p => p.team === 2);
+    const team1 = players.filter(p => p.team === 0);
+    const team2 = players.filter(p => p.team === 1);
    
     // Process players in parallel (faster) with error handling
     const team1Stats = await Promise.all(
