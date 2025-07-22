@@ -11,7 +11,7 @@ try {
         deadlockAPI = new DeadlockAPIService();
     }
 } catch (e) {
-    console.log('DeadlockAPIService not loaded or enhanced API disabled, using legacy API');
+    // DeadlockAPIService not loaded or enhanced API disabled, using legacy API
 }
 
 // Mock Data
@@ -85,7 +85,6 @@ async function getSteamProfileName(steamId) {
 // API Fetching Functions
 async function getPlayersFromMatch(matchId) {
     if (API_CONFIG.features.useMockData) {
-        console.log(`Using mock data for match: ${matchId}`);
         await new Promise(resolve => setTimeout(resolve, 500));
         return MOCK_MATCH_DATA.players;
     }
@@ -93,7 +92,6 @@ async function getPlayersFromMatch(matchId) {
     // Try using the enhanced API service first
     if (deadlockAPI) {
         try {
-            console.log(`Fetching match details using enhanced API for match: ${matchId}`);
             const matchData = await deadlockAPI.getMatchMetadata(matchId);
             
             // Handle the actual API response structure
@@ -132,15 +130,13 @@ async function getPlayersFromMatch(matchId) {
                 }
                 
                 const players = await Promise.all(playerPromises);
-                console.log(`Successfully fetched ${players.length} players with enhanced data`);
                 return players;
             }
         } catch (error) {
-            console.warn('Enhanced API failed, falling back to legacy API:', error.message);
+            // Enhanced API failed, falling back to legacy API
         }
     }
 
-    console.log(`Fetching players for match: ${matchId}`);
     
     try {
         const response = await fetch(`${API_CONFIG.legacyAPI.baseUrl}/matches/${matchId}/metadata`);
@@ -184,22 +180,18 @@ async function getPlayersFromMatch(matchId) {
         }
         
         if (players.length > 0) {
-            console.log(`Successfully fetched ${players.length} players from API`);
             return players;
         }
         
         throw new Error('No players found in response');
         
     } catch (error) {
-        console.warn(`Failed to fetch from API:`, error.message);
-        console.log('API failed, using mock data');
         return MOCK_MATCH_DATA.players;
     }
 }
 
 async function getPlayerStats(playerId) {
     if (API_CONFIG.features.useMockData) {
-        console.log(`Using mock data for player: ${playerId}`);
         await new Promise(resolve => setTimeout(resolve, 100));
         const matches = MOCK_PLAYER_MATCHES[playerId] || [];
         const total = matches.length;
@@ -214,7 +206,6 @@ async function getPlayerStats(playerId) {
     // Try using the enhanced API service first
     if (deadlockAPI) {
         try {
-            console.log(`Fetching player stats using enhanced API for player: ${playerId}`);
             // Use only_stored_history=true to bypass rate limits
             const playerData = await deadlockAPI.getPlayerMatchHistory(playerId, 50, 0, true);
             
@@ -235,11 +226,10 @@ async function getPlayerStats(playerId) {
                 };
             }
         } catch (error) {
-            console.warn('Enhanced API failed, falling back to legacy API:', error.message);
+            // Enhanced API failed, falling back to legacy API
         }
     }
 
-    console.log(`Fetching matches for player: ${playerId}`);
     
     try {
         // Small delay to prevent overwhelming API
@@ -252,7 +242,6 @@ async function getPlayerStats(playerId) {
         if (!response.ok) {
             if (response.status === 429) {
                 // Rate limited - just return mock data silently
-                console.warn(`Rate limited for player ${playerId}, using fallback data`);
                 const matches = MOCK_PLAYER_MATCHES[playerId] || Array.from({ length: Math.floor(Math.random() * 30) + 20 }, () => ({ won: Math.random() > 0.5 }));
                 const total = matches.length;
                 const wins = matches.filter(m => m.won).length;
@@ -278,12 +267,9 @@ async function getPlayerStats(playerId) {
         const wins = recentMatches.filter(m => m.match_result === 1).length;
         const winRate = total > 0 ? (wins / total) * 100 : 0;
         
-        console.log(`Player ${playerId}: ${wins}/${total} wins (${winRate.toFixed(1)}%)`);
         return { steamId: playerId, total, winRate: parseFloat(winRate.toFixed(1)) };
         
     } catch (error) {
-        console.warn(`Failed to fetch player stats from API:`, error.message);
-        console.log(`API failed for player ${playerId}, using mock data`);
         const matches = MOCK_PLAYER_MATCHES[playerId] || [];
         const total = matches.length;
         if (total === 0) return { steamId: playerId, total: 0, winRate: 0 };

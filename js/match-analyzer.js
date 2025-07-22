@@ -2,11 +2,65 @@
  * Match Analyzer - Enhanced visualization for Deadlock match analysis
  */
 
+// Hero names mapping for Deadlock heroes
+const HERO_NAMES = {
+    1: "Abrams",
+    2: "Bebop",
+    3: "Dynamo", 
+    4: "Grey Talon",
+    5: "Haze",
+    6: "Infernus",
+    7: "Ivy",
+    8: "Kelvin",
+    9: "Lady Geist",
+    10: "Lash",
+    11: "McGinnis",
+    12: "Mirage",
+    13: "Mo & Krill",
+    14: "Paradox",
+    15: "Pocket",
+    16: "Seven",
+    17: "Shiv",
+    18: "Vindicta",
+    19: "Viscous",
+    20: "Warden",
+    21: "Wraith",
+    22: "Yamato",
+    // Add more heroes as they are discovered/released
+};
+
+// Hero color themes for better visual distinction
+const HERO_COLORS = {
+    1: "#8B4513", // Abrams - Brown
+    2: "#FF6B35", // Bebop - Orange
+    3: "#4A90E2", // Dynamo - Blue
+    4: "#228B22", // Grey Talon - Forest Green
+    5: "#9932CC", // Haze - Purple
+    6: "#FF4500", // Infernus - Red Orange
+    7: "#32CD32", // Ivy - Lime Green
+    8: "#4169E1", // Kelvin - Royal Blue
+    9: "#8A2BE2", // Lady Geist - Blue Violet
+    10: "#FF1493", // Lash - Deep Pink
+    11: "#B8860B", // McGinnis - Dark Goldenrod
+    12: "#FFD700", // Mirage - Gold
+    13: "#20B2AA", // Mo & Krill - Light Sea Green
+    14: "#FF69B4", // Paradox - Hot Pink
+    15: "#40E0D0", // Pocket - Turquoise
+    16: "#ADFF2F", // Seven - Green Yellow
+    17: "#DC143C", // Shiv - Crimson
+    18: "#800080", // Vindicta - Purple
+    19: "#00CED1", // Viscous - Dark Turquoise
+    20: "#2F4F4F", // Warden - Dark Slate Gray
+    21: "#191970", // Wraith - Midnight Blue
+    22: "#FF6347"  // Yamato - Tomato
+};
+
 // Match Analyzer Component
 class MatchAnalyzer {
     constructor() {
         this.currentMatchData = null;
         this.playerStatsCache = new Map();
+        this.heroCache = new Map(); // Cache for hero data
     }
 
     /**
@@ -17,8 +71,17 @@ class MatchAnalyzer {
         // Handle both possible data structure formats
         const matchInfo = matchData.matchInfo || matchData.match_info;
         
-        // Fix 1: Robust match ID handling
-        const matchId = matchData.matchId ?? matchData.id ?? 'Unknown';
+        // Fix: More robust match ID handling
+        const matchId = matchData.matchId || matchData.match_id || matchData.id || 
+                        matchInfo?.match_id || matchInfo?.id || 'Unknown';
+        
+        // If matchId is still 'Unknown', try to extract from the input field
+        if (matchId === 'Unknown') {
+            const inputValue = document.getElementById('matchIdInput')?.value;
+            if (inputValue) {
+                matchId = inputValue;
+            }
+        }
         
         if (!matchInfo) {
             return `
@@ -41,15 +104,19 @@ class MatchAnalyzer {
         const seconds = matchInfo.duration_s % 60;
         
         return `
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+            <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-6 mb-6 shadow-lg">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-bold text-cyan-400">Match ${matchId}</h2>
-                        <p class="text-gray-400 mt-1">Duration: ${duration}:${String(seconds).padStart(2, '0')}</p>
+                        <h2 class="text-3xl font-bold text-cyan-400 mb-2">Match ${matchId}</h2>
+                        <p class="text-gray-300 text-lg">
+                            <i class="fas fa-clock mr-2"></i>
+                            Duration: ${duration}:${String(seconds).padStart(2, '0')}
+                        </p>
                     </div>
                     <div class="mt-4 md:mt-0 text-center">
-                        <p class="text-sm text-gray-400">Winner</p>
-                        <p class="text-2xl font-bold ${matchInfo.winning_team === 0 ? 'text-green-400' : 'text-red-400'}">
+                        <p class="text-sm text-gray-400 uppercase tracking-wide">Winner</p>
+                        <p class="text-3xl font-bold ${matchInfo.winning_team === 0 ? 'text-green-400' : 'text-red-400'} mt-1">
+                            <i class="fas fa-trophy mr-2"></i>
                             ${matchInfo.winning_team === 0 ? 'Team 1' : 'Team 2'}
                         </p>
                     </div>
@@ -76,30 +143,42 @@ class MatchAnalyzer {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Team 1 Stats -->
                 <div class="bg-gradient-to-br from-green-900/20 to-gray-800 rounded-lg p-6 border border-green-500/30">
-                    <h3 class="text-xl font-bold text-green-400 mb-4">Team 1 (Winners)</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-white">${team0AvgWR}%</p>
-                            <p class="text-sm text-gray-400">Avg Win Rate</p>
+                    <div class="team-header mb-4">
+                        <h3 class="text-xl font-bold text-green-400">Team 1</h3>
+                        <div class="team-stats text-sm text-gray-300 mt-1">
+                            <span class="win-rate text-green-300 font-semibold">${team0AvgWR}% WR</span> • 
+                            <span class="avg-kda text-cyan-300 font-semibold">${team0AvgKDA} KDA</span>
                         </div>
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-white">${team0AvgKDA}</p>
-                            <p class="text-sm text-gray-400">Avg KDA</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-green-400">${team0AvgWR}%</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Win Rate</p>
+                        </div>
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-cyan-400">${team0AvgKDA}</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">KDA Ratio</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Team 2 Stats -->
                 <div class="bg-gradient-to-br from-red-900/20 to-gray-800 rounded-lg p-6 border border-red-500/30">
-                    <h3 class="text-xl font-bold text-red-400 mb-4">Team 2</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-white">${team1AvgWR}%</p>
-                            <p class="text-sm text-gray-400">Avg Win Rate</p>
+                    <div class="team-header mb-4">
+                        <h3 class="text-xl font-bold text-red-400">Team 2</h3>
+                        <div class="team-stats text-sm text-gray-300 mt-1">
+                            <span class="win-rate text-red-300 font-semibold">${team1AvgWR}% WR</span> • 
+                            <span class="avg-kda text-orange-300 font-semibold">${team1AvgKDA} KDA</span>
                         </div>
-                        <div class="text-center">
-                            <p class="text-3xl font-bold text-white">${team1AvgKDA}</p>
-                            <p class="text-sm text-gray-400">Avg KDA</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-red-400">${team1AvgWR}%</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Win Rate</p>
+                        </div>
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-orange-400">${team1AvgKDA}</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">KDA Ratio</p>
                         </div>
                     </div>
                 </div>
@@ -130,14 +209,14 @@ class MatchAnalyzer {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-600">
-                                <th class="text-left py-3 px-2">Player</th>
-                                <th class="text-center py-3 px-2">K/D/A</th>
-                                <th class="text-center py-3 px-2">Damage</th>
-                                <th class="text-center py-3 px-2">Healing</th>
-                                <th class="text-center py-3 px-2 border-l border-gray-600">Player</th>
-                                <th class="text-center py-3 px-2">K/D/A</th>
-                                <th class="text-center py-3 px-2">Damage</th>
-                                <th class="text-center py-3 px-2">Healing</th>
+                                <th class="player-column text-left py-3 px-2">Player</th>
+                                <th class="kda-column text-center py-3 px-2">K/D/A</th>
+                                <th class="damage-column text-center py-3 px-2">Damage</th>
+                                <th class="healing-column text-center py-3 px-2">Healing</th>
+                                <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
+                                <th class="kda-column text-center py-3 px-2">K/D/A</th>
+                                <th class="damage-column text-center py-3 px-2">Damage</th>
+                                <th class="healing-column text-center py-3 px-2">Healing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -163,45 +242,77 @@ class MatchAnalyzer {
             rows += `
                 <tr class="border-b border-gray-700 hover:bg-gray-700/30">
                     <!-- Team 1 Player -->
-                    <td class="py-3 px-2">
+                    <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
-                                    H${player0.heroId || '?'}
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
+                                     style="border-color: ${this.getHeroColor(player0.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);"
+                                     data-tooltip="${this.getHeroName(player0.heroId)}">
+                                    ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
                                 </div>
-                                <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
+                                <div class="flex flex-col">
+                                    <div class="flex flex-col">
+                                    <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
+                                    ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
+                                    ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2">
+                    <td class="kda-column numeric-cell py-3 px-2">
                         ${player0 ? `<span class="font-mono">${player0.kills || 0}/${player0.deaths || 0}/${player0.assists || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player0 ? `<span class="${this.getStatValueClass(player0.playerDamage || 0, 'damage')}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
+                    <td class="damage-column numeric-cell py-3 px-2">
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.playerDamage || 0, 'damage', this.formatPlayerName(player0))}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player0 ? `<span class="${this.getStatValueClass(player0.healingOutput || 0, 'healing')}">${this.formatNumber(player0.healingOutput || 0)}</span>` : '-'}
+                    <td class="healing-column numeric-cell py-3 px-2">
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.healingOutput || 0, 'healing')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.healingOutput || 0, 'healing', this.formatPlayerName(player0))}">${this.formatNumber(player0.healingOutput || 0)}</span>` : '-'}
                     </td>
                     
                     <!-- Team 2 Player -->
-                    <td class="py-3 px-2 border-l border-gray-600">
+                    <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
-                                    H${player1.heroId || '?'}
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
+                                     style="border-color: ${this.getHeroColor(player1.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);"
+                                     data-tooltip="${this.getHeroName(player1.heroId)}">
+                                    ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
                                 </div>
-                                <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
+                                <div class="flex flex-col">
+                                    <div class="flex flex-col">
+                                    <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
+                                    ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
+                                    ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2">
+                    <td class="kda-column numeric-cell py-3 px-2">
                         ${player1 ? `<span class="font-mono">${player1.kills || 0}/${player1.deaths || 0}/${player1.assists || 0}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player1 ? `<span class="${this.getStatValueClass(player1.playerDamage || 0, 'damage')}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
+                    <td class="damage-column numeric-cell py-3 px-2">
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.playerDamage || 0, 'damage', this.formatPlayerName(player1))}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player1 ? `<span class="${this.getStatValueClass(player1.healingOutput || 0, 'healing')}">${this.formatNumber(player1.healingOutput || 0)}</span>` : '-'}
+                    <td class="healing-column numeric-cell py-3 px-2">
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.healingOutput || 0, 'healing')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.healingOutput || 0, 'healing', this.formatPlayerName(player1))}">${this.formatNumber(player1.healingOutput || 0)}</span>` : '-'}
                     </td>
                 </tr>
             `;
@@ -233,14 +344,14 @@ class MatchAnalyzer {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-600">
-                                <th class="text-left py-3 px-2">Player</th>
-                                <th class="text-center py-3 px-2">Net Worth</th>
-                                <th class="text-center py-3 px-2">Last Hits</th>
-                                <th class="text-center py-3 px-2">Denies</th>
-                                <th class="text-center py-3 px-2 border-l border-gray-600">Player</th>
-                                <th class="text-center py-3 px-2">Net Worth</th>
-                                <th class="text-center py-3 px-2">Last Hits</th>
-                                <th class="text-center py-3 px-2">Denies</th>
+                                <th class="player-column text-left py-3 px-2">Player</th>
+                                <th class="networth-column text-right py-3 px-2">Net Worth</th>
+                                <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
+                                <th class="denies-column text-right py-3 px-2">Denies</th>
+                                <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
+                                <th class="networth-column text-right py-3 px-2">Net Worth</th>
+                                <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
+                                <th class="denies-column text-right py-3 px-2">Denies</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -271,45 +382,63 @@ class MatchAnalyzer {
             rows += `
                 <tr class="border-b border-gray-700 hover:bg-gray-700/30">
                     <!-- Team 1 Player -->
-                    <td class="py-3 px-2">
+                    <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
-                                    H${player0.heroId || '?'}
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
+                                     style="border-color: ${this.getHeroColor(player0.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);"
+                                     data-tooltip="${this.getHeroName(player0.heroId)}">
+                                    ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
                                 </div>
-                                <span class="text-green-400 font-medium">${player0.displayName || `Player ${player0.accountId}`}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
+                                    ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player0 ? `<span class="${this.getStatValueClass(player0.netWorth || 0, 'networth')}">$${this.formatNumber(player0.netWorth || 0)}</span>` : '-'}
+                    <td class="networth-column numeric-cell py-3 px-2">
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.netWorth || 0, 'networth', this.formatPlayerName(player0))}">$${this.formatNetWorth(player0.netWorth || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player0 ? `<span class="${this.getStatValueClass(player0.lastHits || 0, 'lasthits')}">${player0.lastHits || 0}</span>` : '-'}
+                    <td class="lasthits-column numeric-cell py-3 px-2">
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.lastHits || 0, 'lasthits', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.lastHits || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player0 ? `<span class="${this.getStatValueClass(player0.denies || 0, 'denies')}">${player0.denies || 0}</span>` : '-'}
+                    <td class="denies-column numeric-cell py-3 px-2">
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.denies || 0, 'denies', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.denies || 0)}</span>` : '-'}
                     </td>
                     
                     <!-- Team 2 Player -->
-                    <td class="py-3 px-2 border-l border-gray-600">
+                    <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">
-                                    H${player1.heroId || '?'}
+                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
+                                     style="border-color: ${this.getHeroColor(player1.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);"
+                                     data-tooltip="${this.getHeroName(player1.heroId)}">
+                                    ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
                                 </div>
-                                <span class="text-red-400 font-medium">${player1.displayName || `Player ${player1.accountId}`}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
+                                    ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
+                                        `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                            <i class="fab fa-steam mr-1"></i>Steam
+                                        </a>` : ''
+                                    }
+                                </div>
                             </div>
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player1 ? `<span class="${this.getStatValueClass(player1.netWorth || 0, 'networth')}">$${this.formatNumber(player1.netWorth || 0)}</span>` : '-'}
+                    <td class="networth-column numeric-cell py-3 px-2">
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.netWorth || 0, 'networth', this.formatPlayerName(player1))}">$${this.formatNetWorth(player1.netWorth || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player1 ? `<span class="${this.getStatValueClass(player1.lastHits || 0, 'lasthits')}">${player1.lastHits || 0}</span>` : '-'}
+                    <td class="lasthits-column numeric-cell py-3 px-2">
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.lastHits || 0, 'lasthits', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.lastHits || 0)}</span>` : '-'}
                     </td>
-                    <td class="text-center py-3 px-2">
-                        ${player1 ? `<span class="${this.getStatValueClass(player1.denies || 0, 'denies')}">${player1.denies || 0}</span>` : '-'}
+                    <td class="denies-column numeric-cell py-3 px-2">
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.denies || 0, 'denies', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.denies || 0)}</span>` : '-'}
                     </td>
                 </tr>
             `;
@@ -439,7 +568,7 @@ class MatchAnalyzer {
                                     Team 1 Historical Stats
                                 </h4>
                             </div>
-                            <div class="team-cards">
+                            <div class="team-cards player-stats-grid">
                                 ${team0Cards}
                             </div>
                         </div>
@@ -451,7 +580,7 @@ class MatchAnalyzer {
                                     Team 2 Historical Stats
                                 </h4>
                             </div>
-                            <div class="team-cards">
+                            <div class="team-cards player-stats-grid">
                                 ${team1Cards}
                             </div>
                         </div>
@@ -459,6 +588,54 @@ class MatchAnalyzer {
                 </div>
             </section>
         `;
+    }
+
+    /**
+     * Convert account ID to Steam ID
+     */
+    convertToSteamId(accountId) {
+        if (!accountId) return null;
+        try {
+            return (BigInt(accountId) + BigInt('76561197960265728')).toString();
+        } catch (error) {
+            console.warn('Error converting to Steam ID:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get hero name from hero ID
+     */
+    getHeroName(heroId) {
+        if (!heroId) return 'Unknown Hero';
+        return HERO_NAMES[heroId] || `Hero ${heroId}`;
+    }
+
+    /**
+     * Get hero color from hero ID
+     */
+    getHeroColor(heroId) {
+        if (!heroId) return '#6b7280'; // Default gray
+        return HERO_COLORS[heroId] || '#6b7280';
+    }
+
+    /**
+     * Create Steam profile URL from account ID
+     */
+    getSteamProfileUrl(accountId) {
+        const steamId = this.convertToSteamId(accountId);
+        return steamId ? `https://steamcommunity.com/profiles/${steamId}` : null;
+    }
+
+    /**
+     * Format player names consistently
+     */
+    formatPlayerName(player) {
+        if (player.displayName && player.displayName !== `ID: ${player.accountId}`) {
+            return player.displayName;
+        }
+        // Return just the account ID without prefix
+        return `Player ${player.accountId}`;
     }
 
     /**
@@ -471,6 +648,120 @@ class MatchAnalyzer {
             return (num / 1000).toFixed(1) + 'K';
         }
         return num.toString();
+    }
+
+    /**
+     * Format net worth with proper number formatting and commas
+     */
+    formatNetWorth(value) {
+        return value.toLocaleString();
+    }
+
+    /**
+     * Format numeric values with consistent padding for table alignment
+     */
+    formatTableNumber(value) {
+        return value.toString().padStart(3, ' ');
+    }
+
+    /**
+     * Get performance level for a stat value
+     */
+    getPerformanceLevel(value, statType) {
+        if (!value || value === 0) return 'poor';
+        
+        let excellentThreshold, goodThreshold, averageThreshold, poorThreshold;
+        
+        switch (statType) {
+            case 'damage':
+                excellentThreshold = 60000;
+                goodThreshold = 40000;
+                averageThreshold = 25000;
+                poorThreshold = 15000;
+                break;
+            case 'healing':
+                excellentThreshold = 20000;
+                goodThreshold = 12000;
+                averageThreshold = 7500;
+                poorThreshold = 3000;
+                break;
+            case 'networth':
+                excellentThreshold = 50000;
+                goodThreshold = 35000;
+                averageThreshold = 25000;
+                poorThreshold = 15000;
+                break;
+            case 'lasthits':
+                excellentThreshold = 500;
+                goodThreshold = 350;
+                averageThreshold = 250;
+                poorThreshold = 150;
+                break;
+            case 'denies':
+                excellentThreshold = 80;
+                goodThreshold = 50;
+                averageThreshold = 25;
+                poorThreshold = 10;
+                break;
+            case 'winrate':
+                excellentThreshold = 70;
+                goodThreshold = 60;
+                averageThreshold = 50;
+                poorThreshold = 40;
+                break;
+            case 'kda':
+                excellentThreshold = 4;
+                goodThreshold = 3;
+                averageThreshold = 2;
+                poorThreshold = 1.5;
+                break;
+            default:
+                return 'average';
+        }
+        
+        if (value >= excellentThreshold) return 'excellent';
+        if (value >= goodThreshold) return 'good';
+        if (value >= averageThreshold) return 'average';
+        if (value >= poorThreshold) return 'poor';
+        return 'bad';
+    }
+
+    /**
+     * Create tooltip text for stat values
+     */
+    createStatTooltip(value, statType, playerName = '') {
+        const level = this.getPerformanceLevel(value, statType);
+        const levelText = level.charAt(0).toUpperCase() + level.slice(1);
+        
+        switch (statType) {
+            case 'damage':
+                return `${levelText} player damage for ${playerName} (${this.formatNumber(value)})`;
+            case 'healing':
+                return `${levelText} healing output for ${playerName} (${this.formatNumber(value)})`;
+            case 'networth':
+                return `${levelText} net worth for ${playerName} ($${this.formatNetWorth(value)})`;
+            case 'lasthits':
+                return `${levelText} farming for ${playerName} (${value} last hits)`;
+            case 'denies':
+                return `${levelText} lane control for ${playerName} (${value} denies)`;
+            default:
+                return `${levelText} performance: ${value}`;
+        }
+    }
+
+    /**
+     * Create enhanced sparkline for recent form
+     */
+    createRecentFormSparkline(recentForm) {
+        if (!recentForm || recentForm.length === 0) {
+            return '<span class="text-xs text-gray-500">No data</span>';
+        }
+        
+        const dots = recentForm.slice(0, 5).map(result => 
+            `<div class="form-dot ${result === 'W' ? 'win' : 'loss'}" title="${result === 'W' ? 'Win' : 'Loss'}"></div>`
+        ).join('');
+        
+        return `<div class="recent-form-sparkline">${dots}</div>`;
     }
 
     /**
@@ -532,7 +823,7 @@ class MatchAnalyzer {
                             <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                            <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
                             <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
                         </div>
                     </div>
@@ -546,21 +837,29 @@ class MatchAnalyzer {
             `<span class="inline-block w-2 h-2 rounded-full ${result === 'W' ? 'bg-green-400' : 'bg-red-400'}"></span>`
         ).join(' ');
         
-        const winRateColor = stats.winRate >= 50 ? 'text-green-400' : 'text-red-400';
-        const kdaColor = stats.averageKDA >= 3 ? 'text-green-400' : 
-                        stats.averageKDA >= 2 ? 'text-yellow-400' : 'text-red-400';
+        const winRateLevel = this.getPerformanceLevel(stats.winRate, 'winrate');
+        const kdaLevel = this.getPerformanceLevel(stats.averageKDA, 'kda');
+        const winRateColor = `performance-${winRateLevel}`;
+        const kdaColor = `performance-${kdaLevel}`;
 
         return `
             <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
-                        <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
+                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0 border stat-tooltip" 
+                         style="border-color: ${this.getHeroColor(player.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);"
+                         data-tooltip="${this.getHeroName(player.heroId)}">
+                        <span class="text-lg font-bold" style="color: ${this.getHeroColor(player.heroId)};">${this.getHeroName(player.heroId).substring(0, 2).toUpperCase()}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                        <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
                         <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
                         <p class="text-xs text-gray-500">${player.totalGames || 0} total games</p>
+                        ${player.accountId && this.getSteamProfileUrl(player.accountId) ? 
+                            `<a href="${this.getSteamProfileUrl(player.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors mt-1 flex items-center" title="View Steam Profile">
+                                <i class="fab fa-steam mr-1"></i>View Profile
+                            </a>` : ''
+                        }
                     </div>
                 </div>
                 
@@ -569,12 +868,18 @@ class MatchAnalyzer {
                     <!-- Primary stats row -->
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div class="bg-gray-700/50 rounded-lg p-3">
-                            <p class="text-xl font-bold ${winRateColor}">${stats.winRate}%</p>
+                            <p class="text-xl font-bold ${winRateColor} enhanced-stat">${stats.winRate}%</p>
                             <p class="text-xs text-gray-400">Win Rate</p>
+                            <div class="performance-indicator indicator-${winRateLevel} mt-1 mx-auto">
+                                ${winRateLevel.charAt(0).toUpperCase() + winRateLevel.slice(1)}
+                            </div>
                         </div>
                         <div class="bg-gray-700/50 rounded-lg p-3">
-                            <p class="text-xl font-bold ${kdaColor}">${stats.averageKDA}</p>
+                            <p class="text-xl font-bold ${kdaColor} enhanced-stat">${stats.averageKDA}</p>
                             <p class="text-xs text-gray-400">Avg KDA</p>
+                            <div class="performance-indicator indicator-${kdaLevel} mt-1 mx-auto">
+                                ${kdaLevel.charAt(0).toUpperCase() + kdaLevel.slice(1)}
+                            </div>
                         </div>
                     </div>
                     
@@ -593,8 +898,8 @@ class MatchAnalyzer {
                     <!-- Recent form -->
                     <div class="text-center border-t border-gray-600 pt-3">
                         <p class="text-xs text-gray-400 mb-2">Recent Form</p>
-                        <div class="flex justify-center items-center space-x-1">
-                            ${formIndicators || '<span class="text-xs text-gray-500">No data</span>'}
+                        <div class="flex justify-center items-center">
+                            ${this.createRecentFormSparkline(stats.recentForm)}
                         </div>
                     </div>
                 </div>
@@ -606,19 +911,9 @@ class MatchAnalyzer {
      * Create the main match analysis view
      */
     async renderMatchAnalysis(matchData, allPlayersData) {
-        console.log('🎯 Starting renderMatchAnalysis...');
-        console.log('📊 Match data:', {
-            hasMatchData: !!matchData,
-            hasTeams: !!allPlayersData?.teams,
-            team0Count: allPlayersData?.teams?.team0?.length || 0,
-            team1Count: allPlayersData?.teams?.team1?.length || 0
-        });
-        
         const container = document.getElementById('chartsContainer');
-        console.log('📦 Charts container found:', !!container);
         
         if (!container) {
-            console.error('❌ Charts container not found - this should be the results div temporarily renamed');
             throw new Error('Charts container not found');
         }
         
@@ -637,24 +932,11 @@ class MatchAnalyzer {
         
         
         // Create the new three-section layout
-        console.log('🏗️ Creating sections...');
-        console.log('📊 Creating game stats section with teams:', team0Players.length, 'vs', team1Players.length);
         const gameStatsSection = this.createGameStatsSection(team0Players, team1Players);
-        console.log('✅ Game stats section created');
-        
-        console.log('💰 Creating lane economics section...');
         const laneEconomicsSection = this.createLaneEconomicsSection(team0Players, team1Players);
-        console.log('✅ Lane economics section created');
-        
-        console.log('📈 Creating historical data section...');
         const historicalDataSection = this.createHistoricalDataSection(team0Players, team1Players);
-        console.log('✅ Historical data section created');
-        
-        console.log('⚖️ Creating team comparison...');
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
-        console.log('✅ Team comparison created');
         
-        console.log('📝 Assembling final HTML...');
         const finalHTML = `
             ${overview}
             ${teamComparison}
@@ -663,39 +945,7 @@ class MatchAnalyzer {
             ${historicalDataSection}
         `;
         
-        console.log('📤 Setting container innerHTML...', 'HTML length:', finalHTML.length);
         container.innerHTML = finalHTML;
-        console.log('✅ Container HTML set successfully');
-        
-        // Debug: Check if content is actually in DOM
-        setTimeout(() => {
-            const sections = container.querySelectorAll('section');
-            const tables = container.querySelectorAll('table');
-            console.log('🔍 DOM Check:', {
-                containerVisible: container.offsetHeight > 0,
-                containerWidth: container.offsetWidth,
-                containerHeight: container.offsetHeight,
-                sectionsFound: sections.length,
-                tablesFound: tables.length,
-                firstSectionVisible: sections[0]?.offsetHeight || 0,
-                containerClasses: container.className,
-                containerStyle: container.style.cssText
-            });
-            
-            // Make container very visible for debugging
-            container.style.border = '3px solid red';
-            container.style.minHeight = '500px';
-            container.style.backgroundColor = 'rgba(255, 0, 0, 0.1)';
-            
-            sections.forEach((section, i) => {
-                console.log(`📋 Section ${i + 1}:`, {
-                    className: section.className,
-                    visible: section.offsetHeight > 0,
-                    height: section.offsetHeight,
-                    innerHTML: section.innerHTML.substring(0, 100) + '...'
-                });
-            });
-        }, 100);
         
         // Add interactive charts after rendering
         this.createInteractiveCharts(allPlayersData);
@@ -731,19 +981,19 @@ class MatchAnalyzer {
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="text-center">
                     <p class="text-sm text-gray-400 mb-1">Highest Win Rate</p>
-                    <p class="text-lg font-semibold text-white">${highestWR.displayName || `Player ${highestWR.accountId}`}</p>
+                    <p class="text-lg font-semibold text-white">${this.formatPlayerName(highestWR)}</p>
                     <p class="text-2xl font-bold text-green-400">${highestWR.statistics.winRate}%</p>
                 </div>
                 
                 <div class="text-center">
                     <p class="text-sm text-gray-400 mb-1">Best KDA</p>
-                    <p class="text-lg font-semibold text-white">${highestKDA.displayName || `Player ${highestKDA.accountId}`}</p>
+                    <p class="text-lg font-semibold text-white">${this.formatPlayerName(highestKDA)}</p>
                     <p class="text-2xl font-bold text-cyan-400">${highestKDA.statistics.averageKDA}</p>
                 </div>
                 
                 <div class="text-center">
                     <p class="text-sm text-gray-400 mb-1">Most Experienced</p>
-                    <p class="text-lg font-semibold text-white">${mostExperienced.displayName || `Player ${mostExperienced.accountId}`}</p>
+                    <p class="text-lg font-semibold text-white">${this.formatPlayerName(mostExperienced)}</p>
                     <p class="text-2xl font-bold text-yellow-400">${mostExperienced.totalGames} games</p>
                 </div>
             </div>
@@ -956,7 +1206,7 @@ class MatchAnalyzer {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: allPlayers.map(p => p.displayName || `Player ${p.accountId}`),
+                labels: allPlayers.map(p => this.formatPlayerName(p)),
                 datasets: [{
                     label: 'Average KDA',
                     data: allPlayers.map(p => p.statistics.averageKDA),
@@ -1013,17 +1263,8 @@ class MatchAnalyzer {
      * @param {Object} apiService - API service for fetching additional data
      */
     async renderProgressiveMatchAnalysis(matchMetadata, apiService) {
-        console.log('🚀 Starting progressive match analysis...');
-        console.log('📊 Match metadata received:', {
-            hasMatchData: !!matchMetadata,
-            hasPlayersData: !!matchMetadata?.playersSummary,
-            playersCount: matchMetadata?.playersSummary?.length,
-            matchInfo: !!matchMetadata?.match_info
-        });
-        
         // Phase 1: Display match overview and basic player cards immediately
         const resultsDiv = document.getElementById('results');
-        console.log('📋 Results div found:', !!resultsDiv);
         
         if (!resultsDiv) {
             throw new Error('Results div not found. Make sure there is a div with id="results" in the HTML.');
@@ -1054,13 +1295,9 @@ class MatchAnalyzer {
         `;
         
         resultsDiv.innerHTML = initialContent;
-        console.log('✅ Initial content loaded to results div');
         
         // Phase 2: Start fetching player statistics in background
-        console.log('🔄 Phase 2: Starting background data fetching...');
-        
         const players = matchMetadata.playersSummary;
-        console.log('👥 Players to process:', players?.length || 0);
         const totalPlayers = players.length;
         let completedPlayers = 0;
         
@@ -1089,12 +1326,9 @@ class MatchAnalyzer {
         };
         
         // Fetch player data with progressive updates
-        console.log('📊 Starting to fetch individual player data...');
         const enhancedPlayersData = await Promise.all(
             players.map(async (player, index) => {
                 try {
-                    console.log(`👤 Processing player ${index + 1}/${totalPlayers}: ${player.accountId}`);
-                                
                     // Update progress
                     const playerName = player.displayName || `Player ${player.accountId}`;
                     updateProgress(completedPlayers, totalPlayers, playerName);
@@ -1105,13 +1339,7 @@ class MatchAnalyzer {
                     }
                     
                     // Fetch detailed player statistics
-                    console.log(`📡 Fetching stats for player: ${player.accountId}`);
                     const playerStats = await apiService.getPlayerMatchHistory(player.accountId, 50, 0, true);
-                    console.log(`✅ Received stats for player ${player.accountId}:`, {
-                        hasStats: !!playerStats,
-                        hasStatistics: !!playerStats?.statistics,
-                        matchCount: playerStats?.totalMatches || 0
-                    });
                     
                     const enhancedPlayer = {
                         ...player,
@@ -1127,20 +1355,14 @@ class MatchAnalyzer {
                     };
                     
                     // Update the specific player card
-                    console.log(`🎨 Updating player card for: ${player.accountId}`);
                     this.updatePlayerCard(enhancedPlayer);
                     
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
                     
-                            return enhancedPlayer;
+                    return enhancedPlayer;
                     
                 } catch (error) {
-                    console.error(`❌ Failed to load data for player ${player.accountId}:`, {
-                        error: error.message,
-                        stack: error.stack,
-                        playerData: player
-                    });
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
                     
@@ -1162,14 +1384,7 @@ class MatchAnalyzer {
             })
         );
         
-        console.log('📋 All players processed:', {
-            totalPlayers: enhancedPlayersData.length,
-            playersWithErrors: enhancedPlayersData.filter(p => p.error).length,
-            playersWithStats: enhancedPlayersData.filter(p => p.statistics && !p.error).length
-        });
-        
         // Phase 3: Update team structures and comparisons
-        console.log('🔄 Phase 3: Creating final team structures...');
         
         const finalTeamData = {
             team0: enhancedPlayersData.filter(p => p.team === 0),
@@ -1195,29 +1410,21 @@ class MatchAnalyzer {
         
         // Now render the final layout using the main renderMatchAnalysis method
         // but targeting the results div instead of chartsContainer
-        console.log('🎨 Phase 4: Rendering final layout...');
         const resultsContainer = document.getElementById('results');
-        console.log('📦 Results container found for final render:', !!resultsContainer);
         
         if (resultsContainer) {
             // Temporarily change the container ID so renderMatchAnalysis targets the right place
             const originalId = resultsContainer.id;
             resultsContainer.id = 'chartsContainer';
-            console.log('🔄 Temporarily changed container ID to chartsContainer');
             
             try {
                 await this.renderMatchAnalysis(finalMatchData, { teams: finalTeamData, matchInfo: matchMetadata.match_info });
-                console.log('✅ Final match analysis rendered successfully');
             } catch (renderError) {
-                console.error('❌ Error rendering final match analysis:', renderError);
                 throw renderError;
             }
             
             // Restore original ID
             resultsContainer.id = originalId;
-            console.log('🔄 Restored original container ID');
-        } else {
-            console.error('❌ Results container not found for final render');
         }
         
     }
@@ -1284,12 +1491,12 @@ class MatchAnalyzer {
                     </div>
                     <div class="tab-panels">
                         <div class="team-panel team1-panel active" data-team="team1">
-                            <div class="team-cards">
+                            <div class="team-cards player-stats-grid">
                                 ${team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : this.createEmptyLoadingSlot('green', index + 1)).join('')}
                             </div>
                         </div>
                         <div class="team-panel team2-panel" data-team="team2">
-                            <div class="team-cards">
+                            <div class="team-cards player-stats-grid">
                                 ${team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : this.createEmptyLoadingSlot('red', index + 1)).join('')}
                             </div>
                         </div>
@@ -1312,11 +1519,13 @@ class MatchAnalyzer {
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
                     <!-- Enhanced hero icon matching the final design -->
-                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
-                        <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
+                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0 border stat-tooltip" 
+                         style="border-color: ${this.getHeroColor(player.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);"
+                         data-tooltip="${this.getHeroName(player.heroId)}">
+                        <span class="text-lg font-bold" style="color: ${this.getHeroColor(player.heroId)};">${this.getHeroName(player.heroId).substring(0, 2).toUpperCase()}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold ${textColor} truncate">${player.displayName || `Player ${player.accountId}`}</h4>
+                        <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
                         <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
                         <p class="text-xs text-gray-500">Loading...</p>
                     </div>

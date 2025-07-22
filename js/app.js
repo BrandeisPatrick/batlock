@@ -4,32 +4,12 @@ let matchAnalyzer = null;
 try {
     if (typeof MatchAnalyzer !== 'undefined') {
         matchAnalyzer = new MatchAnalyzer();
-        console.log('✅ MatchAnalyzer initialized successfully');
     } else {
-        console.warn('⚠️ MatchAnalyzer class not available');
     }
 } catch (e) {
-    console.error('❌ Error initializing MatchAnalyzer:', e.message);
 }
 
 // Check if enhanced styles are loading
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Checking CSS loading...');
-    const testElement = document.createElement('div');
-    testElement.className = 'glass-effect';
-    document.body.appendChild(testElement);
-    const computedStyle = window.getComputedStyle(testElement);
-    const hasBackdropFilter = computedStyle.backdropFilter !== 'none';
-    document.body.removeChild(testElement);
-    console.log('🎨 Enhanced CSS loaded:', hasBackdropFilter ? 'YES' : 'NO');
-    
-    console.log('🌐 Available global objects:', {
-        MatchAnalyzer: typeof MatchAnalyzer,
-        DeadlockAPIService: typeof DeadlockAPIService,
-        deadlockAPI: typeof deadlockAPI,
-        Chart: typeof Chart
-    });
-});
 
 // Event Listeners
 fetchButton.addEventListener('click', handleFetchData);
@@ -53,52 +33,42 @@ async function handleFetchData() {
         
         // Use progressive loading with match analyzer if available
         if (matchAnalyzer && deadlockAPI) {
-            console.log('🎯 Using progressive match analysis...');
-            console.log('📋 MatchAnalyzer available:', !!matchAnalyzer);
-            console.log('🔌 DeadlockAPI available:', !!deadlockAPI);
-            console.log('🎮 Match ID:', matchId);
-            console.log('🧩 MatchAnalyzer methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(matchAnalyzer)));
-            console.log('🔧 DeadlockAPI methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(deadlockAPI)));
             
             try {
-                console.log('📡 Step 1: Fetching match metadata for immediate display...');
-                
                 // Get match metadata first (fast)
                 const matchMetadata = await deadlockAPI.getMatchMetadata(matchId);
                 
-                console.log('📊 Step 2: Match metadata received:', {
-                    hasData: !!matchMetadata,
-                    playersCount: matchMetadata?.playersSummary?.length || 0,
-                    matchInfo: !!matchMetadata?.match_info
-                });
-                
                 if (matchMetadata && matchMetadata.playersSummary && matchMetadata.playersSummary.length > 0) {
-                    console.log('🎨 Step 3: Rendering immediate match display...');
+                    
+                    // If no damage/healing data, fetch detailed match data
+                    const hasStats = matchMetadata.playersSummary.some(p => p.playerDamage > 0);
+                    
+                    if (!hasStats) {
+                        try {
+                            const fullMatchData = await deadlockAPI.getMatchDetails(matchId);
+                            if (fullMatchData && fullMatchData.match_info) {
+                                matchMetadata.match_info = fullMatchData.match_info;
+                                matchMetadata.playersSummary = fullMatchData.playersSummary;
+                            }
+                        } catch (detailError) {
+                            // Could not fetch detailed match data
+                        }
+                    }
                     
                     // Hide loader and show initial content immediately
                     showLoader(false);
                     
                     // Start progressive loading
                     await matchAnalyzer.renderProgressiveMatchAnalysis(matchMetadata, deadlockAPI);
-                    console.log('✅ Progressive match analysis completed successfully');
                     enhancedSucceeded = true;
                 } else {
-                    console.warn('⚠️ No player data received, falling back to standard method');
+                    // No player data received, falling back to standard method
                 }
             } catch (enhancedError) {
-                console.error('❌ Enhanced match analysis failed:', enhancedError);
-                console.error('🔍 Error details:', {
-                    message: enhancedError.message,
-                    stack: enhancedError.stack,
-                    name: enhancedError.name
-                });
-                console.log('🔄 Falling back to standard method...');
+                // Enhanced match analysis failed, falling back to standard method
             }
         } else {
-            console.log('⚙️ Enhanced components not available:', {
-                matchAnalyzer: !!matchAnalyzer,
-                deadlockAPI: !!deadlockAPI
-            });
+            // Enhanced components not available
         }
         
         // Show error if enhanced method didn't succeed
@@ -107,13 +77,11 @@ async function handleFetchData() {
         }
 
     } catch (error) {
-        console.error('Error fetching data:', error);
         showError(`Failed to fetch data. ${error.message}. Displaying mock data as a fallback.`);
         
         // Try match analyzer with mock data first if available
         if (matchAnalyzer && MOCK_MATCH_DATA) {
             try {
-                console.log('🎯 Using match analyzer with mock data...');
                 
                 // Create enhanced mock data structure
                 const enhancedMockData = {
@@ -166,9 +134,7 @@ async function handleFetchData() {
                 };
                 
                 await matchAnalyzer.renderMatchAnalysis(enhancedMockData, enhancedMockData);
-                console.log('✅ Match analyzer with mock data completed');
             } catch (mockError) {
-                console.error('❌ Match analyzer with mock data failed:', mockError);
                 showError('Failed to display match data. Please refresh and try again.');
             }
         } else {

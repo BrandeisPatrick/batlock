@@ -773,3 +773,342 @@ section {
     flex-direction: column;
     gap: 1rem;
 }
+
+/* Player Historical Stats Grid Layout */
+.player-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+}
+
+@media (min-width: 1024px) {
+    .player-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .teams-grid .team-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    
+    .teams-grid .team-cards::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .teams-grid .team-cards::-webkit-scrollbar-track {
+        background: var(--secondary-bg);
+        border-radius: 3px;
+    }
+    
+    .teams-grid .team-cards::-webkit-scrollbar-thumb {
+        background: var(--accent-cyan);
+        border-radius: 3px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .player-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Enhanced table improvements */
+.game-stats-section table,
+.lane-economics-section table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.game-stats-section th,
+.game-stats-section td,
+.lane-economics-section th,
+.lane-economics-section td {
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+/* Better player name display */
+.hero-icon {
+    min-width: 32px;
+    min-height: 32px;
+}
+
+/* Improve stat value visibility */
+.stat-value-high {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.stat-value-medium {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.stat-value-low {
+    color: #ef4444;
+}
+
+/* Add alternating row colors for better readability */
+.game-stats-section tbody tr:nth-child(even),
+.lane-economics-section tbody tr:nth-child(even) {
+    background-color: rgba(75, 85, 99, 0.1);
+}
+
+/* Performance table column alignment */
+.performance-table th,
+.performance-table td,
+.game-stats-section th,
+.game-stats-section td {
+    text-align: center;
+    padding: 8px 12px;
+}
+
+.player-column { 
+    width: 25%; 
+    text-align: left !important;
+}
+
+.kda-column { 
+    width: 15%; 
+    text-align: center;
+}
+
+.damage-column { 
+    width: 15%; 
+    text-align: center;
+}
+
+.healing-column { 
+    width: 15%; 
+    text-align: center;
+}
+
+/* Numeric cell alignment */
+.numeric-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.player-name-cell {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+/* Lane Economics table improvements */
+.lane-economics-section th,
+.lane-economics-section td {
+    text-align: center;
+    padding: 8px 12px;
+}
+
+.lane-economics-section .player-column {
+    width: 30%;
+    text-align: left !important;
+}
+
+.networth-column,
+.lasthits-column,
+.denies-column {
+    width: 20%;
+    text-align: right;
+}
+
+/* Enhanced Performance Color Coding */
+.performance-excellent {
+    color: #10b981 !important;
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+    font-weight: 600;
+}
+
+.performance-good {
+    color: #22d3ee !important;
+    font-weight: 600;
+}
+
+.performance-average {
+    color: #f59e0b !important;
+    font-weight: 500;
+}
+
+.performance-poor {
+    color: #f97316 !important;
+}
+
+.performance-bad {
+    color: #ef4444 !important;
+    font-weight: 600;
+}
+
+/* Enhanced Tooltips */
+.stat-tooltip {
+    position: relative;
+    cursor: help;
+    display: inline-block;
+}
+
+.stat-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.95);
+    color: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+}
+
+.stat-tooltip:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(15, 23, 42, 0.95);
+    z-index: 1000;
+}
+
+/* Performance Indicators */
+.performance-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+.indicator-excellent {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.indicator-good {
+    background: rgba(34, 211, 238, 0.2);
+    color: #22d3ee;
+    border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.indicator-average {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.indicator-poor {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+    border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.indicator-bad {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Sparklines for Recent Form */
+.recent-form-sparkline {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    justify-content: center;
+}
+
+.form-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.form-dot.win {
+    background: #10b981;
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+}
+
+.form-dot.loss {
+    background: #ef4444;
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
+}
+
+.form-dot:hover {
+    transform: scale(1.3);
+}
+
+/* Enhanced stat displays */
+.enhanced-stat {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.enhanced-stat:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* Mini progress bars for stats comparison */
+.stat-progress {
+    width: 100%;
+    height: 3px;
+    background: rgba(75, 85, 99, 0.3);
+    border-radius: 1.5px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+
+.stat-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.6s ease;
+}
+
+.progress-excellent { background: linear-gradient(90deg, #10b981, #22d3ee); }
+.progress-good { background: linear-gradient(90deg, #22d3ee, #06b6d4); }
+.progress-average { background: linear-gradient(90deg, #f59e0b, #f97316); }
+.progress-poor { background: linear-gradient(90deg, #f97316, #ef4444); }
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .game-stats-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .lane-economics-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .game-stats-section table,
+    .lane-economics-section table {
+        min-width: 800px;
+    }
+    
+    .player-column { width: 35%; }
+    .kda-column, .damage-column, .healing-column { width: 18%; }
+    
+    .stat-tooltip:hover::after {
+        font-size: 0.65rem;
+        padding: 6px 8px;
+    }
+}

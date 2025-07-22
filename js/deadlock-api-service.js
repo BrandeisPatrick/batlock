@@ -22,13 +22,11 @@ class DeadlockAPIService {
      * Generic fetch wrapper with error handling and caching
      */
     async fetchWithCache(url, options = {}) {
-        console.log('🌐 API: Making request to:', url);
         
         const cacheKey = url;
         const cached = this.cache.get(cacheKey);
         
         if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
-            console.log('💾 API: Using cached data for:', url);
             return cached.data;
         }
 
@@ -58,7 +56,6 @@ class DeadlockAPIService {
             }
 
             const data = await response.json();
-            console.log('✅ API: Successfully received data from:', url, 'Size:', JSON.stringify(data).length, 'chars');
             
             // Cache successful responses
             this.cache.set(cacheKey, {
@@ -68,7 +65,6 @@ class DeadlockAPIService {
 
             return data;
         } catch (error) {
-            console.error('❌ API: Error fetching from:', url, 'Error:', error.message);
             throw error;
         }
     }
@@ -156,26 +152,27 @@ class DeadlockAPIService {
         if (data && data.match_info && data.match_info.players) {
             // Extract player IDs and basic info
             const players = data.match_info.players.map((player, index) => {
-                // Find the player's final stats from their stats array
+                // More robust stats extraction
                 const finalStats = player.stats && player.stats.length > 0 
                     ? player.stats[player.stats.length - 1] 
-                    : {};
+                    : player; // Fallback to player object itself if no stats array
                 
                 const playerData = {
                     accountId: player.account_id,
                     playerSlot: player.player_slot,
                     team: player.player_slot <= 6 ? 0 : 1, // Fix: API uses 1-12, so slots 1-6 = team 0, slots 7-12 = team 1
                     heroId: player.hero_id,
-                    kills: finalStats.kills || 0,
-                    deaths: finalStats.deaths || 0,
-                    assists: finalStats.assists || 0,
-                    netWorth: finalStats.net_worth || 0,
-                    lastHits: finalStats.creep_kills || 0,
-                    denies: finalStats.denies || 0,
-                    heroLevel: finalStats.level || 0
+                    kills: finalStats.kills || player.kills || 0,
+                    deaths: finalStats.deaths || player.deaths || 0,
+                    assists: finalStats.assists || player.assists || 0,
+                    netWorth: finalStats.net_worth || player.net_worth || 0,
+                    lastHits: finalStats.creep_kills || player.last_hits || 0,
+                    denies: finalStats.denies || player.denies || 0,
+                    heroLevel: finalStats.level || player.level || 0,
+                    // Add player damage and healing
+                    playerDamage: finalStats.player_damage || player.player_damage || 0,
+                    healingOutput: finalStats.healing_output || player.healing_output || 0
                 };
-                
-                
                 return playerData;
             });
             
@@ -207,11 +204,9 @@ class DeadlockAPIService {
      * @returns {Promise<Object>} All players' statistics from the match
      */
     async getAllPlayersFromMatch(matchId, matchHistoryLimit = 50) {
-        
         try {
             // First get match metadata to get all player IDs
             const matchData = await this.getMatchMetadata(matchId);
-            
             
             if (!matchData || !matchData.playersSummary) {
                 throw new Error('Could not retrieve match data');
@@ -220,7 +215,6 @@ class DeadlockAPIService {
             const players = matchData.playersSummary;
             
             const allPlayerStats = [];
-            
             
             // Fetch stats for each player with minimal delay
             for (let i = 0; i < players.length; i++) {
@@ -233,7 +227,6 @@ class DeadlockAPIService {
                         0, 
                         true // Use only_stored_history to bypass rate limits
                     );
-                    
                     
                     allPlayerStats.push({
                         ...player,
@@ -260,7 +253,6 @@ class DeadlockAPIService {
                     team1: allPlayerStats.filter(p => p.team === 1)
                 }
             };
-            
             
             return result;
         } catch (error) {
