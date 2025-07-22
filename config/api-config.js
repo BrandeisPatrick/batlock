@@ -58,7 +58,7 @@ const API_CONFIG = {
     // Legacy API (for backward compatibility)
     legacyAPI: {
         baseUrl: 'https://api.deadlock-api.com/v1',
-        steamAPIKey: 'F453D25B12877462957236A9D6D8CCD4',
+        steamAPIKey: null, // Steam API key should be configured in Vercel environment variables
         corsProxy: 'https://api.allorigins.win/raw?url='
     },
     

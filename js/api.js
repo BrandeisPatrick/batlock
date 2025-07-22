@@ -47,26 +47,25 @@ const MOCK_PLAYER_MATCHES = {
     'player12': Array.from({ length: 38 }, () => ({ won: Math.random() > 0.48 })),
 };
 
-// Steam Profile Name Fetching (using CORS proxy)
+// Steam Profile Name Fetching (using Vercel serverless function)
 async function getSteamProfileName(steamId) {
-    if (!API_CONFIG.legacyAPI.steamAPIKey) {
-        return null; // Return null if no Steam API key is provided
-    }
-    
     try {
         // Convert 32-bit account ID to 64-bit Steam ID
         const steamId64 = (BigInt(steamId) + BigInt('76561197960265728')).toString();
         
-        // Use CORS proxy to bypass browser restrictions
-        const corsProxy = 'https://corsproxy.io/';
-        const steamApiUrl = encodeURIComponent(
-            `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_CONFIG.legacyAPI.steamAPIKey}&steamids=${steamId64}`
-        );
-        
-        const response = await fetch(`${corsProxy}${steamApiUrl}`);
+        // Use Vercel serverless function instead of CORS proxy
+        const response = await fetch(`/api/steam-user?steamids=${steamId64}`);
         
         if (!response.ok) {
-            throw new Error(`Steam API error: ${response.status}`);
+            // If it's a 500 error, it might be API key not configured
+            if (response.status === 500) {
+                const errorData = await response.json().catch(() => ({}));
+                if (errorData.error?.includes('API key not configured')) {
+                    // Steam API key not configured in Vercel, return null silently
+                    return null;
+                }
+            }
+            throw new Error(`API error: ${response.status}`);
         }
         
         const data = await response.json();
@@ -77,7 +76,7 @@ async function getSteamProfileName(steamId) {
         
         return null;
     } catch (error) {
-        console.warn(`Failed to fetch Steam profile for ${steamId}:`, error.message);
+        // Fallback silently for better UX - will show account ID instead
         return null;
     }
 }
