@@ -53,7 +53,8 @@
       "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --tree-filter 'if test -f config/api-config.js; then sed -i \"\"s/F453D25B12877462957236A9D6D8CCD4/REMOVED_FOR_SECURITY/g\"\" config/api-config.js; fi' -- --all)",
       "Bash(vercel:*)",
       "Bash(grep:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

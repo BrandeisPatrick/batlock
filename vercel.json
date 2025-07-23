@@ -1,4 +1,7 @@
 {
+  "build": {
+    "outputDirectory": "public"
+  },
   "functions": {
     "api/steam-user.js": {
       "maxDuration": 10
