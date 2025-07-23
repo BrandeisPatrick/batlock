@@ -61,76 +61,101 @@ class PlayerSearch {
     async searchPlayer(query) {
         try {
             const parsed = this.parsePlayerInput(query);
-            
-            // Check cache first
             const cacheKey = `${parsed.type}:${parsed.value}`;
+
             if (this.playerCache.has(cacheKey)) {
                 const cached = this.playerCache.get(cacheKey);
                 if (Date.now() - cached.timestamp < this.CACHE_TTL) {
                     return cached.data;
                 }
             }
-            
+
             let steamResponse;
-            
-            if (parsed.type === 'vanity') {
-                // Resolve vanity URL to Steam ID and get Deadlock account ID
-                const response = await fetch(`/api/steam-user?vanityurl=${encodeURIComponent(parsed.value)}`);
-                
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error(`Steam user "${parsed.value}" not found. Please check the username and try again.`);
-                    }
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Failed to search for player (${response.status})`);
-                }
-                
-                steamResponse = await response.json();
-                
-                if (!steamResponse.resolved) {
-                    throw new Error(`Steam user "${parsed.value}" not found. The vanity URL may not exist or be incorrect.`);
-                }
-                
-                // Get full player profile
-                const profileResponse = await fetch(`/api/steam-user?steamids=${steamResponse.steamid}`);
-                if (profileResponse.ok) {
-                    const profileData = await profileResponse.json();
-                    if (profileData.response && profileData.response.players && profileData.response.players.length > 0) {
-                        steamResponse.playerData = profileData.response.players[0];
+
+            // If it's a direct Steam ID, use it directly
+            if (parsed.type === 'steamid') {
+                const response = await fetch(`/api/steam-user?steamids=${encodeURIComponent(parsed.value)}`);
+                if (response.ok) {
+                    steamResponse = await response.json();
+                    if (steamResponse.response && steamResponse.response.players && steamResponse.response.players.length > 0) {
+                        steamResponse.playerData = steamResponse.response.players[0];
+                        steamResponse.resolved = true;
+                        steamResponse.steamid = parsed.value;
+                        steamResponse.deadlockAccountId = steamResponse.response.players[0].deadlockAccountId;
                     }
                 }
-                
-            } else if (parsed.type === 'steamid') {
-                // Direct Steam ID lookup
-                const response = await fetch(`/api/steam-user?steamids=${parsed.value}`);
-                
-                if (!response.ok) {
-                    throw new Error('Failed to fetch Steam profile');
-                }
-                
-                const data = await response.json();
-                
-                if (!data.response || !data.response.players || data.response.players.length === 0) {
-                    throw new Error('Steam profile not found');
-                }
-                
-                const player = data.response.players[0];
-                steamResponse = {
-                    resolved: true,
-                    steamid: player.steamid,
-                    deadlockAccountId: player.deadlockAccountId,
-                    playerData: player
-                };
             }
-            
-            // Cache the result
+            // For potential vanity URLs or display names
+            else if (parsed.type === 'vanity') {
+                // If the input contains spaces, it's likely a display name, not a vanity URL
+                // Steam vanity URLs cannot contain spaces, so go straight to player name search
+                if (parsed.value.includes(' ')) {
+                    console.log('Input contains spaces, treating as display name and using player_name search');
+                    const url = `/api/steam-user?player_name=${encodeURIComponent(query)}`;
+                    console.log('Fetching from URL:', url);
+                    const response = await fetch(url);
+                    console.log('Response status:', response.status);
+                    console.log('Response ok:', response.ok);
+                    
+                    if (response.ok) {
+                        steamResponse = await response.json();
+                        console.log('Response data:', steamResponse);
+                    } else {
+                        const errorText = await response.text();
+                        console.log('Error response text:', errorText);
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            console.log('Error response JSON:', errorJson);
+                        } catch (e) {
+                            console.log('Could not parse error response as JSON');
+                        }
+                    }
+                } else {
+                    // Try vanity URL first for inputs without spaces
+                    try {
+                        const response = await fetch(`/api/steam-user?vanityurl=${encodeURIComponent(parsed.value)}`);
+                        if (response.ok) {
+                            steamResponse = await response.json();
+                            if (steamResponse.resolved) {
+                                const profileResponse = await fetch(`/api/steam-user?steamids=${steamResponse.steamid}`);
+                                if (profileResponse.ok) {
+                                    const profileData = await profileResponse.json();
+                                    if (profileData.response && profileData.response.players && profileData.response.players.length > 0) {
+                                        steamResponse.playerData = profileData.response.players[0];
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Vanity URL lookup failed:', error);
+                    }
+
+                    // If vanity lookup fails, try as display name
+                    if (!steamResponse || !steamResponse.resolved) {
+                        try {
+                            const response = await fetch(`/api/steam-user?player_name=${encodeURIComponent(query)}`);
+                            if (response.ok) {
+                                steamResponse = await response.json();
+                            }
+                        } catch (error) {
+                            console.warn('Player name search failed:', error);
+                        }
+                    }
+                }
+            }
+
+            // If all searches failed, throw error
+            if (!steamResponse || (!steamResponse.resolved && (!steamResponse.response || !steamResponse.response.players || steamResponse.response.players.length === 0))) {
+                throw new Error(`Steam user "${query}" not found. Please check the username and try again.`);
+            }
+
             this.playerCache.set(cacheKey, {
                 data: steamResponse,
                 timestamp: Date.now()
             });
-            
+
             return steamResponse;
-            
+
         } catch (error) {
             console.error('Player search error:', error);
             throw error;

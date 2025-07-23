@@ -3,7 +3,7 @@
     "outputDirectory": "public"
   },
   "functions": {
-    "api/steam-user.js": {
+    "api/steam-user.mjs": {
       "maxDuration": 10
     }
   },

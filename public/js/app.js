@@ -110,9 +110,11 @@ if (playerSearchButton && playerSearchInput) {
 }
 
 // Main Logic
-async function handleFetchData(providedMatchId = null) {
+async function handleFetchData(eventOrMatchId) {
     console.log('handleFetchData called.');
+    const providedMatchId = (typeof eventOrMatchId === 'string' || typeof eventOrMatchId === 'number') ? eventOrMatchId : null;
     let matchId = providedMatchId || matchIdInput.value.trim();
+
     if (!matchId) {
         matchId = '38069822'; // Use default match ID when input is empty
         matchIdInput.value = matchId; // Update the input field to show the default value
