@@ -220,14 +220,7 @@ class MatchAnalyzer {
                                     ${player0.heroId && player0HeroImageUrl ? `<img src="${player0HeroImageUrl}" alt="${this.getHeroName(player0.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <div class="flex flex-col">
                                     <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
-                                    ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
-                                        `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
-                                        </a>` : ''
-                                    }
-                                </div>
                                     ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
                                             <i class="fab fa-steam mr-1"></i>Steam
@@ -256,14 +249,7 @@ class MatchAnalyzer {
                                     ${player1.heroId && player1HeroImageUrl ? `<img src="${player1HeroImageUrl}" alt="${this.getHeroName(player1.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <div class="flex flex-col">
                                     <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
-                                    ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
-                                        `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
-                                        </a>` : ''
-                                    }
-                                </div>
                                     ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
                                             <i class="fab fa-steam mr-1"></i>Steam
@@ -603,8 +589,11 @@ class MatchAnalyzer {
         if (player.displayName && player.displayName !== `ID: ${player.accountId}`) {
             return player.displayName;
         }
-        // Return just the account ID without prefix
-        return `Player ${player.accountId}`;
+        if (player.playerName) {
+            return player.playerName;
+        }
+        // Return just the account ID as a fallback
+        return player.accountId ? player.accountId.toString() : 'Unknown';
     }
 
     /**
