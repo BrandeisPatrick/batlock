@@ -159,38 +159,47 @@ class PlayerSearch {
             const accountId = BigInt(steamId64) - BigInt('76561197960265728');
             console.log(`Converted to account ID: ${accountId}`);
             
-            // Use the existing DeadlockAPIService method
-            const matchHistory = await this.deadlockAPI.getPlayerMatchHistory(accountId.toString(), limit, 0, true);
+            // Call the Deadlock API directly since we know the correct endpoint format
+            const matchHistoryUrl = `https://api.deadlock-api.com/v1/players/${accountId}/match-history`;
+            console.log('Fetching from:', matchHistoryUrl);
             
-            if (!matchHistory || !matchHistory.matches) {
-                throw new Error('No match history found');
+            const response = await fetch(matchHistoryUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch match history: ${response.status} ${response.statusText}`);
             }
             
-            // Process matches with the same format as before
-            const validMatches = matchHistory.matches
-                .filter(match => match.matchId && match.matchId !== '0')
+            const matchData = await response.json();
+            console.log('Match history response:', matchData);
+            
+            if (!Array.isArray(matchData)) {
+                throw new Error('Invalid match history response format');
+            }
+            
+            // Process matches with the correct API response format
+            const validMatches = matchData
+                .filter(match => match.match_id && match.match_id !== '0')
                 .slice(0, limit) // Get top matches based on limit
                 .map(match => ({
-                    matchId: match.matchId,
-                    heroId: match.heroId,
-                    heroName: getHeroName(match.heroId),
-                    heroColor: getHeroColor(match.heroId),
-                    kills: match.kills || 0,
-                    deaths: match.deaths || 0,
-                    assists: match.assists || 0,
-                    result: match.result || 'unknown', // 'win', 'loss', or 'unknown'
-                    startTime: match.startTime,
-                    duration: match.duration,
-                    playerDamage: match.playerDamage || 0,
-                    netWorth: match.netWorth || 0,
-                    lastHits: match.lastHits || 0
+                    matchId: match.match_id,
+                    heroId: match.hero_id,
+                    heroName: getHeroName(match.hero_id),
+                    heroColor: getHeroColor(match.hero_id),
+                    kills: match.player_kills || 0,
+                    deaths: match.player_deaths || 0,
+                    assists: match.player_assists || 0,
+                    result: match.match_result === 1 ? 'win' : 'loss',
+                    startTime: new Date(match.start_time * 1000).toISOString(),
+                    duration: match.match_duration_s || 0,
+                    playerDamage: 0, // Not available in this endpoint
+                    netWorth: match.net_worth || 0,
+                    lastHits: match.last_hits || 0
                 }))
                 .sort((a, b) => new Date(b.startTime) - new Date(a.startTime)); // Sort by most recent
             
             const result = {
                 matches: validMatches,
-                totalMatches: matchHistory.totalMatches || 0,
-                statistics: matchHistory.statistics || this.calculateBasicStats(validMatches)
+                totalMatches: matchData.length,
+                statistics: this.calculateBasicStats(validMatches)
             };
             
             // Cache the result
