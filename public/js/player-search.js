@@ -148,9 +148,17 @@ class PlayerSearch {
             if (this.matchCache.has(cacheKey)) {
                 const cached = this.matchCache.get(cacheKey);
                 if (Date.now() - cached.timestamp < this.CACHE_TTL) {
+                    console.log('Returning cached match data for:', steamId64);
+                    console.log('Cached data preview:', {
+                        matchCount: cached.data.matches?.length || 0,
+                        totalMatches: cached.data.totalMatches,
+                        timestamp: new Date(cached.timestamp).toISOString()
+                    });
                     return cached.data;
                 }
             }
+            
+            console.log('No valid cache found, making fresh API call');
             
             console.log(`Fetching recent matches for SteamID64: ${steamId64}`);
             
@@ -472,6 +480,15 @@ class PlayerSearch {
     clearCache() {
         this.playerCache.clear();
         this.matchCache.clear();
+        console.log('All caches cleared');
+    }
+    
+    /**
+     * Clear just match cache (for debugging)
+     */
+    clearMatchCache() {
+        this.matchCache.clear();
+        console.log('Match cache cleared');
     }
 }
 
