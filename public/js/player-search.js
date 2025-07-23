@@ -315,8 +315,9 @@ class PlayerSearch {
     /**
      * Create HTML for a match tab
      */
-    createMatchTab(matchData, index, isActive = false) {
-        const heroImageUrl = `/downloads/hero_thumbnails/hero_${matchData.heroName?.toLowerCase() || 'unknown'}.png`;
+    async createMatchTab(matchData, index, isActive = false) {
+        // Get hero image from API instead of local files
+        const heroImageUrl = await this.deadlockAPI.getHeroThumbnailUrl(matchData.heroId);
         const kda = `${matchData.kills}/${matchData.deaths}/${matchData.assists}`;
         const resultClass = matchData.result === 'win' ? 'win-indicator' : 'loss-indicator';
         const resultIcon = matchData.result === 'win' ? '🏆' : '💀';
@@ -331,11 +332,17 @@ class PlayerSearch {
                 <div class="match-card-header">
                     <div class="hero-section">
                         <div class="hero-avatar" style="border-color: ${matchData.heroColor};">
-                            <img src="${heroImageUrl}" alt="${matchData.heroName}" 
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="hero-fallback" style="display: none;">
-                                <span>${matchData.heroName?.substring(0, 2) || '?'}</span>
-                            </div>
+                            ${heroImageUrl ? `
+                                <img src="${heroImageUrl}" alt="${matchData.heroName}" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="hero-fallback" style="display: none;">
+                                    <span>${matchData.heroName?.substring(0, 2) || '?'}</span>
+                                </div>
+                            ` : `
+                                <div class="hero-fallback" style="display: flex;">
+                                    <span>${matchData.heroName?.substring(0, 2) || '?'}</span>
+                                </div>
+                            `}
                         </div>
                         <div class="hero-info">
                             <h4 class="hero-name">${matchData.heroName || 'Unknown'}</h4>
@@ -435,12 +442,11 @@ class PlayerSearch {
         // Create match cards
         if (matchHistory.matches && matchHistory.matches.length > 0) {
             console.log('Creating match cards for', matchHistory.matches.length, 'matches');
-            const cardsHTML = matchHistory.matches
-                .map((match, index) => {
-                    console.log(`Creating card ${index + 1}:`, match);
-                    return this.createMatchTab(match, index, false); // No card active by default
-                })
-                .join('');
+            const cardPromises = matchHistory.matches.map(async (match, index) => {
+                console.log(`Creating card ${index + 1}:`, match);
+                return await this.createMatchTab(match, index, false); // No card active by default
+            });
+            const cardsHTML = (await Promise.all(cardPromises)).join('');
             
             console.log('Generated cards HTML length:', cardsHTML.length);
             console.log('Cards HTML preview:', cardsHTML.substring(0, 200));

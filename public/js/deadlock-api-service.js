@@ -426,15 +426,34 @@ class DeadlockAPIService {
             return null;
         }
 
-        const localPath = `/downloads/hero_thumbnails/${heroClassName}.png`;
-        // In a browser environment, we can't directly check for file existence on the file system.
-        // We'll assume if the file was downloaded, it's available at this path.
-        // For a robust solution, you'd typically have a backend endpoint to verify or serve these.
-        // For local development, this path should work if the server serves the 'downloads' directory.
-        
-        // For now, we'll just return the local path first, and if that fails (e.g., 404), the browser will handle it.
-        // If you need a more robust check, you'd need a server-side component.
-        return localPath;
+        try {
+            const allHeroes = await this.getAllHeroes();
+            const hero = allHeroes.find(h => h.class_name.toLowerCase() === heroClassName.toLowerCase());
+            
+            if (hero && hero.images) {
+                // Prefer smaller images for thumbnails (icon, thumbnail, then larger images)
+                const preferredImages = [
+                    hero.images.icon,
+                    hero.images.thumbnail,
+                    hero.images.portrait,
+                    hero.images.icon_hero_card,
+                    hero.images.card
+                ];
+                
+                for (const imgUrl of preferredImages) {
+                    if (imgUrl) {
+                        console.log(`Using API hero image for ${heroClassName}:`, imgUrl);
+                        return imgUrl;
+                    }
+                }
+            }
+            
+            console.warn(`No images available for hero ${heroClassName} (ID: ${heroId})`);
+            return null;
+        } catch (error) {
+            console.error(`Failed to fetch hero thumbnail for ${heroClassName}:`, error);
+            return null;
+        }
     }
 
     /**
