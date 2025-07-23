@@ -438,7 +438,7 @@ class PlayerSearch {
             const cardsHTML = matchHistory.matches
                 .map((match, index) => {
                     console.log(`Creating card ${index + 1}:`, match);
-                    return this.createMatchTab(match, index, index === 0);
+                    return this.createMatchTab(match, index, false); // No card active by default
                 })
                 .join('');
             
@@ -458,10 +458,31 @@ class PlayerSearch {
                     // Add active class to clicked card
                     card.classList.add('active');
                     
-                    // Get match ID and trigger match analysis
+                    // Store selected match for potential analysis
                     const matchId = card.dataset.matchId;
-                    if (matchId && window.handleMatchFromTab) {
-                        window.handleMatchFromTab(matchId);
+                    console.log('Match card selected:', matchId);
+                    
+                    // Update action button text to show it's ready for analysis
+                    const actionButton = card.querySelector('.match-card-action .action-text');
+                    if (actionButton) {
+                        actionButton.textContent = 'Analyze Match';
+                    }
+                    
+                    // Double-click to analyze immediately
+                    let clickTimeout = card.dataset.clickTimeout;
+                    if (clickTimeout) {
+                        clearTimeout(clickTimeout);
+                        card.dataset.clickTimeout = '';
+                        // Double click - analyze immediately
+                        if (matchId && window.handleMatchFromTab) {
+                            console.log('Double-click detected - analyzing match:', matchId);
+                            window.handleMatchFromTab(matchId);
+                        }
+                    } else {
+                        // Single click - just select
+                        card.dataset.clickTimeout = setTimeout(() => {
+                            card.dataset.clickTimeout = '';
+                        }, 300);
                     }
                 });
             });

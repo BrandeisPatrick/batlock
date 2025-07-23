@@ -234,14 +234,8 @@ async function handlePlayerSearch() {
         // Render the results
         playerSearch.renderPlayerSearchResults(playerData, matchHistory);
         
-        // Auto-select first match if available
-        if (matchHistory.matches && matchHistory.matches.length > 0) {
-            console.log('Auto-selecting first match:', matchHistory.matches[0].matchId);
-            // Wait a bit for the tabs to render, then select first match
-            setTimeout(() => {
-                handleMatchFromTab(matchHistory.matches[0].matchId);
-            }, 100);
-        }
+        // Store matches for later use but don't auto-select
+        console.log('Player search completed. Match cards should now be visible for selection.');
         
     } catch (error) {
         console.error('Player search error:', error);
