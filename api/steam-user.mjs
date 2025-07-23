@@ -3,6 +3,10 @@
  * Bypasses CORS restrictions and keeps API key secure
  */
 export default async function handler(req, res) {
+  console.log('=== API FUNCTION CALLED ===');
+  console.log('Method:', req.method);
+  console.log('Query params:', req.query);
+  
   // Enable CORS for all origins (adjust as needed)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -20,6 +24,7 @@ export default async function handler(req, res) {
   }
   
   const { steamids, vanityurl, player_name } = req.query;
+  console.log('Extracted params - steamids:', steamids, 'vanityurl:', vanityurl, 'player_name:', player_name);
   let finalVanityUrl = vanityurl || player_name;
 
   console.log('Received request:', { steamids, vanityurl, player_name });
