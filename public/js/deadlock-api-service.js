@@ -145,6 +145,42 @@ class DeadlockAPIService {
     }
 
     /**
+     * Fetch Steam profile names for players
+     */
+    async fetchSteamNames(players) {
+        const playersWithNames = [];
+        
+        for (const player of players) {
+            const playerCopy = { ...player };
+            
+            try {
+                // Convert 32-bit account ID to 64-bit Steam ID
+                const steamId64 = (BigInt(player.accountId) + BigInt('76561197960265728')).toString();
+                
+                // Use Vercel serverless function
+                const response = await fetch(`/api/steam-user?steamids=${steamId64}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.response && data.response.players && data.response.players.length > 0) {
+                        const steamPlayer = data.response.players[0];
+                        playerCopy.displayName = steamPlayer.personaname;
+                        playerCopy.steamName = steamPlayer.personaname;
+                        console.log(`Fetched Steam name for ${player.accountId}: ${steamPlayer.personaname}`);
+                    }
+                }
+            } catch (error) {
+                console.log(`Could not fetch Steam name for ${player.accountId}:`, error);
+            }
+            
+            playersWithNames.push(playerCopy);
+        }
+        
+        return playersWithNames;
+    }
+
+    /**
      * Get match metadata including all player information
      * @param {string} matchId - The match ID
      * @returns {Promise<Object>} Match metadata with player details
@@ -175,12 +211,18 @@ class DeadlockAPIService {
                     heroLevel: finalStats.level || player.level || 0,
                     // Add player damage and healing
                     playerDamage: finalStats.player_damage || player.player_damage || 0,
-                    healingOutput: finalStats.healing_output || player.healing_output || 0
+                    healingOutput: finalStats.healing_output || player.healing_output || 0,
+                    // Add player name if available
+                    playerName: player.player_name || player.name || null
                 };
                 return playerData;
             });
             
             data.playersSummary = players;
+            
+            // Fetch Steam names for all players
+            console.log('Fetching Steam names for players...');
+            data.playersSummary = await this.fetchSteamNames(players);
             
         }
         

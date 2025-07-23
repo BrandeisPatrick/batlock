@@ -586,25 +586,20 @@ class MatchAnalyzer {
      * Format player names consistently
      */
     formatPlayerName(player) {
-        // Debug logging
-        console.log('formatPlayerName called with:', player);
-        
         if (player.displayName && player.displayName !== `ID: ${player.accountId}`) {
             // Clean up any potential escape characters
-            const cleanName = player.displayName.replace(/\\/g, '').trim();
-            console.log('Using displayName:', cleanName);
-            return cleanName;
+            return player.displayName.replace(/\\/g, '').trim();
+        }
+        if (player.steamName) {
+            // Clean up any potential escape characters
+            return player.steamName.replace(/\\/g, '').trim();
         }
         if (player.playerName) {
             // Clean up any potential escape characters
-            const cleanName = player.playerName.replace(/\\/g, '').trim();
-            console.log('Using playerName:', cleanName);
-            return cleanName;
+            return player.playerName.replace(/\\/g, '').trim();
         }
         // Return just the account ID as a fallback
-        const fallback = player.accountId ? player.accountId.toString() : 'Unknown';
-        console.log('Using fallback:', fallback);
-        return fallback;
+        return player.accountId ? player.accountId.toString() : 'Unknown';
     }
 
     /**
