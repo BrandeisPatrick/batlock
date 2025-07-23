@@ -68,12 +68,19 @@ function switchSearchMode(mode) {
         playerSearchTab.classList.remove('active');
         matchSearchSection.classList.remove('hidden');
         playerSearchSection.classList.add('hidden');
+        // Hide player search results when switching to match mode
         playerSearchResults.classList.add('hidden');
+        console.log('Switched to match mode - player results hidden');
     } else {
         playerSearchTab.classList.add('active');
         matchSearchTab.classList.remove('active');
         playerSearchSection.classList.remove('hidden');
         matchSearchSection.classList.add('hidden');
+        // Hide match analysis results when switching to player mode
+        if (resultsDiv) {
+            resultsDiv.classList.add('hidden');
+        }
+        console.log('Switched to player mode - match results hidden');
     }
     
     // Clear results and errors when switching modes
@@ -265,11 +272,27 @@ async function handlePlayerSearch() {
 function handleMatchFromTab(matchId) {
     console.log('handleMatchFromTab called with:', matchId);
     
-    // Switch to match search mode to show results
+    // Clear any existing results first
+    if (resultsDiv) {
+        resultsDiv.classList.add('hidden');
+        resultsDiv.innerHTML = '';
+    }
+    
+    // Switch to match search mode (this hides player search results)
     switchSearchMode('match');
+    
+    // Set the match ID input to show what's being analyzed
+    if (matchIdInput) {
+        matchIdInput.value = matchId;
+    }
     
     // Call the existing match analysis function
     handleFetchData(matchId);
+    
+    // Add back button after results are loaded
+    setTimeout(() => {
+        addBackToPlayerSearchButton();
+    }, 1000);
     
     // Scroll to results after a brief delay
     setTimeout(() => {
@@ -277,6 +300,37 @@ function handleMatchFromTab(matchId) {
             resultsDiv.scrollIntoView({ behavior: 'smooth' });
         }
     }, 500);
+}
+
+// Add back to player search button
+function addBackToPlayerSearchButton() {
+    if (!resultsDiv || resultsDiv.classList.contains('hidden')) return;
+    
+    // Check if button already exists
+    if (resultsDiv.querySelector('.back-to-player-search')) return;
+    
+    // Create back button
+    const backButton = document.createElement('div');
+    backButton.className = 'back-to-player-search mb-6';
+    backButton.innerHTML = `
+        <button class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors border border-gray-600 hover:border-gray-500">
+            <i class="fas fa-arrow-left"></i>
+            Back to Player Search
+        </button>
+    `;
+    
+    // Add click handler
+    backButton.querySelector('button').addEventListener('click', () => {
+        switchSearchMode('player');
+        // Show player search results if they exist
+        if (playerSearchResults && playerSearchResults.innerHTML.trim() !== '') {
+            playerSearchResults.classList.remove('hidden');
+        }
+    });
+    
+    // Insert at the beginning of results
+    resultsDiv.insertBefore(backButton, resultsDiv.firstChild);
+    console.log('Added back to player search button');
 }
 
 // Make handleMatchFromTab available globally for the player-search module
