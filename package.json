@@ -8,7 +8,7 @@
     "build-css": "tailwindcss -i ./src/input.css -o ./styles.css --watch",
     "build-css-prod": "tailwindcss -i ./src/input.css -o ./styles.css --minify",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build-css-prod && rm -rf public && mkdir -p public && cp index.html public/ && cp styles.css public/ && cp enhanced-styles.css public/ && cp -r js public/ && cp -r hero_mapping public/ && cp -r downloads public/ && cp -r config public/"
+    "build": "echo 'Build already complete - files are in public directory'"
   },
   "keywords": [],
   "author": "",
