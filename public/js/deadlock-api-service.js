@@ -414,16 +414,15 @@ class DeadlockAPIService {
 
     /**
      * Get hero thumbnail URL with fallback strategy
-     * Since no hero images are currently available from any CDN,
-     * this returns null to force text-based hero display
+     * First tries API, then falls back to local hero thumbnails
      * @param {number} heroId - The hero ID
-     * @returns {Promise<string|null>} - null to show text fallback
+     * @returns {Promise<string|null>} - Image URL or null for text fallback
      */
     async getHeroThumbnailUrl(heroId) {
         const heroClassName = getHeroClassName(heroId);
         if (!heroClassName) {
             console.warn(`Unknown hero ID: ${heroId}`);
-            return null;
+            return this.getLocalHeroThumbnailUrl(heroId);
         }
 
         try {
@@ -448,12 +447,26 @@ class DeadlockAPIService {
                 }
             }
             
-            console.warn(`No images available for hero ${heroClassName} (ID: ${heroId})`);
-            return null;
+            console.warn(`No images available for hero ${heroClassName} (ID: ${heroId}), falling back to local thumbnail`);
+            return this.getLocalHeroThumbnailUrl(heroId);
         } catch (error) {
-            console.error(`Failed to fetch hero thumbnail for ${heroClassName}:`, error);
+            console.error(`Failed to fetch hero thumbnail for ${heroClassName}:`, error, ', falling back to local thumbnail');
+            return this.getLocalHeroThumbnailUrl(heroId);
+        }
+    }
+
+    /**
+     * Get local hero thumbnail URL by hero ID
+     * @param {number} heroId - The hero ID to get thumbnail for
+     * @returns {string|null} - Local thumbnail URL or null if not found
+     */
+    getLocalHeroThumbnailUrl(heroId) {
+        const heroClassName = getHeroClassName(heroId);
+        if (!heroClassName) {
             return null;
         }
+        
+        return `downloads/hero_thumbnails/${heroClassName}.png`;
     }
 
     /**
