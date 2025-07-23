@@ -327,30 +327,41 @@ class PlayerSearch {
         const timeAgo = this.getTimeAgo(matchDate);
         
         return `
-            <div class="match-tab ${activeClass}" data-match-id="${matchData.matchId}" data-index="${index}">
-                <div class="tab-hero-section">
-                    <div class="tab-hero-icon" style="border-color: ${matchData.heroColor};">
-                        <img src="${heroImageUrl}" alt="${matchData.heroName}" 
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="hero-fallback" style="display: none;">
-                            <span>${matchData.heroName?.substring(0, 2) || '?'}</span>
+            <div class="match-card ${activeClass}" data-match-id="${matchData.matchId}" data-index="${index}">
+                <div class="match-card-header">
+                    <div class="hero-section">
+                        <div class="hero-avatar" style="border-color: ${matchData.heroColor};">
+                            <img src="${heroImageUrl}" alt="${matchData.heroName}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="hero-fallback" style="display: none;">
+                                <span>${matchData.heroName?.substring(0, 2) || '?'}</span>
+                            </div>
+                        </div>
+                        <div class="hero-info">
+                            <h4 class="hero-name">${matchData.heroName || 'Unknown'}</h4>
+                            <p class="match-time">${timeAgo}</p>
                         </div>
                     </div>
-                    <div class="tab-match-info">
-                        <div class="tab-hero-name">${matchData.heroName || 'Unknown'}</div>
-                        <div class="tab-match-time">${timeAgo}</div>
+                    <div class="match-result ${resultClass}">
+                        <span class="result-icon">${resultIcon}</span>
+                        <span class="result-text">${matchData.result?.toUpperCase() || 'N/A'}</span>
                     </div>
                 </div>
                 
-                <div class="tab-stats-section">
-                    <div class="tab-kda">${kda}</div>
-                    <div class="tab-result ${resultClass}">
-                        ${resultIcon} ${matchData.result?.toUpperCase() || 'N/A'}
+                <div class="match-card-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">KDA</span>
+                        <span class="stat-value">${kda}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Match ID</span>
+                        <span class="stat-value">${matchData.matchId}</span>
                     </div>
                 </div>
                 
-                <div class="tab-click-indicator">
-                    <i class="fas fa-chevron-right"></i>
+                <div class="match-card-action">
+                    <span class="action-text">View Details</span>
+                    <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
         `;
@@ -429,17 +440,17 @@ class PlayerSearch {
             
             matchTabsWrapper.innerHTML = tabsHTML;
             
-            // Add click event listeners to tabs
-            const matchTabs = matchTabsWrapper.querySelectorAll('.match-tab');
-            matchTabs.forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    // Remove active class from all tabs
-                    matchTabs.forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
-                    tab.classList.add('active');
+            // Add click event listeners to cards
+            const matchCards = matchTabsWrapper.querySelectorAll('.match-card');
+            matchCards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Remove active class from all cards
+                    matchCards.forEach(c => c.classList.remove('active'));
+                    // Add active class to clicked card
+                    card.classList.add('active');
                     
                     // Get match ID and trigger match analysis
-                    const matchId = tab.dataset.matchId;
+                    const matchId = card.dataset.matchId;
                     if (matchId && window.handleMatchFromTab) {
                         window.handleMatchFromTab(matchId);
                     }
