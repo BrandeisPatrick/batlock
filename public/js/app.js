@@ -221,9 +221,10 @@ async function handlePlayerSearch() {
             throw new Error('Failed to resolve player data');
         }
         
-        // Fetch recent matches
-        console.log('Fetching recent matches for:', playerData.deadlockAccountId);
-        const matchHistory = await playerSearch.fetchPlayerRecentMatches(playerData.deadlockAccountId);
+        // Fetch recent matches using SteamID64
+        const steamId64 = playerData.steamId64 || playerData.steamid || playerData.deadlockAccountId;
+        console.log('Fetching recent matches for SteamID64:', steamId64);
+        const matchHistory = await playerSearch.fetchPlayerRecentMatches(steamId64);
         console.log('Match history:', matchHistory);
         
         // Store for later use

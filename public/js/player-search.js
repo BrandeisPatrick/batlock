@@ -26,37 +26,31 @@ class PlayerSearch {
         if (match) {
             const [, type, identifier] = match;
             if (type === 'id') {
-                // Vanity URL
+                // Vanity URL (e.g., steamcommunity.com/id/vanityName/)
                 return { type: 'vanity', value: identifier };
             } else if (type === 'profiles') {
-                // Steam ID 64
-                return { type: 'steamid', value: identifier };
+                // Direct SteamID64 (e.g., steamcommunity.com/profiles/76561198148166542/)
+                return { type: 'steamid64', value: identifier };
             }
         }
         
         // Check if it looks like a Steam ID 64 (17 digits starting with 7656119)
         if (/^7656119\d{10}$/.test(trimmed)) {
-            return { type: 'steamid', value: trimmed };
+            return { type: 'steamid64', value: trimmed };
         }
         
         // Process username/vanity URL
         let processedValue = trimmed;
         
-        // Steam vanity URLs typically don't have spaces, so suggest removing them
-        if (processedValue.includes(' ')) {
-            // Try both with and without spaces, but warn the user
-            console.warn(`Username "${processedValue}" contains spaces. Steam vanity URLs typically don't contain spaces.`);
-        }
-        
         // Remove common URL prefixes if user pasted them accidentally
         processedValue = processedValue.replace(/^https?:\/\/(www\.)?steamcommunity\.com\/(id\/)?/i, '');
         
-        // Otherwise, treat as vanity URL
+        // Otherwise, treat as vanity URL that needs resolution
         return { type: 'vanity', value: processedValue };
     }
 
     /**
-     * Search for a player using Steam name or profile URL
+     * Search for a player using Steam profile URL or vanity name
      */
     async searchPlayer(query) {
         try {
@@ -71,83 +65,63 @@ class PlayerSearch {
             }
 
             let steamResponse;
+            let steamId64 = null;
 
-            // If it's a direct Steam ID, use it directly
-            if (parsed.type === 'steamid') {
-                const response = await fetch(`/api/steam-user?steamids=${encodeURIComponent(parsed.value)}`);
+            // If we have a direct SteamID64, use it directly
+            if (parsed.type === 'steamid64') {
+                steamId64 = parsed.value;
+                console.log('Using direct SteamID64:', steamId64);
+                
+                // Get Steam profile info
+                const response = await fetch(`/api/steam-user?steamids=${encodeURIComponent(steamId64)}`);
                 if (response.ok) {
                     steamResponse = await response.json();
                     if (steamResponse.response && steamResponse.response.players && steamResponse.response.players.length > 0) {
                         steamResponse.playerData = steamResponse.response.players[0];
                         steamResponse.resolved = true;
-                        steamResponse.steamid = parsed.value;
-                        steamResponse.deadlockAccountId = steamResponse.response.players[0].deadlockAccountId;
+                        steamResponse.steamid = steamId64;
+                        steamResponse.deadlockAccountId = steamId64; // Use SteamID64 for Deadlock API calls
                     }
                 }
             }
-            // For potential vanity URLs or display names
+            // For vanity URLs, resolve to SteamID64 first
             else if (parsed.type === 'vanity') {
-                // If the input contains spaces, it's likely a display name, not a vanity URL
-                // Steam vanity URLs cannot contain spaces, so go straight to player name search
-                if (parsed.value.includes(' ')) {
-                    console.log('Input contains spaces, treating as display name and using player_name search');
-                    const url = `/api/steam-user?player_name=${encodeURIComponent(query)}`;
-                    console.log('Fetching from URL:', url);
-                    const response = await fetch(url);
-                    console.log('Response status:', response.status);
-                    console.log('Response ok:', response.ok);
-                    
-                    if (response.ok) {
-                        steamResponse = await response.json();
-                        console.log('Response data:', steamResponse);
-                    } else {
-                        const errorText = await response.text();
-                        console.log('Error response text:', errorText);
-                        try {
-                            const errorJson = JSON.parse(errorText);
-                            console.log('Error response JSON:', errorJson);
-                        } catch (e) {
-                            console.log('Could not parse error response as JSON');
-                        }
-                    }
-                } else {
-                    // Try vanity URL first for inputs without spaces
-                    try {
-                        const response = await fetch(`/api/steam-user?vanityurl=${encodeURIComponent(parsed.value)}`);
-                        if (response.ok) {
-                            steamResponse = await response.json();
-                            if (steamResponse.resolved) {
-                                const profileResponse = await fetch(`/api/steam-user?steamids=${steamResponse.steamid}`);
-                                if (profileResponse.ok) {
-                                    const profileData = await profileResponse.json();
-                                    if (profileData.response && profileData.response.players && profileData.response.players.length > 0) {
-                                        steamResponse.playerData = profileData.response.players[0];
-                                    }
+                console.log('Resolving vanity URL:', parsed.value);
+                
+                try {
+                    // Step 1: Resolve vanity URL to SteamID64
+                    const vanityResponse = await fetch(`/api/steam-user?vanityurl=${encodeURIComponent(parsed.value)}`);
+                    if (vanityResponse.ok) {
+                        const vanityData = await vanityResponse.json();
+                        if (vanityData.resolved && vanityData.steamid) {
+                            steamId64 = vanityData.steamid;
+                            console.log('Resolved vanity URL to SteamID64:', steamId64);
+                            
+                            // Step 2: Get Steam profile info
+                            const profileResponse = await fetch(`/api/steam-user?steamids=${steamId64}`);
+                            if (profileResponse.ok) {
+                                steamResponse = await profileResponse.json();
+                                if (steamResponse.response && steamResponse.response.players && steamResponse.response.players.length > 0) {
+                                    steamResponse.playerData = steamResponse.response.players[0];
+                                    steamResponse.resolved = true;
+                                    steamResponse.steamid = steamId64;
+                                    steamResponse.deadlockAccountId = steamId64; // Use SteamID64 for Deadlock API calls
                                 }
                             }
                         }
-                    } catch (error) {
-                        console.warn('Vanity URL lookup failed:', error);
                     }
-
-                    // If vanity lookup fails, try as display name
-                    if (!steamResponse || !steamResponse.resolved) {
-                        try {
-                            const response = await fetch(`/api/steam-user?player_name=${encodeURIComponent(query)}`);
-                            if (response.ok) {
-                                steamResponse = await response.json();
-                            }
-                        } catch (error) {
-                            console.warn('Player name search failed:', error);
-                        }
-                    }
+                } catch (error) {
+                    console.warn('Vanity URL resolution failed:', error);
                 }
             }
 
             // If all searches failed, throw error
-            if (!steamResponse || (!steamResponse.resolved && (!steamResponse.response || !steamResponse.response.players || steamResponse.response.players.length === 0))) {
-                throw new Error(`Steam user "${query}" not found. Please check the username and try again.`);
+            if (!steamResponse || !steamResponse.resolved || !steamId64) {
+                throw new Error(`Steam profile "${query}" not found. Please check the profile URL or vanity name and try again.`);
             }
+
+            // Store the resolved SteamID64 for future use
+            steamResponse.steamId64 = steamId64;
 
             this.playerCache.set(cacheKey, {
                 data: steamResponse,
@@ -163,12 +137,14 @@ class PlayerSearch {
     }
 
     /**
-     * Fetch recent matches for a player
+     * Fetch recent matches for a player using SteamID64
+     * Since the Deadlock API doesn't have direct player match endpoints,
+     * we'll use the existing DeadlockAPIService method which uses match history
      */
-    async fetchPlayerRecentMatches(accountId, limit = 20) {
+    async fetchPlayerRecentMatches(steamId64, limit = 5) {
         try {
             // Check cache first
-            const cacheKey = `matches:${accountId}`;
+            const cacheKey = `matches:${steamId64}`;
             if (this.matchCache.has(cacheKey)) {
                 const cached = this.matchCache.get(cacheKey);
                 if (Date.now() - cached.timestamp < this.CACHE_TTL) {
@@ -176,17 +152,24 @@ class PlayerSearch {
                 }
             }
             
-            // Fetch match history from Deadlock API
-            const matchHistory = await this.deadlockAPI.getPlayerMatchHistory(accountId, limit, 0, true);
+            console.log(`Fetching recent matches for SteamID64: ${steamId64}`);
+            
+            // Convert SteamID64 to account ID for Deadlock API
+            // SteamID64 to Account ID: subtract 76561197960265728
+            const accountId = BigInt(steamId64) - BigInt('76561197960265728');
+            console.log(`Converted to account ID: ${accountId}`);
+            
+            // Use the existing DeadlockAPIService method
+            const matchHistory = await this.deadlockAPI.getPlayerMatchHistory(accountId.toString(), limit, 0, true);
             
             if (!matchHistory || !matchHistory.matches) {
                 throw new Error('No match history found');
             }
             
-            // Filter matches to get ones with valid match IDs and process them
+            // Process matches with the same format as before
             const validMatches = matchHistory.matches
                 .filter(match => match.matchId && match.matchId !== '0')
-                .slice(0, 5) // Get top 5 recent matches
+                .slice(0, limit) // Get top matches based on limit
                 .map(match => ({
                     matchId: match.matchId,
                     heroId: match.heroId,
@@ -207,7 +190,7 @@ class PlayerSearch {
             const result = {
                 matches: validMatches,
                 totalMatches: matchHistory.totalMatches || 0,
-                statistics: matchHistory.statistics || {}
+                statistics: matchHistory.statistics || this.calculateBasicStats(validMatches)
             };
             
             // Cache the result
@@ -216,12 +199,40 @@ class PlayerSearch {
                 timestamp: Date.now()
             });
             
+            console.log(`Successfully processed ${validMatches.length} matches`);
             return result;
             
         } catch (error) {
             console.error('Error fetching player matches:', error);
             throw error;
         }
+    }
+
+    /**
+     * Calculate basic statistics from match data
+     */
+    calculateBasicStats(matches) {
+        if (!matches || matches.length === 0) {
+            return {
+                winRate: 0,
+                averageKDA: 0,
+                averageKills: 0,
+                averageDamage: 0
+            };
+        }
+
+        const wins = matches.filter(m => m.result === 'win').length;
+        const totalKills = matches.reduce((sum, m) => sum + (m.kills || 0), 0);
+        const totalDeaths = matches.reduce((sum, m) => sum + (m.deaths || 0), 0);
+        const totalAssists = matches.reduce((sum, m) => sum + (m.assists || 0), 0);
+        const totalDamage = matches.reduce((sum, m) => sum + (m.playerDamage || 0), 0);
+
+        return {
+            winRate: Math.round((wins / matches.length) * 100),
+            averageKDA: totalDeaths > 0 ? Math.round(((totalKills + totalAssists) / totalDeaths) * 100) / 100 : totalKills + totalAssists,
+            averageKills: Math.round((totalKills / matches.length) * 10) / 10,
+            averageDamage: Math.round(totalDamage / matches.length)
+        };
     }
 
     /**
@@ -292,8 +303,8 @@ class PlayerSearch {
                 </div>
                 <div class="flex-1">
                     <h3 class="text-xl font-bold text-white">${steamProfile.personaname || 'Unknown Player'}</h3>
-                    <p class="text-gray-400">Steam ID: ${playerData.steamid}</p>
-                    <p class="text-gray-400">Deadlock ID: ${playerData.deadlockAccountId}</p>
+                    <p class="text-gray-400">Steam ID: ${playerData.steamId64 || playerData.steamid}</p>
+                    <p class="text-gray-400">Profile: <a href="https://steamcommunity.com/profiles/${playerData.steamId64 || playerData.steamid}" target="_blank" class="text-blue-400 hover:underline">View Steam Profile</a></p>
                 </div>
                 <div class="text-right">
                     <div class="text-2xl font-bold text-cyan-400">${matchHistory.totalMatches || 0}</div>

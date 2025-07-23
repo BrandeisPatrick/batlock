@@ -49,66 +49,14 @@ export default async function handler(req, res) {
     });
   }
 
-  // If a player_name is provided and Google API keys are available, use Google Search
-  if (player_name && process.env.GOOGLE_API_KEY && process.env.GOOGLE_CSE_ID) {
-    console.log('=== GOOGLE CUSTOM SEARCH DEBUG START ===');
-    console.log('Attempting Google Custom Search for player_name:', player_name);
-    console.log('GOOGLE_API_KEY present:', !!process.env.GOOGLE_API_KEY);
-    console.log('GOOGLE_CSE_ID present:', !!process.env.GOOGLE_CSE_ID);
-    console.log('GOOGLE_API_KEY length:', process.env.GOOGLE_API_KEY?.length || 0);
-    console.log('GOOGLE_CSE_ID value:', process.env.GOOGLE_CSE_ID);
-
-    try {
-      const googleSearchUrl = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_API_KEY}&cx=${process.env.GOOGLE_CSE_ID}&q=${encodeURIComponent(player_name + ' site:steamcommunity.com')}`;
-      console.log('Google Search URL:', googleSearchUrl);
-      const searchResponse = await fetch(googleSearchUrl);
-      console.log('Google Search Response Status:', searchResponse.status);
-      const searchData = await searchResponse.json();
-      console.log('Google Search Data (first 2 items):', JSON.stringify(searchData.items ? searchData.items.slice(0, 2) : searchData, null, 2));
-
-      if (searchData.items && searchData.items.length > 0) {
-        const steamProfileUrl = searchData.items[0].link;
-        console.log('Found Steam Profile URL from Google Search:', steamProfileUrl);
-        const vanityMatch = steamProfileUrl.match(/steamcommunity\.com\/id\/([^\/]+)/);
-        if (vanityMatch && vanityMatch[1]) {
-          finalVanityUrl = vanityMatch[1];
-          console.log('Extracted vanity URL:', finalVanityUrl);
-        } else {
-          const profileMatch = steamProfileUrl.match(/steamcommunity\.com\/profiles\/([^\/]+)/);
-          if (profileMatch && profileMatch[1]) {
-            steamids = profileMatch[1];
-            finalVanityUrl = null; // Unset vanity url to proceed with steamid
-            console.log('Extracted SteamID64:', steamids);
-          }
-        }
-      } else {
-        console.log('No relevant items found in Google Search results.');
-      }
-    } catch (e) {
-      console.error('Google Search API call failed:', e.message, e.stack);
-      console.log('=== GOOGLE CUSTOM SEARCH DEBUG END (FAILED) ===');
-      // Proceed with the original vanity/player name if search fails
-    }
-    console.log('=== GOOGLE CUSTOM SEARCH DEBUG END ===');
-  } else {
-    console.log('=== GOOGLE CUSTOM SEARCH SKIPPED ===');
-    console.log('player_name provided:', !!player_name);
-    console.log('GOOGLE_API_KEY present:', !!process.env.GOOGLE_API_KEY);
-    console.log('GOOGLE_CSE_ID present:', !!process.env.GOOGLE_CSE_ID);
-    if (player_name && !process.env.GOOGLE_API_KEY) {
-      console.log('Missing GOOGLE_API_KEY - player name search will not work');
-    }
-    if (player_name && !process.env.GOOGLE_CSE_ID) {
-      console.log('Missing GOOGLE_CSE_ID - player name search will not work');
-    }
-    if (player_name && (!process.env.GOOGLE_API_KEY || !process.env.GOOGLE_CSE_ID)) {
-      console.log('Player name search not available - returning 404 for display name searches');
-      return res.status(404).json({
-        error: 'Player not found',
-        message: `Display name search requires Google Custom Search API configuration. Please use Steam ID or vanity URL instead.`,
-        searchTerm: player_name
-      });
-    }
+  // If a player_name is provided, return an error since we no longer support display name search
+  if (player_name && !finalVanityUrl && !steamids) {
+    console.log('Player name search not supported - display names are not supported');
+    return res.status(404).json({
+      error: 'Player not found',
+      message: `Display name search is not supported. Please use Steam profile URL or vanity URL instead.`,
+      searchTerm: player_name
+    });
   }
   
   try {
