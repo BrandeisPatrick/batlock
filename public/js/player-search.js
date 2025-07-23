@@ -360,11 +360,23 @@ class PlayerSearch {
      * Render player search results
      */
     renderPlayerSearchResults(playerData, matchHistory) {
+        console.log('=== renderPlayerSearchResults START ===');
+        console.log('playerData:', playerData);
+        console.log('matchHistory:', matchHistory);
+        console.log('matchHistory.matches count:', matchHistory.matches?.length || 0);
+        
         const playerInfoCard = document.getElementById('playerInfoCard');
         const matchTabsWrapper = document.getElementById('matchTabsWrapper');
         const playerSearchResults = document.getElementById('playerSearchResults');
         
+        console.log('DOM elements found:', {
+            playerInfoCard: !!playerInfoCard,
+            matchTabsWrapper: !!matchTabsWrapper,
+            playerSearchResults: !!playerSearchResults
+        });
+        
         if (!playerInfoCard || !matchTabsWrapper || !playerSearchResults) {
+            console.error('Missing DOM elements');
             throw new Error('Required DOM elements not found');
         }
         
@@ -443,10 +455,15 @@ class PlayerSearch {
         }
         
         // Show the results section
+        console.log('Showing player search results section');
         playerSearchResults.classList.remove('hidden');
+        console.log('playerSearchResults classList after removing hidden:', playerSearchResults.classList.toString());
         
         // Scroll to results
+        console.log('Scrolling to results');
         playerSearchResults.scrollIntoView({ behavior: 'smooth' });
+        
+        console.log('=== renderPlayerSearchResults COMPLETE ===');
     }
 
     /**
