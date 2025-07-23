@@ -94,7 +94,7 @@ When using a match ID that returns enhanced data:
 - Team summaries provide aggregate data
 
 ### Configuration
-Edit `config/api-config.js` to:
+Edit `api/api-config.js` to:
 - Enable/disable features
 - Adjust cache timeouts
 - Configure API endpoints

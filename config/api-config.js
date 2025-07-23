@@ -55,12 +55,7 @@ const API_CONFIG = {
         }
     },
     
-    // Legacy API (for backward compatibility)
-    legacyAPI: {
-        baseUrl: 'https://api.deadlock-api.com/v1',
-        steamAPIKey: null, // Steam API key should be configured in Vercel environment variables
-        corsProxy: 'https://api.allorigins.win/raw?url='
-    },
+    
     
     // Cache settings
     cache: {
@@ -86,12 +81,10 @@ const API_CONFIG = {
         enableStreamkit: false,
         enableAnalytics: true,
         enableLeaderboard: true,
-        fallbackToLegacy: true,
+        
         useMockData: false
     }
 };
 
 // Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = API_CONFIG;
-}
+export default API_CONFIG;

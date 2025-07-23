@@ -12,19 +12,19 @@ A web application to analyze team performance in Deadlock matches by comparing p
 ## Setup
 
 ### Option 1: Use Mock Data (Default)
-The app works out of the box with mock data. To enable mock data, set `features.useMockData` to `true` in `config/api-config.js`.
+The app works out of the box with mock data. To enable mock data, set `features.useMockData` to `true` in `api/api-config.js`.
 
 ### Option 2: Use Public API (Recommended)
-The app is configured to use the public Deadlock API at `https://api.deadlock-api.com/api/v1` by default. This can be configured in `config/api-config.js`.
+The app is configured to use the public Deadlock API at `https://api.deadlock-api.com/api/v1` by default. This can be configured in `api/api-config.js`.
 
 **Optional: Get Real Player Names**
 To show actual Steam usernames instead of Steam IDs:
 1. Get a Steam API key from [Steam Community](https://steamcommunity.com/dev/apikey)
-2. In `config/api-config.js`, set `legacyAPI.steamAPIKey` to your Steam API key.
+2. In `api/api-config.js`, set `legacyAPI.steamAPIKey` to your Steam API key.
 
 ### Option 3: Alternative APIs
 
-All API endpoints and feature flags are configured in `config/api-config.js`. You can modify `mainAPI.baseUrl`, `assetsAPI.baseUrl`, `streamkitAPI.baseUrl`, and `legacyAPI.baseUrl` to point to different API instances. You can also enable/disable features like `useEnhancedAPI`, `enableAssets`, etc., via the `features` object in `config/api-config.js`.
+All API endpoints and feature flags are configured in `api/api-config.js`. You can modify `mainAPI.baseUrl`, `assetsAPI.baseUrl`, `streamkitAPI.baseUrl`, and `legacyAPI.baseUrl` to point to different API instances. You can also enable/disable features like `useEnhancedAPI`, `enableAssets`, etc., via the `features` object in `api/api-config.js`.
 
 ## Usage
 
@@ -34,7 +34,7 @@ All API endpoints and feature flags are configured in `config/api-config.js`. Yo
 
 ## API Configuration
 
-All API endpoints, feature flags, and other API-related settings are centralized in `config/api-config.js`. This file allows you to configure:
+All API endpoints, feature flags, and other API-related settings are centralized in `api/api-config.js`. This file allows you to configure:
 
 - **Main API Endpoints**: `mainAPI.baseUrl` for the primary Deadlock API.
 - **Assets API**: `assetsAPI.baseUrl` for hero icons, portraits, etc.

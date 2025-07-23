@@ -1,6 +1,7 @@
 {
   "name": "deadlock_web",
   "version": "1.0.0",
+  "type": "module",
   "description": "A web application to analyze team performance in Deadlock matches by comparing players' recent statistics.",
   "main": "index.js",
   "scripts": {

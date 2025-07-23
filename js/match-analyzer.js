@@ -2,84 +2,15 @@
  * Match Analyzer - Enhanced visualization for Deadlock match analysis
  */
 
-// Hero names mapping for Deadlock heroes
-const HERO_NAMES = {
-    1: "Abrams",
-    2: "Bebop",
-    3: "Dynamo", 
-    4: "Grey Talon",
-    5: "Haze",
-    6: "Infernus",
-    7: "Ivy",
-    8: "Kelvin",
-    9: "Lady Geist",
-    10: "Lash",
-    11: "McGinnis",
-    12: "Mirage",
-    13: "Mo & Krill",
-    14: "Paradox",
-    15: "Pocket",
-    16: "Seven",
-    17: "Shiv",
-    18: "Vindicta",
-    19: "Viscous",
-    20: "Warden",
-    21: "Wraith",
-    22: "Yamato",
-    // Add more heroes as they are discovered/released
-};
-
-// Hero color themes for better visual distinction
-const HERO_COLORS = {
-    1: "#8B4513", // Abrams - Brown
-    2: "#FF6B35", // Bebop - Orange
-    3: "#4A90E2", // Dynamo - Blue
-    4: "#228B22", // Grey Talon - Forest Green
-    5: "#9932CC", // Haze - Purple
-    6: "#FF4500", // Infernus - Red Orange
-    7: "#32CD32", // Ivy - Lime Green
-    8: "#4169E1", // Kelvin - Royal Blue
-    9: "#8A2BE2", // Lady Geist - Blue Violet
-    10: "#FF1493", // Lash - Deep Pink
-    11: "#B8860B", // McGinnis - Dark Goldenrod
-    12: "#FFD700", // Mirage - Gold
-    13: "#20B2AA", // Mo & Krill - Light Sea Green
-    14: "#FF69B4", // Paradox - Hot Pink
-    15: "#40E0D0", // Pocket - Turquoise
-    16: "#ADFF2F", // Seven - Green Yellow
-    17: "#DC143C", // Shiv - Crimson
-    18: "#800080", // Vindicta - Purple
-    19: "#00CED1", // Viscous - Dark Turquoise
-    20: "#2F4F4F", // Warden - Dark Slate Gray
-    21: "#191970", // Wraith - Midnight Blue
-    22: "#FF6347"  // Yamato - Tomato
-};
-
-// Map hero IDs to URL-friendly names (lowercase, special characters handled)
-const HERO_URL_NAMES = {
-    1: "abrams",
-    2: "bebop",
-    3: "dynamo",
-    4: "grey_talon",
-    5: "haze",
-    6: "infernus",
-    7: "ivy",
-    8: "kelvin",
-    9: "lady_geist",
-    10: "lash",
-    11: "mcginnis",
-    12: "mirage",
-    13: "mo_and_krill",
-    14: "paradox",
-    15: "pocket",
-    16: "seven",
-    17: "shiv",
-    18: "vindicta",
-    19: "viscous",
-    20: "warden",
-    21: "wraith",
-    22: "yamato",
-};
+import DeadlockAPIService from './deadlock-api-service.js';
+import { 
+    HERO_ID_TO_NAME, 
+    HERO_ID_TO_CLASS, 
+    HERO_COLORS,
+    getHeroName,
+    getHeroClassName,
+    getHeroColor
+} from '../hero_mapping/hero-mappings.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -87,16 +18,14 @@ class MatchAnalyzer {
         this.currentMatchData = null;
         this.playerStatsCache = new Map();
         this.heroCache = new Map(); // Cache for hero data
+        this.apiService = new DeadlockAPIService(); // Initialize API service
     }
 
-    getHeroThumbnailUrl(heroId) {
-        const heroName = HERO_URL_NAMES[heroId];
-        if (!heroName) return null;
-        
-        // This URL points to an external GitHub repository.
-        // If images are missing or paths are incorrect in the repository,
-        // a 404 error will occur. Ensure the image exists at this path.
-        return `https://raw.githubusercontent.com/simon-lund/deadlock-data/main/data/heroes/${heroName}/assets/hero_thumbnail.png`;
+    async getHeroThumbnailUrl(heroId) {
+        // Use the enhanced API service method that handles all fallbacks
+        const url = await this.apiService.getHeroThumbnailUrl(heroId);
+        console.log(`[DEBUG] Match Analyzer - Hero ${heroId} thumbnail URL: ${url}`);
+        return url;
     }
 
     /**
@@ -225,7 +154,8 @@ class MatchAnalyzer {
     /**
      * Create Section 1: Game Stats (KDA, Damage, Healing)
      */
-    createGameStatsSection(team0Players, team1Players) {
+    async createGameStatsSection(team0Players, team1Players) {
+        const gameStatsRows = await this.createGameStatsRows(team0Players, team1Players);
         return `
             <section class="game-stats-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">🎮 Match Performance</h2>
@@ -256,7 +186,7 @@ class MatchAnalyzer {
                             </tr>
                         </thead>
                         <tbody>
-                            ${this.createGameStatsRows(team0Players, team1Players)}
+                            ${gameStatsRows}
                         </tbody>
                     </table>
                 </div>
@@ -267,7 +197,7 @@ class MatchAnalyzer {
     /**
      * Create rows for the game stats table
      */
-    createGameStatsRows(team0Players, team1Players) {
+    async createGameStatsRows(team0Players, team1Players) {
         const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
         let rows = '';
         
@@ -284,11 +214,13 @@ class MatchAnalyzer {
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
                                     <img 
-                                        src="${this.getHeroThumbnailUrl(player0.heroId)}" 
+                                        src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
                                         alt="${this.getHeroName(player0.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
+                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
                                          style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
@@ -330,11 +262,13 @@ class MatchAnalyzer {
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
                                     <img 
-                                        src="${this.getHeroThumbnailUrl(player1.heroId)}" 
+                                        src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
                                         alt="${this.getHeroName(player1.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
+                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
                                          style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
@@ -378,7 +312,8 @@ class MatchAnalyzer {
     /**
      * Create Section 2: Lane Economics (Denies, Economics by Lane)
      */
-    createLaneEconomicsSection(team0Players, team1Players) {
+    async createLaneEconomicsSection(team0Players, team1Players) {
+        const laneEconomicsRows = await this.createLaneEconomicsRows(team0Players, team1Players);
         return `
             <section class="lane-economics-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.2s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">💰 Lane Economics & Farm</h2>
@@ -409,7 +344,7 @@ class MatchAnalyzer {
                             </tr>
                         </thead>
                         <tbody>
-                            ${this.createLaneEconomicsRows(team0Players, team1Players)}
+                            ${laneEconomicsRows}
                         </tbody>
                     </table>
                 </div>
@@ -425,7 +360,7 @@ class MatchAnalyzer {
     /**
      * Create rows for the lane economics table
      */
-    createLaneEconomicsRows(team0Players, team1Players) {
+    async createLaneEconomicsRows(team0Players, team1Players) {
         const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
         let rows = '';
         
@@ -442,11 +377,13 @@ class MatchAnalyzer {
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
                                     <img 
-                                        src="${this.getHeroThumbnailUrl(player0.heroId)}" 
+                                        src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
                                         alt="${this.getHeroName(player0.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
+                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
                                          style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
@@ -481,11 +418,13 @@ class MatchAnalyzer {
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
                                     <img 
-                                        src="${this.getHeroThumbnailUrl(player1.heroId)}" 
+                                        src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
                                         alt="${this.getHeroName(player1.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
+                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
                                          style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
@@ -591,7 +530,7 @@ class MatchAnalyzer {
     /**
      * Create Section 3: Historical Player Data (existing player cards)
      */
-    createHistoricalDataSection(team0Players, team1Players) {
+    async createHistoricalDataSection(team0Players, team1Players) {
         // Pad teams to 6 players if needed
         const team0Padded = [...team0Players];
         const team1Padded = [...team1Players];
@@ -603,27 +542,28 @@ class MatchAnalyzer {
             team1Padded.push(null);
         }
         
-        const team0Cards = team0Padded
+        const team0CardPromises = team0Padded
             .slice(0, 6)
-            .map((player, index) => {
+            .map(async (player, index) => {
                 if (player) {
-                    return this.createHistoricalPlayerCard(player, 'green');
+                    return await this.createHistoricalPlayerCard(player, 'green');
                 } else {
                     return this.createEmptyPlayerSlot('green', index + 1);
                 }
-            })
-            .join('');
+            });
             
-        const team1Cards = team1Padded
+        const team1CardPromises = team1Padded
             .slice(0, 6)
-            .map((player, index) => {
+            .map(async (player, index) => {
                 if (player) {
-                    return this.createHistoricalPlayerCard(player, 'red');
+                    return await this.createHistoricalPlayerCard(player, 'red');
                 } else {
                     return this.createEmptyPlayerSlot('red', index + 1);
                 }
-            })
-            .join('');
+            });
+        
+        const team0Cards = (await Promise.all(team0CardPromises)).join('');
+        const team1Cards = (await Promise.all(team1CardPromises)).join('');
         
         return `
             <section class="historical-data-section animate-fadeInUp mb-8" style="animation-delay: 0.4s;">
@@ -679,16 +619,14 @@ class MatchAnalyzer {
      * Get hero name from hero ID
      */
     getHeroName(heroId) {
-        if (!heroId) return 'Unknown Hero';
-        return HERO_NAMES[heroId] || `Hero ${heroId}`;
+        return getHeroName(heroId);
     }
 
     /**
      * Get hero color from hero ID
      */
     getHeroColor(heroId) {
-        if (!heroId) return '#6b7280'; // Default gray
-        return HERO_COLORS[heroId] || '#6b7280';
+        return getHeroColor(heroId);
     }
 
     /**
@@ -881,7 +819,7 @@ class MatchAnalyzer {
     /**
      * Create historical player cards (renamed from createPlayerCard)
      */
-    createHistoricalPlayerCard(player, teamColor) {
+    async createHistoricalPlayerCard(player, teamColor) {
         const stats = player.statistics;
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
@@ -921,11 +859,12 @@ class MatchAnalyzer {
                     <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
                          style="border-color: ${this.getHeroColor(player.heroId)};">
                         <img 
-                            src="${this.getHeroThumbnailUrl(player.heroId)}" 
+                            src="${await this.getHeroThumbnailUrl(player.heroId)}" 
                             alt="${this.getHeroName(player.heroId)}"
                             class="w-full h-full object-cover"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                         />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
                              style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
@@ -1013,9 +952,9 @@ class MatchAnalyzer {
         
         
         // Create the new three-section layout
-        const gameStatsSection = this.createGameStatsSection(team0Players, team1Players);
-        const laneEconomicsSection = this.createLaneEconomicsSection(team0Players, team1Players);
-        const historicalDataSection = this.createHistoricalDataSection(team0Players, team1Players);
+        const gameStatsSection = await this.createGameStatsSection(team0Players, team1Players);
+        const laneEconomicsSection = await this.createLaneEconomicsSection(team0Players, team1Players);
+        const historicalDataSection = await this.createHistoricalDataSection(team0Players, team1Players);
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
         
         const finalHTML = `
@@ -1513,7 +1452,7 @@ class MatchAnalyzer {
     /**
      * Create initial player cards with loading placeholders
      */
-    createInitialPlayerCards(players) {
+    async createInitialPlayerCards(players) {
         const team0 = players.filter(p => p.team === 0);
         const team1 = players.filter(p => p.team === 1);
         
@@ -1543,7 +1482,7 @@ class MatchAnalyzer {
                             </h4>
                         </div>
                         <div class="team-cards">
-                            ${team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : this.createEmptyLoadingSlot('green', index + 1)).join('')}
+                            ${(await Promise.all(team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : Promise.resolve(this.createEmptyLoadingSlot('green', index + 1))))).join('')}
                         </div>
                     </div>
                     
@@ -1555,7 +1494,7 @@ class MatchAnalyzer {
                             </h4>
                         </div>
                         <div class="team-cards">
-                            ${team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : this.createEmptyLoadingSlot('red', index + 1)).join('')}
+                            ${(await Promise.all(team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : Promise.resolve(this.createEmptyLoadingSlot('red', index + 1))))).join('')}
                         </div>
                     </div>
                 </div>
@@ -1573,12 +1512,12 @@ class MatchAnalyzer {
                     <div class="tab-panels">
                         <div class="team-panel team1-panel active" data-team="team1">
                             <div class="team-cards player-stats-grid">
-                                ${team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : this.createEmptyLoadingSlot('green', index + 1)).join('')}
+                                ${(await Promise.all(team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : Promise.resolve(this.createEmptyLoadingSlot('green', index + 1))))).join('')}
                             </div>
                         </div>
                         <div class="team-panel team2-panel" data-team="team2">
                             <div class="team-cards player-stats-grid">
-                                ${team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : this.createEmptyLoadingSlot('red', index + 1)).join('')}
+                                ${(await Promise.all(team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : Promise.resolve(this.createEmptyLoadingSlot('red', index + 1))))).join('')}
                             </div>
                         </div>
                     </div>
@@ -1590,7 +1529,7 @@ class MatchAnalyzer {
     /**
      * Create a loading placeholder player card with consistent layout
      */
-    createLoadingPlayerCard(player, teamColor) {
+    async createLoadingPlayerCard(player, teamColor) {
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
@@ -1603,11 +1542,12 @@ class MatchAnalyzer {
                     <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
                          style="border-color: ${this.getHeroColor(player.heroId)};">
                         <img 
-                            src="${this.getHeroThumbnailUrl(player.heroId)}" 
+                            src="${await this.getHeroThumbnailUrl(player.heroId)}" 
                             alt="${this.getHeroName(player.heroId)}"
                             class="w-full h-full object-cover"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             loading="lazy"
+                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                         />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
                              style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">

@@ -169,6 +169,9 @@ class PlayerProfile {
 }
 
 // Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { MatchData, PlayerMatchData, PlayerProfile };
-}
+export { MatchData, PlayerMatchData, PlayerProfile };
+
+// Also make available globally for legacy compatibility
+window.MatchData = MatchData;
+window.PlayerMatchData = PlayerMatchData;
+window.PlayerProfile = PlayerProfile;

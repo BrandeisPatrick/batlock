@@ -2,6 +2,10 @@
  * DeadlockAPIService - Enhanced API service using official Deadlock API endpoints
  * Provides comprehensive access to match data, player profiles, leaderboards, and assets
  */
+
+// Import hero mappings for better asset handling
+import { getHeroClassName, getHeroName } from '../hero_mapping/hero-mappings.js';
+
 class DeadlockAPIService {
     constructor() {
         // Use v1 endpoints which are actually available
@@ -282,13 +286,151 @@ class DeadlockAPIService {
     }
 
     /**
-     * Get hero asset URL
-     * @param {string} heroId - The hero ID
-     * @param {string} assetType - Type of asset (icon, portrait, ability)
-     * @returns {string} Asset URL
+     * Get Steam user info from our serverless function
+     * @param {string[]} steamIds - Array of Steam IDs
+     * @returns {Promise<Object>} Steam user data
      */
-    getHeroAssetUrl(heroId, assetType = 'icon') {
-        return `${this.assetsUrl}/heroes/${heroId}/${assetType}.png`;
+    async getSteamUsers(steamIds) {
+        // Use the serverless function to bypass CORS and hide API key
+        const url = `/api/steam-user?steamids=${steamIds.join(',')}`;
+        
+        // This endpoint is not cached as it's a proxy
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Steam user API failed: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Failed to fetch Steam user data:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Get all hero data and cache it.
+     * @returns {Promise<Object[]>} Array of hero data objects.
+     */
+    async getAllHeroes() {
+        const url = `${this.assetsUrl}/v2/heroes`;
+        return await this.fetchWithCache(url);
+    }
+
+    /**
+     * Get hero asset URL by hero ID
+     * @param {number} heroId - The hero ID
+     * @returns {Promise<string>} Asset URL for the hero's card image.
+     */
+    async getHeroCardAssetUrlById(heroId) {
+        const heroClassName = getHeroClassName(heroId);
+        if (!heroClassName) {
+            console.warn(`Unknown hero ID: ${heroId}`);
+            return null;
+        }
+        return await this.getHeroCardAssetUrl(heroClassName);
+    }
+
+    /**
+     * Get hero asset URL by class name
+     * @param {string} heroClassName - The hero's class name (e.g., 'hero_atlas' for Abrams)
+     * @returns {Promise<string>} Asset URL for the hero's card image.
+     */
+    async getHeroCardAssetUrl(heroClassName) {
+        try {
+            const allHeroes = await this.getAllHeroes();
+            const hero = allHeroes.find(h => h.class_name === heroClassName);
+            
+            if (hero && hero.images && hero.images.icon_hero_card) {
+                return hero.images.icon_hero_card;
+            }
+            
+            // Try alternative image properties if main one doesn't exist
+            if (hero && hero.images) {
+                const alternativeImages = [
+                    hero.images.card,
+                    hero.images.portrait,
+                    hero.images.icon,
+                    hero.images.thumbnail
+                ];
+                
+                for (const imgUrl of alternativeImages) {
+                    if (imgUrl) return imgUrl;
+                }
+            }
+            
+            // Extract slug from class name for fallback URL
+            const slug = heroClassName.replace('hero_', '');
+            return `${this.assetsUrl}/heroes/${slug}/card.png`;
+            
+        } catch (error) {
+            console.warn(`Error fetching hero asset for ${heroClassName}:`, error);
+            // Extract slug from class name for fallback URL
+            const slug = heroClassName.replace('hero_', '');
+            return `${this.assetsUrl}/heroes/${slug}/card.png`;
+        }
+    }
+
+    /**
+     * Get hero thumbnail URL with multiple fallback strategies
+     * @param {number} heroId - The hero ID
+     * @returns {Promise<string>} - Best available hero image URL
+     */
+    async getHeroThumbnailUrl(heroId) {
+        console.log(`[DEBUG] Getting thumbnail URL for hero ID: ${heroId}`);
+        
+        try {
+            // Skip the broken API call and go directly to fallback URLs
+            const heroClassName = getHeroClassName(heroId);
+            console.log(`[DEBUG] Hero class name for ID ${heroId}: ${heroClassName}`);
+            
+            if (heroClassName) {
+                const slug = heroClassName.replace('hero_', '');
+                console.log(`[DEBUG] Hero slug: ${slug}`);
+                
+                // Try multiple possible asset URL patterns
+                const possibleUrls = [
+                    `${this.assetsUrl}/heroes/${slug}/card.png`,
+                    `${this.assetsUrl}/heroes/${slug}/portrait.png`,
+                    `${this.assetsUrl}/heroes/${slug}/icon.png`,
+                    `https://assets.deadlock-api.com/heroes/${slug}_card.png`,
+                    `https://assets.deadlock-api.com/heroes/${slug}_portrait.png`,
+                    `https://cdn.cloudflare.steamstatic.com/apps/1422450/icons/heroes/${slug}_icon.png`,
+                    `https://steamcdn-a.akamaihd.net/apps/1422450/icons/heroes/${slug}_icon.png`,
+                    `https://cdn.akamai.steamstatic.com/apps/1422450/icons/heroes/${slug}_icon.png`
+                ];
+                
+                console.log(`[DEBUG] Testing URLs for hero ${heroId}:`, possibleUrls);
+                
+                // Test each URL to find the first working one
+                for (let i = 0; i < possibleUrls.length; i++) {
+                    const url = possibleUrls[i];
+                    console.log(`[DEBUG] Testing URL ${i + 1}/${possibleUrls.length}: ${url}`);
+                    
+                    try {
+                        const response = await fetch(url, { method: 'HEAD' });
+                        if (response.ok) {
+                            console.log(`[DEBUG] ✓ Working URL found for hero ${heroId}: ${url}`);
+                            return url;
+                        } else {
+                            console.log(`[DEBUG] ✗ URL failed with status ${response.status}: ${url}`);
+                        }
+                    } catch (fetchError) {
+                        console.log(`[DEBUG] ✗ URL failed with error: ${url}`, fetchError.message);
+                    }
+                }
+                
+                console.log(`[DEBUG] No working URLs found for hero ${heroId}, returning first URL as fallback`);
+                return possibleUrls[0];
+            }
+            
+            console.log(`[DEBUG] No hero class name found for hero ID ${heroId}, returning null`);
+            // Final fallback - return null so UI shows text fallback
+            return null;
+            
+        } catch (error) {
+            console.error(`[DEBUG] Error getting thumbnail for hero ${heroId}:`, error);
+            return null;
+        }
     }
 
     /**
@@ -421,6 +563,4 @@ class DeadlockAPIService {
 }
 
 // Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = DeadlockAPIService;
-}
+export default DeadlockAPIService;
