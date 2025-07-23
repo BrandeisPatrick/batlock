@@ -179,6 +179,14 @@ class PlayerSearch {
                 console.log('Is array:', Array.isArray(matchData));
                 console.log('Match history response length:', matchData.length);
                 console.log('First 3 matches:', matchData.slice(0, 3));
+                
+                // Log structure of first match to understand data format
+                if (matchData.length > 0) {
+                    console.log('First match structure:', matchData[0]);
+                    console.log('First match keys:', Object.keys(matchData[0]));
+                    console.log('Match ID field value:', matchData[0].match_id);
+                    console.log('Match ID type:', typeof matchData[0].match_id);
+                }
             } catch (error) {
                 console.error('Error fetching match history:', error);
                 throw error;
@@ -190,10 +198,15 @@ class PlayerSearch {
             
             // Debug the filtering step by step
             console.log('Before filtering - total matches:', matchData.length);
-            const filteredMatches = matchData.filter(match => {
+            const filteredMatches = matchData.filter((match, index) => {
                 const hasMatchId = match.match_id && match.match_id !== '0';
                 if (!hasMatchId) {
-                    console.log('Filtered out match with invalid ID:', match.match_id);
+                    console.log(`Filtered out match ${index} with invalid ID:`, {
+                        match_id: match.match_id,
+                        match_id_type: typeof match.match_id,
+                        has_match_id: !!match.match_id,
+                        full_match: match
+                    });
                 }
                 return hasMatchId;
             });
