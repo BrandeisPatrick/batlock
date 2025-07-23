@@ -414,45 +414,14 @@ class DeadlockAPIService {
 
     /**
      * Get hero thumbnail URL with fallback strategy
-     * First tries API, then falls back to local hero thumbnails
+     * Uses local hero thumbnails due to persistent API issues
      * @param {number} heroId - The hero ID
      * @returns {Promise<string|null>} - Image URL or null for text fallback
      */
     async getHeroThumbnailUrl(heroId) {
-        const heroClassName = getHeroClassName(heroId);
-        if (!heroClassName) {
-            console.warn(`Unknown hero ID: ${heroId}`);
-            return this.getLocalHeroThumbnailUrl(heroId);
-        }
-
-        try {
-            const allHeroes = await this.getAllHeroes();
-            const hero = allHeroes.find(h => h.class_name.toLowerCase() === heroClassName.toLowerCase());
-            
-            if (hero && hero.images) {
-                // Prefer smaller images for thumbnails (icon, thumbnail, then larger images)
-                const preferredImages = [
-                    hero.images.icon,
-                    hero.images.thumbnail,
-                    hero.images.portrait,
-                    hero.images.icon_hero_card,
-                    hero.images.card
-                ];
-                
-                for (const imgUrl of preferredImages) {
-                    if (imgUrl) {
-                        console.log(`Using API hero image for ${heroClassName}:`, imgUrl);
-                        return imgUrl;
-                    }
-                }
-            }
-            
-            console.warn(`No images available for hero ${heroClassName} (ID: ${heroId}), falling back to local thumbnail`);
-            return this.getLocalHeroThumbnailUrl(heroId);
-        } catch (error) {
-            console.error(`Failed to fetch hero thumbnail for ${heroClassName}:`, error, ', falling back to local thumbnail');
-            return this.getLocalHeroThumbnailUrl(heroId);
-        }
+        // Skip API calls entirely due to persistent CORS issues
+        // Use local thumbnails directly for better performance
+        return this.getLocalHeroThumbnailUrl(heroId);
     }
 
     /**
