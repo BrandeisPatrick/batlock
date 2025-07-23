@@ -432,17 +432,26 @@ class PlayerSearch {
             </div>
         `;
         
-        // Create match tabs
+        // Create match cards
         if (matchHistory.matches && matchHistory.matches.length > 0) {
-            const tabsHTML = matchHistory.matches
-                .map((match, index) => this.createMatchTab(match, index, index === 0))
+            console.log('Creating match cards for', matchHistory.matches.length, 'matches');
+            const cardsHTML = matchHistory.matches
+                .map((match, index) => {
+                    console.log(`Creating card ${index + 1}:`, match);
+                    return this.createMatchTab(match, index, index === 0);
+                })
                 .join('');
             
-            matchTabsWrapper.innerHTML = tabsHTML;
+            console.log('Generated cards HTML length:', cardsHTML.length);
+            console.log('Cards HTML preview:', cardsHTML.substring(0, 200));
+            matchTabsWrapper.innerHTML = cardsHTML;
+            console.log('Cards inserted into wrapper');
             
             // Add click event listeners to cards
             const matchCards = matchTabsWrapper.querySelectorAll('.match-card');
-            matchCards.forEach(card => {
+            console.log('Found match cards:', matchCards.length);
+            matchCards.forEach((card, index) => {
+                console.log(`Setting up event listener for card ${index}:`, card.dataset.matchId);
                 card.addEventListener('click', (e) => {
                     // Remove active class from all cards
                     matchCards.forEach(c => c.classList.remove('active'));
