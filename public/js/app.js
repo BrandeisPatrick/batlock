@@ -25,7 +25,37 @@ try {
     console.error('Error initializing PlayerSearch:', e);
 }
 
-// Check if enhanced styles are loading
+// Player profiles for quick selection
+const popularPlayers = [
+    {
+        name: "M Vestappen",
+        url: "https://steamcommunity.com/profiles/76561198148166542/"
+    },
+    {
+        name: "TheDolanizor",
+        url: "https://steamcommunity.com/id/TheDolanizor"
+    },
+    {
+        name: "Player Profile 3",
+        url: "https://steamcommunity.com/profiles/76561199836706201"
+    },
+    {
+        name: "Player Profile 4", 
+        url: "https://steamcommunity.com/profiles/76561198152972921"
+    },
+    {
+        name: "fisting_300_bucks",
+        url: "https://steamcommunity.com/id/fisting_300_bucks"
+    },
+    {
+        name: "2Krucial",
+        url: "https://steamcommunity.com/id/2Krucial"
+    },
+    {
+        name: "Player Profile 7",
+        url: "https://steamcommunity.com/profiles/76561198106577838"
+    }
+];
 
 // Search mode variables
 let currentSearchMode = 'match'; // 'match' or 'player'
@@ -48,6 +78,7 @@ const playerSearchSection = document.getElementById('playerSearchSection');
 const playerSearchInput = document.getElementById('playerSearchInput');
 const playerSearchButton = document.getElementById('playerSearchButton');
 const playerSearchResults = document.getElementById('playerSearchResults');
+const playerProfileDropdown = document.getElementById('playerProfileDropdown');
 
 // Helper functions for UI state
 function showLoader(show) {
@@ -114,6 +145,32 @@ if (playerSearchButton && playerSearchInput) {
         if (event.key === 'Enter') handlePlayerSearch();
     });
     console.log('Event listeners added to player search elements.');
+}
+
+// Add dropdown functionality for quick player selection
+if (playerProfileDropdown) {
+    playerProfileDropdown.addEventListener('change', (event) => {
+        const selectedUrl = event.target.value;
+        if (selectedUrl && playerSearchInput) {
+            // Auto-fill the input field with selected URL
+            playerSearchInput.value = selectedUrl;
+            
+            // Add loading state to dropdown
+            const wrapper = playerProfileDropdown.closest('.custom-select-wrapper');
+            if (wrapper) {
+                wrapper.classList.add('dropdown-loading');
+            }
+            
+            // Trigger player search automatically
+            handlePlayerSearch().finally(() => {
+                // Remove loading state
+                if (wrapper) {
+                    wrapper.classList.remove('dropdown-loading');
+                }
+            });
+        }
+    });
+    console.log('Event listener added to player profile dropdown.');
 }
 
 // Main Logic
