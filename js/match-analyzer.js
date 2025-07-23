@@ -211,16 +211,8 @@ class MatchAnalyzer {
                             <div class="flex items-center space-x-2">
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
-                                    <img 
-                                        src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
-                                        alt="${this.getHeroName(player0.heroId)}"
-                                        class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                        loading="lazy"
-                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
-                                    />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
-                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
+                                         style="background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
                                         ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
                                     </div>
                                 </div>
@@ -258,16 +250,8 @@ class MatchAnalyzer {
                             <div class="flex items-center space-x-2">
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
-                                    <img 
-                                        src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
-                                        alt="${this.getHeroName(player1.heroId)}"
-                                        class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                        loading="lazy"
-                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
-                                    />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
-                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
+                                         style="background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
                                         ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
                                     </div>
                                 </div>
@@ -372,16 +356,8 @@ class MatchAnalyzer {
                             <div class="flex items-center space-x-2">
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
-                                    <img 
-                                        src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
-                                        alt="${this.getHeroName(player0.heroId)}"
-                                        class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                        loading="lazy"
-                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
-                                    />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
-                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
+                                         style="background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
                                         ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
                                     </div>
                                 </div>
@@ -412,16 +388,8 @@ class MatchAnalyzer {
                             <div class="flex items-center space-x-2">
                                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
-                                    <img 
-                                        src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
-                                        alt="${this.getHeroName(player1.heroId)}"
-                                        class="w-full h-full object-cover"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                        loading="lazy"
-                                        onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
-                                    />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
-                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
+                                         style="background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
                                         ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
                                     </div>
                                 </div>
@@ -852,15 +820,8 @@ class MatchAnalyzer {
                 <div class="flex items-center space-x-4 mb-4">
                     <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
                          style="border-color: ${this.getHeroColor(player.heroId)};">
-                        <img 
-                            src="${await this.getHeroThumbnailUrl(player.heroId)}" 
-                            alt="${this.getHeroName(player.heroId)}"
-                            class="w-full h-full object-cover"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                            loading="lazy"
-                        />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
-                             style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
+                             style="background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
                             ${player.heroId ? this.getHeroName(player.heroId).substring(0, 2).toUpperCase() : '?'}
                         </div>
                     </div>
@@ -1534,15 +1495,8 @@ class MatchAnalyzer {
                     <!-- Enhanced hero icon matching the final design -->
                     <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
                          style="border-color: ${this.getHeroColor(player.heroId)};">
-                        <img 
-                            src="${await this.getHeroThumbnailUrl(player.heroId)}" 
-                            alt="${this.getHeroName(player.heroId)}"
-                            class="w-full h-full object-cover"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                            loading="lazy"
-                        />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
-                             style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
+                             style="background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
                             ${player.heroId ? this.getHeroName(player.heroId).substring(0, 2).toUpperCase() : '?'}
                         </div>
                     </div>

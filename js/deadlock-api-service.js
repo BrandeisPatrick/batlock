@@ -378,8 +378,6 @@ class DeadlockAPIService {
      * @returns {Promise<string|null>} - null to show text fallback
      */
     async getHeroThumbnailUrl(heroId) {
-        console.log(`[DEBUG] Hero images not available, using text fallback for hero ID: ${heroId}`);
-        
         // Since all image sources are currently unavailable (404s or CORS blocked),
         // return null to immediately show the text-based hero fallback
         // This avoids the delay from testing multiple failing URLs
