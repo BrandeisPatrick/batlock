@@ -466,7 +466,7 @@ class DeadlockAPIService {
             return null;
         }
         
-        return `downloads/hero_thumbnails/${heroClassName}.png`;
+        return `/downloads/hero_thumbnails/${heroClassName}.png`;
     }
 
     /**
