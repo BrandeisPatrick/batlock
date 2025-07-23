@@ -371,66 +371,19 @@ class DeadlockAPIService {
     }
 
     /**
-     * Get hero thumbnail URL with multiple fallback strategies
+     * Get hero thumbnail URL with fallback strategy
+     * Since no hero images are currently available from any CDN,
+     * this returns null to force text-based hero display
      * @param {number} heroId - The hero ID
-     * @returns {Promise<string>} - Best available hero image URL
+     * @returns {Promise<string|null>} - null to show text fallback
      */
     async getHeroThumbnailUrl(heroId) {
-        console.log(`[DEBUG] Getting thumbnail URL for hero ID: ${heroId}`);
+        console.log(`[DEBUG] Hero images not available, using text fallback for hero ID: ${heroId}`);
         
-        try {
-            // Skip the broken API call and go directly to fallback URLs
-            const heroClassName = getHeroClassName(heroId);
-            console.log(`[DEBUG] Hero class name for ID ${heroId}: ${heroClassName}`);
-            
-            if (heroClassName) {
-                const slug = heroClassName.replace('hero_', '');
-                console.log(`[DEBUG] Hero slug: ${slug}`);
-                
-                // Try multiple possible asset URL patterns
-                const possibleUrls = [
-                    `${this.assetsUrl}/heroes/${slug}/card.png`,
-                    `${this.assetsUrl}/heroes/${slug}/portrait.png`,
-                    `${this.assetsUrl}/heroes/${slug}/icon.png`,
-                    `https://assets.deadlock-api.com/heroes/${slug}_card.png`,
-                    `https://assets.deadlock-api.com/heroes/${slug}_portrait.png`,
-                    `https://cdn.cloudflare.steamstatic.com/apps/1422450/icons/heroes/${slug}_icon.png`,
-                    `https://steamcdn-a.akamaihd.net/apps/1422450/icons/heroes/${slug}_icon.png`,
-                    `https://cdn.akamai.steamstatic.com/apps/1422450/icons/heroes/${slug}_icon.png`
-                ];
-                
-                console.log(`[DEBUG] Testing URLs for hero ${heroId}:`, possibleUrls);
-                
-                // Test each URL to find the first working one
-                for (let i = 0; i < possibleUrls.length; i++) {
-                    const url = possibleUrls[i];
-                    console.log(`[DEBUG] Testing URL ${i + 1}/${possibleUrls.length}: ${url}`);
-                    
-                    try {
-                        const response = await fetch(url, { method: 'HEAD' });
-                        if (response.ok) {
-                            console.log(`[DEBUG] ✓ Working URL found for hero ${heroId}: ${url}`);
-                            return url;
-                        } else {
-                            console.log(`[DEBUG] ✗ URL failed with status ${response.status}: ${url}`);
-                        }
-                    } catch (fetchError) {
-                        console.log(`[DEBUG] ✗ URL failed with error: ${url}`, fetchError.message);
-                    }
-                }
-                
-                console.log(`[DEBUG] No working URLs found for hero ${heroId}, returning first URL as fallback`);
-                return possibleUrls[0];
-            }
-            
-            console.log(`[DEBUG] No hero class name found for hero ID ${heroId}, returning null`);
-            // Final fallback - return null so UI shows text fallback
-            return null;
-            
-        } catch (error) {
-            console.error(`[DEBUG] Error getting thumbnail for hero ${heroId}:`, error);
-            return null;
-        }
+        // Since all image sources are currently unavailable (404s or CORS blocked),
+        // return null to immediately show the text-based hero fallback
+        // This avoids the delay from testing multiple failing URLs
+        return null;
     }
 
     /**

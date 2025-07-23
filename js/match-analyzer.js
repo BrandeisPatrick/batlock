@@ -23,9 +23,7 @@ class MatchAnalyzer {
 
     async getHeroThumbnailUrl(heroId) {
         // Use the enhanced API service method that handles all fallbacks
-        const url = await this.apiService.getHeroThumbnailUrl(heroId);
-        console.log(`[DEBUG] Match Analyzer - Hero ${heroId} thumbnail URL: ${url}`);
-        return url;
+        return await this.apiService.getHeroThumbnailUrl(heroId);
     }
 
     /**
@@ -217,9 +215,8 @@ class MatchAnalyzer {
                                         src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
                                         alt="${this.getHeroName(player0.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                         onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
@@ -265,9 +262,8 @@ class MatchAnalyzer {
                                         src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
                                         alt="${this.getHeroName(player1.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                         onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
@@ -380,9 +376,8 @@ class MatchAnalyzer {
                                         src="${await this.getHeroThumbnailUrl(player0.heroId)}" 
                                         alt="${this.getHeroName(player0.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                         onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
@@ -421,9 +416,8 @@ class MatchAnalyzer {
                                         src="${await this.getHeroThumbnailUrl(player1.heroId)}" 
                                         alt="${this.getHeroName(player1.heroId)}"
                                         class="w-full h-full object-cover"
-                                        onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                         loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                         onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                                     />
                                     <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
@@ -862,9 +856,8 @@ class MatchAnalyzer {
                             src="${await this.getHeroThumbnailUrl(player.heroId)}" 
                             alt="${this.getHeroName(player.heroId)}"
                             class="w-full h-full object-cover"
-                            onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                         />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
                              style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
@@ -1545,9 +1538,8 @@ class MatchAnalyzer {
                             src="${await this.getHeroThumbnailUrl(player.heroId)}" 
                             alt="${this.getHeroName(player.heroId)}"
                             class="w-full h-full object-cover"
-                            onerror="console.log('[DEBUG] Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                             loading="lazy"
-                            onload="console.log('[DEBUG] Image loaded successfully:', this.src);"
                         />
                         <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
                              style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
