@@ -224,7 +224,7 @@ async function handlePlayerSearch() {
         // Fetch recent matches using SteamID64
         const steamId64 = playerData.steamId64 || playerData.steamid || playerData.deadlockAccountId;
         console.log('Fetching recent matches for SteamID64:', steamId64);
-        const matchHistory = await playerSearch.fetchPlayerRecentMatches(steamId64);
+        const matchHistory = await playerSearch.fetchPlayerRecentMatches(steamId64, 10);
         console.log('Match history:', matchHistory);
         
         // Store for later use
