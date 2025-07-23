@@ -142,12 +142,20 @@ class PlayerSearch {
      * we'll use the existing DeadlockAPIService method which uses match history
      */
     async fetchPlayerRecentMatches(steamId64, limit = 5) {
+        console.log('=== fetchPlayerRecentMatches START ===');
+        console.log('Input steamId64:', steamId64, 'limit:', limit);
         try {
             // Check cache first
             const cacheKey = `matches:${steamId64}`;
+            console.log('Checking cache with key:', cacheKey);
+            console.log('Cache has key:', this.matchCache.has(cacheKey));
+            
             if (this.matchCache.has(cacheKey)) {
                 const cached = this.matchCache.get(cacheKey);
-                if (Date.now() - cached.timestamp < this.CACHE_TTL) {
+                const isValid = Date.now() - cached.timestamp < this.CACHE_TTL;
+                console.log('Cache entry found. Age:', Date.now() - cached.timestamp, 'Valid:', isValid);
+                
+                if (isValid) {
                     console.log('Returning cached match data for:', steamId64);
                     console.log('Cached data preview:', {
                         matchCount: cached.data.matches?.length || 0,
