@@ -242,13 +242,20 @@ async function handlePlayerSearch() {
         
     } catch (error) {
         console.error('Player search error:', error);
-        let errorMsg = 'Failed to search for player: ' + error.message;
+        let errorMsg = error.message;
         
-        // Provide more helpful error messages
-        if (error.message.includes('Player not found')) {
-            errorMsg = 'Player not found. Please check the Steam name or profile URL and try again.';
+        // Provide more helpful error messages and suggestions
+        if (error.message.includes('not found') || error.message.includes('Player not found')) {
+            const searchQuery = playerSearchInput.value.trim();
+            let specificTip = '';
+            if (searchQuery.includes(' ')) {
+                specificTip = `\n• NOTE: "${searchQuery}" contains spaces. Steam vanity URLs typically don't have spaces - try removing them or using underscores.`;
+            }
+            errorMsg = `${error.message}\n\nTips:\n• Try the exact Steam vanity URL (the part after /id/ in your Steam profile)\n• Use the full Steam profile URL (steamcommunity.com/id/username)\n• Check if the profile is public and exists\n• Try searching on Steam first to verify the username${specificTip}`;
         } else if (error.message.includes('No recent matches')) {
-            errorMsg = 'Player found but no recent Deadlock matches available.';
+            errorMsg = 'Player found but no recent Deadlock matches available. The player may not have played Deadlock recently or their match history is private.';
+        } else if (error.message.includes('Failed to resolve')) {
+            errorMsg = 'Unable to resolve Steam profile. Please try using the full Steam profile URL instead.';
         }
         
         showError(errorMsg);

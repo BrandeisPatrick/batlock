@@ -39,8 +39,20 @@ class PlayerSearch {
             return { type: 'steamid', value: trimmed };
         }
         
+        // Process username/vanity URL
+        let processedValue = trimmed;
+        
+        // Steam vanity URLs typically don't have spaces, so suggest removing them
+        if (processedValue.includes(' ')) {
+            // Try both with and without spaces, but warn the user
+            console.warn(`Username "${processedValue}" contains spaces. Steam vanity URLs typically don't contain spaces.`);
+        }
+        
+        // Remove common URL prefixes if user pasted them accidentally
+        processedValue = processedValue.replace(/^https?:\/\/(www\.)?steamcommunity\.com\/(id\/)?/i, '');
+        
         // Otherwise, treat as vanity URL
-        return { type: 'vanity', value: trimmed };
+        return { type: 'vanity', value: processedValue };
     }
 
     /**
@@ -66,14 +78,17 @@ class PlayerSearch {
                 const response = await fetch(`/api/steam-user?vanityurl=${encodeURIComponent(parsed.value)}`);
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Player not found');
+                    if (response.status === 404) {
+                        throw new Error(`Steam user "${parsed.value}" not found. Please check the username and try again.`);
+                    }
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Failed to search for player (${response.status})`);
                 }
                 
                 steamResponse = await response.json();
                 
                 if (!steamResponse.resolved) {
-                    throw new Error('Failed to resolve Steam profile');
+                    throw new Error(`Steam user "${parsed.value}" not found. The vanity URL may not exist or be incorrect.`);
                 }
                 
                 // Get full player profile
