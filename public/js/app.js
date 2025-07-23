@@ -239,7 +239,7 @@ async function handlePlayerSearch() {
         selectedMatchIndex = 0;
         
         // Render the results
-        playerSearch.renderPlayerSearchResults(playerData, matchHistory);
+        await playerSearch.renderPlayerSearchResults(playerData, matchHistory);
         
         // Store matches for later use but don't auto-select
         console.log('Player search completed. Match cards should now be visible for selection.');

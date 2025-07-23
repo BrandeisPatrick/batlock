@@ -377,7 +377,7 @@ class PlayerSearch {
     /**
      * Render player search results
      */
-    renderPlayerSearchResults(playerData, matchHistory) {
+    async renderPlayerSearchResults(playerData, matchHistory) {
         console.log('=== renderPlayerSearchResults START ===');
         console.log('playerData:', playerData);
         console.log('matchHistory:', matchHistory);
