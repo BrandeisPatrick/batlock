@@ -1,5 +1,6 @@
-// Initialize match analyzer
+// Initialize match analyzer and player search
 let matchAnalyzer = null;
+let playerSearch = null;
 
 try {
     console.log('Attempting to initialize MatchAnalyzer...');
@@ -13,7 +14,23 @@ try {
     console.error('Error initializing MatchAnalyzer:', e);
 }
 
+// Import and initialize player search
+import PlayerSearch from './player-search.js';
+
+try {
+    console.log('Attempting to initialize PlayerSearch...');
+    playerSearch = new PlayerSearch();
+    console.log('PlayerSearch initialized successfully.');
+} catch (e) {
+    console.error('Error initializing PlayerSearch:', e);
+}
+
 // Check if enhanced styles are loading
+
+// Search mode variables
+let currentSearchMode = 'match'; // 'match' or 'player'
+let currentPlayerMatches = null;
+let selectedMatchIndex = 0;
 
 // Event Listeners
 const fetchButton = document.getElementById('fetchButton');
@@ -22,6 +39,15 @@ const loader = document.getElementById('loader');
 const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
 const resultsDiv = document.getElementById('results');
+
+// Player search elements
+const matchSearchTab = document.getElementById('matchSearchTab');
+const playerSearchTab = document.getElementById('playerSearchTab');
+const matchSearchSection = document.getElementById('matchSearchSection');
+const playerSearchSection = document.getElementById('playerSearchSection');
+const playerSearchInput = document.getElementById('playerSearchInput');
+const playerSearchButton = document.getElementById('playerSearchButton');
+const playerSearchResults = document.getElementById('playerSearchResults');
 
 // Helper functions for UI state
 function showLoader(show) {
@@ -33,7 +59,37 @@ function showError(message) {
     if (errorText) errorText.textContent = message || '';
 }
 
-// Ensure elements exist before adding listeners
+// Search mode toggle functionality
+function switchSearchMode(mode) {
+    currentSearchMode = mode;
+    
+    if (mode === 'match') {
+        matchSearchTab.classList.add('active');
+        playerSearchTab.classList.remove('active');
+        matchSearchSection.classList.remove('hidden');
+        playerSearchSection.classList.add('hidden');
+        playerSearchResults.classList.add('hidden');
+    } else {
+        playerSearchTab.classList.add('active');
+        matchSearchTab.classList.remove('active');
+        playerSearchSection.classList.remove('hidden');
+        matchSearchSection.classList.add('hidden');
+    }
+    
+    // Clear results and errors when switching modes
+    showError(null);
+    if (resultsDiv) {
+        resultsDiv.classList.add('hidden');
+    }
+}
+
+// Add event listeners for search mode toggle
+if (matchSearchTab && playerSearchTab) {
+    matchSearchTab.addEventListener('click', () => switchSearchMode('match'));
+    playerSearchTab.addEventListener('click', () => switchSearchMode('player'));
+}
+
+// Ensure match search elements exist before adding listeners
 if (fetchButton && matchIdInput) {
     fetchButton.addEventListener('click', handleFetchData);
     matchIdInput.addEventListener('keyup', (event) => {
@@ -44,14 +100,28 @@ if (fetchButton && matchIdInput) {
     console.error('Could not find fetchButton or matchIdInput elements.');
 }
 
+// Add player search event listeners
+if (playerSearchButton && playerSearchInput) {
+    playerSearchButton.addEventListener('click', handlePlayerSearch);
+    playerSearchInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') handlePlayerSearch();
+    });
+    console.log('Event listeners added to player search elements.');
+}
+
 // Main Logic
-async function handleFetchData() {
+async function handleFetchData(providedMatchId = null) {
     console.log('handleFetchData called.');
-    let matchId = matchIdInput.value.trim();
+    let matchId = providedMatchId || matchIdInput.value.trim();
     if (!matchId) {
         matchId = '38069822'; // Use default match ID when input is empty
         matchIdInput.value = matchId; // Update the input field to show the default value
         console.log(`Using default match ID: ${matchId}`);
+    }
+    
+    // Update input field if match ID was provided externally
+    if (providedMatchId) {
+        matchIdInput.value = providedMatchId;
     }
 
     showLoader(true);
@@ -124,12 +194,91 @@ async function handleFetchData() {
     }
 }
 
+// Player search functionality
+async function handlePlayerSearch() {
+    console.log('handlePlayerSearch called.');
+    const query = playerSearchInput.value.trim();
+    
+    if (!query) {
+        showError('Please enter a Steam name or profile URL.');
+        return;
+    }
+    
+    showLoader(true);
+    showError(null);
+    playerSearchResults.classList.add('hidden');
+    
+    try {
+        console.log('Searching for player:', query);
+        
+        // Search for the player
+        const playerData = await playerSearch.searchPlayer(query);
+        console.log('Player data:', playerData);
+        
+        if (!playerData || !playerData.deadlockAccountId) {
+            throw new Error('Failed to resolve player data');
+        }
+        
+        // Fetch recent matches
+        console.log('Fetching recent matches for:', playerData.deadlockAccountId);
+        const matchHistory = await playerSearch.fetchPlayerRecentMatches(playerData.deadlockAccountId);
+        console.log('Match history:', matchHistory);
+        
+        // Store for later use
+        currentPlayerMatches = matchHistory.matches;
+        selectedMatchIndex = 0;
+        
+        // Render the results
+        playerSearch.renderPlayerSearchResults(playerData, matchHistory);
+        
+        // Auto-select first match if available
+        if (matchHistory.matches && matchHistory.matches.length > 0) {
+            console.log('Auto-selecting first match:', matchHistory.matches[0].matchId);
+            // Wait a bit for the tabs to render, then select first match
+            setTimeout(() => {
+                handleMatchFromTab(matchHistory.matches[0].matchId);
+            }, 100);
+        }
+        
+    } catch (error) {
+        console.error('Player search error:', error);
+        let errorMsg = 'Failed to search for player: ' + error.message;
+        
+        // Provide more helpful error messages
+        if (error.message.includes('Player not found')) {
+            errorMsg = 'Player not found. Please check the Steam name or profile URL and try again.';
+        } else if (error.message.includes('No recent matches')) {
+            errorMsg = 'Player found but no recent Deadlock matches available.';
+        }
+        
+        showError(errorMsg);
+    } finally {
+        showLoader(false);
+    }
+}
+
+// Handle match selection from tabs
+function handleMatchFromTab(matchId) {
+    console.log('handleMatchFromTab called with:', matchId);
+    
+    // Switch to match search mode to show results
+    switchSearchMode('match');
+    
+    // Call the existing match analysis function
+    handleFetchData(matchId);
+    
+    // Scroll to results after a brief delay
+    setTimeout(() => {
+        if (resultsDiv && !resultsDiv.classList.contains('hidden')) {
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 500);
+}
+
+// Make handleMatchFromTab available globally for the player-search module
+window.handleMatchFromTab = handleMatchFromTab;
+
 // Check if enhanced styles are loading
 
-// Event Listeners
-fetchButton.addEventListener('click', handleFetchData);
-matchIdInput.addEventListener('keyup', (event) => {
-    if (event.key === 'Enter') handleFetchData();
-});
-
+// Remove duplicate event listeners (they're added above now)
 

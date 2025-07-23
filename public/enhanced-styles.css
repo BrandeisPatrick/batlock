@@ -365,6 +365,302 @@ section {
     100% { background-position: -200% 0; }
 }
 
+/* ========================================
+   PLAYER SEARCH COMPONENTS
+======================================== */
+
+/* Search Mode Toggle */
+.search-mode-toggle {
+    display: flex;
+    background: rgba(31, 41, 55, 0.8);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.search-mode-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    color: #9ca3af;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.search-mode-btn:hover {
+    color: #f3f4f6;
+    background: rgba(75, 85, 99, 0.3);
+}
+
+.search-mode-btn.active {
+    color: #ffffff;
+    background: linear-gradient(135deg, #22d3ee, #0891b2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Sections */
+.search-section {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.search-section.hidden {
+    display: none;
+}
+
+/* Player Info Card */
+.player-avatar img {
+    border-radius: 0.5rem;
+    border: 2px solid rgba(34, 211, 238, 0.3);
+    transition: border-color 0.3s ease;
+}
+
+.player-avatar img:hover {
+    border-color: rgba(34, 211, 238, 0.6);
+}
+
+/* Match Tabs Container */
+.match-tabs-container {
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.match-tabs-wrapper {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(34, 211, 238, 0.3) transparent;
+}
+
+.match-tabs-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.match-tabs-wrapper::-webkit-scrollbar-track {
+    background: rgba(75, 85, 99, 0.2);
+    border-radius: 3px;
+}
+
+.match-tabs-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(34, 211, 238, 0.3);
+    border-radius: 3px;
+}
+
+.match-tabs-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 211, 238, 0.5);
+}
+
+/* Match Tab Styles */
+.match-tab {
+    min-width: 250px;
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(55, 65, 81, 0.6));
+    border: 1px solid rgba(75, 85, 99, 0.4);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.match-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(34, 211, 238, 0.4);
+}
+
+.match-tab.active {
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(8, 145, 178, 0.1));
+    border-color: rgba(34, 211, 238, 0.6);
+    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+.match-tab.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #22d3ee, #0891b2);
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* Tab Hero Section */
+.tab-hero-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.tab-hero-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    border: 2px solid;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.tab-hero-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-fallback {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #374151, #1f2937);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #9ca3af;
+}
+
+.tab-match-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.tab-hero-name {
+    font-weight: 600;
+    color: #f3f4f6;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.tab-match-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Tab Stats Section */
+.tab-stats-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.tab-kda {
+    font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
+    color: #e5e7eb;
+    background: rgba(75, 85, 99, 0.3);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.tab-result {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.win-indicator {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.loss-indicator {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Tab Click Indicator */
+.tab-click-indicator {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.match-tab:hover .tab-click-indicator {
+    opacity: 1;
+}
+
+.match-tab.active .tab-click-indicator {
+    color: #22d3ee;
+    opacity: 1;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .search-mode-toggle {
+        width: 100%;
+    }
+    
+    .search-mode-btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .match-tab {
+        min-width: 200px;
+        padding: 0.75rem;
+    }
+    
+    .tab-hero-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+    
+    .tab-hero-name {
+        font-size: 0.8125rem;
+    }
+    
+    .tab-kda {
+        font-size: 0.8125rem;
+    }
+    
+    .match-tabs-wrapper {
+        gap: 0.75rem;
+    }
+    
+    /* Show 2-3 tabs on mobile */
+    .match-tabs-container {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .match-tab {
+        min-width: 180px;
+        padding: 0.5rem;
+    }
+    
+    .tab-hero-section {
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tab-stats-section {
+        margin-bottom: 0.25rem;
+    }
+}
+
 /* Match overview enhancements */
 .match-overview {
     background: linear-gradient(135deg, #1f2937, #111827);

@@ -19,15 +19,62 @@
         </header>
 
         <main>
-            <!-- Input Section -->
-            <div class="glass-effect p-6 rounded-lg shadow-lg mb-8">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <input type="text" id="matchIdInput" placeholder="Enter Match ID (e.g., 38069822)" class="flex-grow enhanced-input text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
-                    <button id="fetchButton" class="enhanced-button text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
-                        🔍 Analyze Match
+            <!-- Search Mode Toggle -->
+            <div class="flex justify-center mb-6">
+                <div class="search-mode-toggle bg-gray-800 rounded-lg p-1 flex">
+                    <button id="matchSearchTab" class="search-mode-btn active px-4 py-2 rounded-md font-medium transition-all duration-200">
+                        🎯 Search by Match ID
+                    </button>
+                    <button id="playerSearchTab" class="search-mode-btn px-4 py-2 rounded-md font-medium transition-all duration-200">
+                        👤 Search by Player
                     </button>
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Try match ID: 38069822 for a sample analysis</p>
+            </div>
+
+            <!-- Match ID Search Section -->
+            <div id="matchSearchSection" class="search-section">
+                <div class="glass-effect p-6 rounded-lg shadow-lg mb-8">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="matchIdInput" placeholder="Enter Match ID (e.g., 38069822)" class="flex-grow enhanced-input text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
+                        <button id="fetchButton" class="enhanced-button text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
+                            🔍 Analyze Match
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Try match ID: 38069822 for a sample analysis</p>
+                </div>
+            </div>
+
+            <!-- Player Search Section -->
+            <div id="playerSearchSection" class="search-section hidden">
+                <div class="glass-effect p-6 rounded-lg shadow-lg mb-8">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="playerSearchInput" placeholder="Enter Steam name or profile URL (e.g., PlayerName or steamcommunity.com/id/username)" class="flex-grow enhanced-input text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition">
+                        <button id="playerSearchButton" class="enhanced-button text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
+                            🔍 Search Player
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Supports: Steam profile URLs, vanity URLs (steamcommunity.com/id/username), or direct usernames
+                    </p>
+                </div>
+
+                <!-- Player Search Results -->
+                <div id="playerSearchResults" class="hidden">
+                    <!-- Player info card -->
+                    <div id="playerInfoCard" class="glass-effect p-6 rounded-lg shadow-lg mb-6">
+                        <!-- Player info will be populated here -->
+                    </div>
+
+                    <!-- Match tabs container -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-white mb-4">Recent Matches</h3>
+                        <div class="match-tabs-container">
+                            <div id="matchTabsWrapper" class="match-tabs-wrapper">
+                                <!-- Match tabs will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Loading and Error Messages -->
@@ -60,6 +107,7 @@
     <script type="module" src="js/api.js"></script>
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/match-analyzer.js"></script>
+    <script type="module" src="js/player-search.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
