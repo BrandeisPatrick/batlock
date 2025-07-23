@@ -176,11 +176,9 @@ class MatchAnalyzer {
                                 <th class="player-column text-left py-3 px-2">Player</th>
                                 <th class="kda-column text-center py-3 px-2">K/D/A</th>
                                 <th class="damage-column text-center py-3 px-2">Damage</th>
-                                <th class="healing-column text-center py-3 px-2">Healing</th>
                                 <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
                                 <th class="kda-column text-center py-3 px-2">K/D/A</th>
                                 <th class="damage-column text-center py-3 px-2">Damage</th>
-                                <th class="healing-column text-center py-3 px-2">Healing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -236,9 +234,6 @@ class MatchAnalyzer {
                     <td class="damage-column numeric-cell py-3 px-2">
                         ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.playerDamage || 0, 'damage', this.formatPlayerName(player0))}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
                     </td>
-                    <td class="healing-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.healingOutput || 0, 'healing')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.healingOutput || 0, 'healing', this.formatPlayerName(player0))}">${this.formatNumber(player0.healingOutput || 0)}</span>` : '-'}
-                    </td>
                     
                     <!-- Team 2 Player -->
                     <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
@@ -264,9 +259,6 @@ class MatchAnalyzer {
                     </td>
                     <td class="damage-column numeric-cell py-3 px-2">
                         ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.playerDamage || 0, 'damage', this.formatPlayerName(player1))}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
-                    </td>
-                    <td class="healing-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.healingOutput || 0, 'healing')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.healingOutput || 0, 'healing', this.formatPlayerName(player1))}">${this.formatNumber(player1.healingOutput || 0)}</span>` : '-'}
                     </td>
                 </tr>
             `;

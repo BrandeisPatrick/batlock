@@ -1378,10 +1378,7 @@ section {
     text-align: right;
 }
 
-.game-stats-section .healing-column { 
-    width: 100px; 
-    text-align: right;
-}
+/* Healing column removed */
 
 /* Numeric cell alignment */
 .numeric-cell {
@@ -1640,7 +1637,7 @@ section {
         width: 60px;
     }
     
-    .damage-column, .healing-column { 
+    .damage-column { 
         width: 70px;
     }
     
