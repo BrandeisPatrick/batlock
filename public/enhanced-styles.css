@@ -1363,9 +1363,15 @@ section {
 
 /* Game Stats Table Columns */
 .game-stats-section .player-column { 
-    width: 180px;
+    width: 140px;
+    max-width: 140px;
     text-align: left !important;
     padding-right: 8px;
+}
+
+.player-name-cell {
+    max-width: 140px;
+    overflow: hidden;
 }
 
 .game-stats-section .kda-column { 
@@ -1421,7 +1427,8 @@ section {
 
 /* Lane Economics Table Columns */
 .lane-economics-section .player-column {
-    width: 180px;
+    width: 140px;
+    max-width: 140px;
     text-align: left !important;
     padding-right: 8px;
 }
@@ -1630,7 +1637,8 @@ section {
     }
     
     .player-column { 
-        width: 120px;
+        width: 100px;
+        max-width: 100px;
     }
     
     .kda-column { 

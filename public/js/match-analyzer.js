@@ -212,16 +212,16 @@ class MatchAnalyzer {
                     <!-- Team 1 Player -->
                     <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
-                            <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                            <div class="flex items-center space-x-1">
+                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
                                     ${player0.heroId && player0HeroImageUrl ? `<img src="${player0HeroImageUrl}" alt="${this.getHeroName(player0.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
+                                    <span class="text-green-400 font-medium text-sm">${this.formatPlayerName(player0)}</span>
                                     ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
+                                            <i class="fab fa-steam"></i>
                                         </a>` : ''
                                     }
                                 </div>
@@ -238,16 +238,16 @@ class MatchAnalyzer {
                     <!-- Team 2 Player -->
                     <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
-                            <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                            <div class="flex items-center space-x-1">
+                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
                                     ${player1.heroId && player1HeroImageUrl ? `<img src="${player1HeroImageUrl}" alt="${this.getHeroName(player1.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
+                                    <span class="text-red-400 font-medium text-sm">${this.formatPlayerName(player1)}</span>
                                     ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
+                                            <i class="fab fa-steam"></i>
                                         </a>` : ''
                                     }
                                 </div>
@@ -334,16 +334,16 @@ class MatchAnalyzer {
                     <!-- Team 1 Player -->
                     <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
-                            <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                            <div class="flex items-center space-x-1">
+                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player0.heroId)};">
                                     ${player0.heroId && player0HeroImageUrl ? `<img src="${player0HeroImageUrl}" alt="${this.getHeroName(player0.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
+                                    <span class="text-green-400 font-medium text-sm">${this.formatPlayerName(player0)}</span>
                                     ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
+                                            <i class="fab fa-steam"></i>
                                         </a>` : ''
                                     }
                                 </div>
@@ -363,16 +363,16 @@ class MatchAnalyzer {
                     <!-- Team 2 Player -->
                     <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
-                            <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                            <div class="flex items-center space-x-1">
+                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
                                      style="border-color: ${this.getHeroColor(player1.heroId)};">
                                     ${player1.heroId && player1HeroImageUrl ? `<img src="${player1HeroImageUrl}" alt="${this.getHeroName(player1.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
+                                    <span class="text-red-400 font-medium text-sm">${this.formatPlayerName(player1)}</span>
                                     ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
                                         `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam mr-1"></i>Steam
+                                            <i class="fab fa-steam"></i>
                                         </a>` : ''
                                     }
                                 </div>
@@ -577,7 +577,7 @@ class MatchAnalyzer {
     /**
      * Format player names consistently with length limits
      */
-    formatPlayerName(player, maxLength = 20) {
+    formatPlayerName(player, maxLength = 12) {
         let name = 'Unknown';
         
         if (player.displayName && player.displayName !== `ID: ${player.accountId}`) {

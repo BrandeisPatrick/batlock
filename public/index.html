@@ -47,6 +47,17 @@
             <!-- Player Search Section -->
             <div id="playerSearchSection" class="search-section hidden">
                 <div class="glass-effect p-6 rounded-lg shadow-lg mb-8">
+                    <!-- Quick Select Dropdown -->
+                    <div class="mb-4">
+                        <label for="playerProfileDropdown" class="block text-sm font-medium text-gray-300 mb-2">
+                            Quick Select Player
+                        </label>
+                        <select id="playerProfileDropdown" class="w-full enhanced-input text-white rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition bg-gray-800 border border-gray-600">
+                            <option value="">Select a player...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Manual Input -->
                     <div class="flex flex-col sm:flex-row gap-4">
                         <input type="text" id="playerSearchInput" placeholder="Enter Steam profile URL or vanity name" class="flex-grow enhanced-input text-white placeholder-gray-400 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:outline-none transition" value="https://steamcommunity.com/profiles/76561198148166542/">
                         <button id="playerSearchButton" class="enhanced-button text-white font-bold py-3 px-6 rounded-md transition duration-300 ease-in-out transform hover:scale-105">
