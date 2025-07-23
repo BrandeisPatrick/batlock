@@ -55,12 +55,48 @@ const HERO_COLORS = {
     22: "#FF6347"  // Yamato - Tomato
 };
 
+// Map hero IDs to URL-friendly names (lowercase, special characters handled)
+const HERO_URL_NAMES = {
+    1: "abrams",
+    2: "bebop",
+    3: "dynamo",
+    4: "grey_talon",
+    5: "haze",
+    6: "infernus",
+    7: "ivy",
+    8: "kelvin",
+    9: "lady_geist",
+    10: "lash",
+    11: "mcginnis",
+    12: "mirage",
+    13: "mo_and_krill",
+    14: "paradox",
+    15: "pocket",
+    16: "seven",
+    17: "shiv",
+    18: "vindicta",
+    19: "viscous",
+    20: "warden",
+    21: "wraith",
+    22: "yamato",
+};
+
 // Match Analyzer Component
 class MatchAnalyzer {
     constructor() {
         this.currentMatchData = null;
         this.playerStatsCache = new Map();
         this.heroCache = new Map(); // Cache for hero data
+    }
+
+    getHeroThumbnailUrl(heroId) {
+        const heroName = HERO_URL_NAMES[heroId];
+        if (!heroName) return null;
+        
+        // This URL points to an external GitHub repository.
+        // If images are missing or paths are incorrect in the repository,
+        // a 404 error will occur. Ensure the image exists at this path.
+        return `https://raw.githubusercontent.com/simon-lund/deadlock-data/main/data/heroes/${heroName}/assets/hero_thumbnail.png`;
     }
 
     /**
@@ -245,10 +281,19 @@ class MatchAnalyzer {
                     <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
-                                     style="border-color: ${this.getHeroColor(player0.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);"
-                                     data-tooltip="${this.getHeroName(player0.heroId)}">
-                                    ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
+                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                                     style="border-color: ${this.getHeroColor(player0.heroId)};">
+                                    <img 
+                                        src="${this.getHeroThumbnailUrl(player0.heroId)}" 
+                                        alt="${this.getHeroName(player0.heroId)}"
+                                        class="w-full h-full object-cover"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        loading="lazy"
+                                    />
+                                    <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
+                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
+                                        ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
+                                    </div>
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="flex flex-col">
@@ -282,10 +327,19 @@ class MatchAnalyzer {
                     <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
-                                     style="border-color: ${this.getHeroColor(player1.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);"
-                                     data-tooltip="${this.getHeroName(player1.heroId)}">
-                                    ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
+                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                                     style="border-color: ${this.getHeroColor(player1.heroId)};">
+                                    <img 
+                                        src="${this.getHeroThumbnailUrl(player1.heroId)}" 
+                                        alt="${this.getHeroName(player1.heroId)}"
+                                        class="w-full h-full object-cover"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        loading="lazy"
+                                    />
+                                    <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
+                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
+                                        ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
+                                    </div>
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="flex flex-col">
@@ -385,10 +439,19 @@ class MatchAnalyzer {
                     <td class="player-column player-name-cell py-3 px-2">
                         ${player0 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
-                                     style="border-color: ${this.getHeroColor(player0.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);"
-                                     data-tooltip="${this.getHeroName(player0.heroId)}">
-                                    ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
+                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                                     style="border-color: ${this.getHeroColor(player0.heroId)};">
+                                    <img 
+                                        src="${this.getHeroThumbnailUrl(player0.heroId)}" 
+                                        alt="${this.getHeroName(player0.heroId)}"
+                                        class="w-full h-full object-cover"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        loading="lazy"
+                                    />
+                                    <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
+                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player0.heroId)}20, #374151);">
+                                        ${player0.heroId ? this.getHeroName(player0.heroId).substring(0, 2).toUpperCase() : '?'}
+                                    </div>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-green-400 font-medium">${this.formatPlayerName(player0)}</span>
@@ -402,7 +465,7 @@ class MatchAnalyzer {
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
                     <td class="networth-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.netWorth || 0, 'networth', this.formatPlayerName(player0))}">$${this.formatNetWorth(player0.netWorth || 0)}</span>` : '-'}
+                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.netWorth || 0, 'networth', this.formatPlayerName(player0))}">${this.formatNetWorth(player0.netWorth || 0)}</span>` : '-'}
                     </td>
                     <td class="lasthits-column numeric-cell py-3 px-2">
                         ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.lastHits || 0, 'lasthits', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.lastHits || 0)}</span>` : '-'}
@@ -415,10 +478,19 @@ class MatchAnalyzer {
                     <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
                         ${player1 ? `
                             <div class="flex items-center space-x-2">
-                                <div class="hero-icon w-8 h-8 rounded bg-gradient-to-br flex items-center justify-center text-xs font-bold border stat-tooltip" 
-                                     style="border-color: ${this.getHeroColor(player1.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);"
-                                     data-tooltip="${this.getHeroName(player1.heroId)}">
-                                    ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
+                                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" 
+                                     style="border-color: ${this.getHeroColor(player1.heroId)};">
+                                    <img 
+                                        src="${this.getHeroThumbnailUrl(player1.heroId)}" 
+                                        alt="${this.getHeroName(player1.heroId)}"
+                                        class="w-full h-full object-cover"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                        loading="lazy"
+                                    />
+                                    <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" 
+                                         style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player1.heroId)}20, #374151);">
+                                        ${player1.heroId ? this.getHeroName(player1.heroId).substring(0, 2).toUpperCase() : '?'}
+                                    </div>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-red-400 font-medium">${this.formatPlayerName(player1)}</span>
@@ -432,7 +504,7 @@ class MatchAnalyzer {
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
                     <td class="networth-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.netWorth || 0, 'networth', this.formatPlayerName(player1))}">$${this.formatNetWorth(player1.netWorth || 0)}</span>` : '-'}
+                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.netWorth || 0, 'networth', this.formatPlayerName(player1))}">${this.formatNetWorth(player1.netWorth || 0)}</span>` : '-'}
                     </td>
                     <td class="lasthits-column numeric-cell py-3 px-2">
                         ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.lastHits || 0, 'lasthits', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.lastHits || 0)}</span>` : '-'}
@@ -460,11 +532,11 @@ class MatchAnalyzer {
                     <h4 class="text-sm font-medium text-gray-400 mb-2">Total Net Worth</h4>
                     <div class="flex justify-center items-center space-x-4">
                         <span class="text-lg font-bold ${team0Stats.totalNetWorth > team1Stats.totalNetWorth ? 'text-green-400' : 'text-gray-300'}">
-                            $${this.formatNumber(team0Stats.totalNetWorth)}
+                            ${this.formatNumber(team0Stats.totalNetWorth)}
                         </span>
                         <span class="text-gray-500">vs</span>
                         <span class="text-lg font-bold ${team1Stats.totalNetWorth > team0Stats.totalNetWorth ? 'text-red-400' : 'text-gray-300'}">
-                            $${this.formatNumber(team1Stats.totalNetWorth)}
+                            ${this.formatNumber(team1Stats.totalNetWorth)}
                         </span>
                     </div>
                 </div>
@@ -846,10 +918,19 @@ class MatchAnalyzer {
             <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0 border stat-tooltip" 
-                         style="border-color: ${this.getHeroColor(player.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);"
-                         data-tooltip="${this.getHeroName(player.heroId)}">
-                        <span class="text-lg font-bold" style="color: ${this.getHeroColor(player.heroId)};">${this.getHeroName(player.heroId).substring(0, 2).toUpperCase()}</span>
+                    <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
+                         style="border-color: ${this.getHeroColor(player.heroId)};">
+                        <img 
+                            src="${this.getHeroThumbnailUrl(player.heroId)}" 
+                            alt="${this.getHeroName(player.heroId)}"
+                            class="w-full h-full object-cover"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            loading="lazy"
+                        />
+                        <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
+                             style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
+                            ${player.heroId ? this.getHeroName(player.heroId).substring(0, 2).toUpperCase() : '?'}
+                        </div>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
@@ -1519,10 +1600,19 @@ class MatchAnalyzer {
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
                     <!-- Enhanced hero icon matching the final design -->
-                    <div class="w-16 h-16 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0 border stat-tooltip" 
-                         style="border-color: ${this.getHeroColor(player.heroId)}; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);"
-                         data-tooltip="${this.getHeroName(player.heroId)}">
-                        <span class="text-lg font-bold" style="color: ${this.getHeroColor(player.heroId)};">${this.getHeroName(player.heroId).substring(0, 2).toUpperCase()}</span>
+                    <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
+                         style="border-color: ${this.getHeroColor(player.heroId)};">
+                        <img 
+                            src="${this.getHeroThumbnailUrl(player.heroId)}" 
+                            alt="${this.getHeroName(player.heroId)}"
+                            class="w-full h-full object-cover"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            loading="lazy"
+                        />
+                        <div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" 
+                             style="display: none; background: linear-gradient(135deg, ${this.getHeroColor(player.heroId)}30, #374151);">
+                            ${player.heroId ? this.getHeroName(player.heroId).substring(0, 2).toUpperCase() : '?'}
+                        </div>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
