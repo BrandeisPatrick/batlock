@@ -494,12 +494,18 @@ section {
     align-items: center;
     justify-content: center;
     background: rgba(31, 41, 55, 0.8);
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
 }
 
 .hero-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    -webkit-object-fit: cover;
+    object-position: center;
+    -webkit-object-position: center;
 }
 
 .hero-fallback {
@@ -635,12 +641,18 @@ section {
     overflow: hidden;
     position: relative;
     flex-shrink: 0;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
 }
 
 .tab-hero-icon img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    -webkit-object-fit: cover;
+    object-position: center;
+    -webkit-object-position: center;
 }
 
 .hero-fallback {
@@ -1033,17 +1045,20 @@ section {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
 }
 
 .hero-icon::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg, transparent, var(--accent-cyan), transparent);
-    animation: rotate 3s linear infinite;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, rgba(34, 211, 238, 0.2), transparent);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -1057,10 +1072,7 @@ section {
     border-color: var(--accent-cyan);
 }
 
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+/* Rotate animation removed for Safari compatibility */
 
 /* Enhanced Loading States */
 .loading-shimmer {
