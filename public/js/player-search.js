@@ -163,14 +163,26 @@ class PlayerSearch {
             const matchHistoryUrl = `https://api.deadlock-api.com/v1/players/${accountId}/match-history`;
             console.log('Fetching from:', matchHistoryUrl);
             
-            const response = await fetch(matchHistoryUrl);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch match history: ${response.status} ${response.statusText}`);
-            }
+            let response, matchData;
             
-            const matchData = await response.json();
-            console.log('Match history response length:', matchData.length);
-            console.log('First 3 matches:', matchData.slice(0, 3));
+            try {
+                response = await fetch(matchHistoryUrl);
+                console.log('Response status:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch match history: ${response.status} ${response.statusText}`);
+                }
+                
+                matchData = await response.json();
+                console.log('Match history response received');
+                console.log('Response type:', typeof matchData);
+                console.log('Is array:', Array.isArray(matchData));
+                console.log('Match history response length:', matchData.length);
+                console.log('First 3 matches:', matchData.slice(0, 3));
+            } catch (error) {
+                console.error('Error fetching match history:', error);
+                throw error;
+            }
             
             if (!Array.isArray(matchData)) {
                 throw new Error('Invalid match history response format');
