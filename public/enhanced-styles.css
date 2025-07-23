@@ -1072,6 +1072,16 @@ section {
     border-color: var(--accent-cyan);
 }
 
+.hero-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-object-fit: cover;
+    object-position: center;
+    -webkit-object-position: center;
+    display: block;
+}
+
 /* Rotate animation removed for Safari compatibility */
 
 /* Enhanced Loading States */
@@ -1494,6 +1504,12 @@ section {
 .hero-icon {
     min-width: 32px;
     min-height: 32px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Improve stat value visibility */
