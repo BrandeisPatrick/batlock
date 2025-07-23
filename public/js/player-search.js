@@ -169,17 +169,38 @@ class PlayerSearch {
             }
             
             const matchData = await response.json();
-            console.log('Match history response:', matchData);
+            console.log('Match history response length:', matchData.length);
+            console.log('First 3 matches:', matchData.slice(0, 3));
             
             if (!Array.isArray(matchData)) {
                 throw new Error('Invalid match history response format');
             }
             
+            // Debug the filtering step by step
+            console.log('Before filtering - total matches:', matchData.length);
+            const filteredMatches = matchData.filter(match => {
+                const hasMatchId = match.match_id && match.match_id !== '0';
+                if (!hasMatchId) {
+                    console.log('Filtered out match with invalid ID:', match.match_id);
+                }
+                return hasMatchId;
+            });
+            console.log('After filtering - valid matches:', filteredMatches.length);
+            
             // Process matches with the correct API response format
-            const validMatches = matchData
-                .filter(match => match.match_id && match.match_id !== '0')
-                .slice(0, limit) // Get top matches based on limit
-                .map(match => ({
+            const topMatches = filteredMatches.slice(0, limit);
+            console.log(`Processing top ${limit} matches:`, topMatches.length);
+            
+            const validMatches = topMatches.map((match, index) => {
+                console.log(`Processing match ${index + 1}:`, {
+                    match_id: match.match_id,
+                    hero_id: match.hero_id,
+                    player_kills: match.player_kills,
+                    match_result: match.match_result,
+                    start_time: match.start_time
+                });
+                
+                return {
                     matchId: match.match_id,
                     heroId: match.hero_id,
                     heroName: getHeroName(match.hero_id),
@@ -193,8 +214,10 @@ class PlayerSearch {
                     playerDamage: 0, // Not available in this endpoint
                     netWorth: match.net_worth || 0,
                     lastHits: match.last_hits || 0
-                }))
-                .sort((a, b) => new Date(b.startTime) - new Date(a.startTime)); // Sort by most recent
+                };
+            }).sort((a, b) => new Date(b.startTime) - new Date(a.startTime)); // Sort by most recent
+            
+            console.log('Final processed matches:', validMatches.length);
             
             const result = {
                 matches: validMatches,
