@@ -162,6 +162,7 @@ class PlayerSearch {
             // Call the Deadlock API directly since we know the correct endpoint format
             const matchHistoryUrl = `https://api.deadlock-api.com/v1/players/${accountId}/match-history`;
             console.log('Fetching from:', matchHistoryUrl);
+            console.log('Account ID being used:', accountId);
             
             let response, matchData;
             
@@ -179,6 +180,7 @@ class PlayerSearch {
                 console.log('Is array:', Array.isArray(matchData));
                 console.log('Match history response length:', matchData.length);
                 console.log('First 3 matches:', matchData.slice(0, 3));
+                console.log('Full response preview:', JSON.stringify(matchData).substring(0, 500));
                 
                 // Log structure of first match to understand data format
                 if (matchData.length > 0) {
@@ -186,6 +188,8 @@ class PlayerSearch {
                     console.log('First match keys:', Object.keys(matchData[0]));
                     console.log('Match ID field value:', matchData[0].match_id);
                     console.log('Match ID type:', typeof matchData[0].match_id);
+                } else {
+                    console.log('No matches returned from API - empty array');
                 }
             } catch (error) {
                 console.error('Error fetching match history:', error);
