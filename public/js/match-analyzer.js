@@ -583,49 +583,57 @@ class MatchAnalyzer {
     }
 
     /**
-     * Format player names consistently
+     * Format player names consistently with length limits
      */
-    formatPlayerName(player) {
+    formatPlayerName(player, maxLength = 20) {
+        let name = 'Unknown';
+        
         if (player.displayName && player.displayName !== `ID: ${player.accountId}`) {
-            // Clean up any potential escape characters
-            return player.displayName.replace(/\\/g, '').trim();
+            name = player.displayName.replace(/\\/g, '').trim();
+        } else if (player.steamName) {
+            name = player.steamName.replace(/\\/g, '').trim();
+        } else if (player.playerName) {
+            name = player.playerName.replace(/\\/g, '').trim();
+        } else if (player.accountId) {
+            name = player.accountId.toString();
         }
-        if (player.steamName) {
-            // Clean up any potential escape characters
-            return player.steamName.replace(/\\/g, '').trim();
+        
+        // Truncate if too long and add ellipsis
+        if (name.length > maxLength) {
+            return name.substring(0, maxLength - 3) + '...';
         }
-        if (player.playerName) {
-            // Clean up any potential escape characters
-            return player.playerName.replace(/\\/g, '').trim();
-        }
-        // Return just the account ID as a fallback
-        return player.accountId ? player.accountId.toString() : 'Unknown';
+        
+        return name;
     }
 
     /**
      * Format numbers for display (e.g., 12000 -> 12K)
      */
     formatNumber(num) {
+        if (typeof num !== 'number' || isNaN(num)) return '0';
+        
         if (num >= 1000000) {
-            return (num / 1000000).toFixed(1) + 'M';
+            return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
         } else if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
+            return (num / 1000).toFixed(1).replace('.0', '') + 'K';
         }
-        return num.toString();
+        return Math.round(num).toString();
     }
 
     /**
      * Format net worth with proper number formatting and commas
      */
     formatNetWorth(value) {
-        return value.toLocaleString();
+        if (typeof value !== 'number' || isNaN(value)) return '0';
+        return Math.round(value).toLocaleString();
     }
 
     /**
      * Format numeric values with consistent padding for table alignment
      */
     formatTableNumber(value) {
-        return value.toString().padStart(3, ' ');
+        if (typeof value !== 'number' || isNaN(value)) return '0';
+        return Math.round(value).toString();
     }
 
     /**
@@ -784,17 +792,17 @@ class MatchAnalyzer {
 
         if (!stats) {
             return `
-                <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <div class="w-16 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
-                            <span class="text-lg font-bold text-gray-300">H${player.heroId}</span>
+                <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg sm:p-4 p-3 border ${borderColor} min-h-[160px] sm:min-h-[180px] flex flex-col justify-between">
+                    <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
+                        <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
+                            <span class="text-sm sm:text-base font-bold text-gray-300">H${player.heroId}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
-                            <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
+                            <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
+                            <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
                         </div>
                     </div>
-                    <p class="text-center text-gray-500">Loading stats...</p>
+                    <p class="text-center text-gray-500 text-xs sm:text-sm">Loading stats...</p>
                 </div>
             `;
         }
@@ -810,60 +818,47 @@ class MatchAnalyzer {
         const kdaColor = `performance-${kdaLevel}`;
 
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg sm:p-4 p-3 border ${borderColor} min-h-[160px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
-                <div class="flex items-center space-x-4 mb-4">
-                    <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
+                <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
+                    <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border flex-shrink-0" 
                          style="border-color: ${this.getHeroColor(player.heroId)};">
-                        ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
+                        ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-sm font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
-                        <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
-                        <p class="text-xs text-gray-500">${player.totalGames || 0} total games</p>
+                        <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
+                        <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
+                        <p class="text-xs text-gray-500 hidden sm:block">${player.totalGames || 0} games</p>
                         ${player.accountId && this.getSteamProfileUrl(player.accountId) ? 
-                            `<a href="${this.getSteamProfileUrl(player.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors mt-1 flex items-center" title="View Steam Profile">
-                                <i class="fab fa-steam mr-1"></i>View Profile
+                            `<a href="${this.getSteamProfileUrl(player.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors mt-1 items-center hidden sm:flex" title="Steam">
+                                <i class="fab fa-steam mr-1"></i><span class="hidden md:inline">Profile</span>
                             </a>` : ''
                         }
                     </div>
                 </div>
                 
-                <!-- Bottom: Stats grid with consistent spacing -->
-                <div class="stats space-y-3">
+                <!-- Bottom: Stats grid with responsive sizing -->
+                <div class="stats space-y-2 sm:space-y-3">
                     <!-- Primary stats row -->
-                    <div class="grid grid-cols-2 gap-4 text-center">
-                        <div class="bg-gray-700/50 rounded-lg p-3">
-                            <p class="text-xl font-bold ${winRateColor} enhanced-stat">${stats.winRate}%</p>
-                            <p class="text-xs text-gray-400">Win Rate</p>
-                            <div class="performance-indicator indicator-${winRateLevel} mt-1 mx-auto">
-                                ${winRateLevel.charAt(0).toUpperCase() + winRateLevel.slice(1)}
-                            </div>
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3 text-center">
+                        <div class="bg-gray-700/50 rounded-lg p-2 sm:p-3">
+                            <p class="text-lg sm:text-xl font-bold ${winRateColor} enhanced-stat">${stats.winRate}%</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Win Rate</p>
                         </div>
-                        <div class="bg-gray-700/50 rounded-lg p-3">
-                            <p class="text-xl font-bold ${kdaColor} enhanced-stat">${stats.averageKDA}</p>
-                            <p class="text-xs text-gray-400">Avg KDA</p>
-                            <div class="performance-indicator indicator-${kdaLevel} mt-1 mx-auto">
-                                ${kdaLevel.charAt(0).toUpperCase() + kdaLevel.slice(1)}
-                            </div>
+                        <div class="bg-gray-700/50 rounded-lg p-2 sm:p-3">
+                            <p class="text-lg sm:text-xl font-bold ${kdaColor} enhanced-stat">${stats.averageKDA}</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">KDA</p>
                         </div>
                     </div>
                     
-                    <!-- Secondary stats row -->
-                    <div class="grid grid-cols-2 gap-4 text-center text-sm">
-                        <div>
-                            <p class="font-semibold text-cyan-400">${stats.averageKills}/${stats.averageDeaths}</p>
-                            <p class="text-xs text-gray-500">Avg K/D</p>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-yellow-400">${stats.averageAssists}</p>
-                            <p class="text-xs text-gray-500">Avg Assists</p>
-                        </div>
+                    <!-- Secondary stats row - combined for mobile -->
+                    <div class="text-center text-xs sm:text-sm">
+                        <p class="font-semibold text-cyan-400">${stats.averageKills}/${stats.averageDeaths}/${stats.averageAssists}</p>
+                        <p class="text-xs text-gray-500">K/D/A Average</p>
                     </div>
                     
-                    <!-- Recent form -->
-                    <div class="text-center border-t border-gray-600 pt-3">
-                        <p class="text-xs text-gray-400 mb-2">Recent Form</p>
+                    <!-- Recent form - simplified for mobile -->
+                    <div class="text-center border-t border-gray-600 pt-2">
                         <div class="flex justify-center items-center">
                             ${this.createRecentFormSparkline(stats.recentForm)}
                         </div>

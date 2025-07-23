@@ -296,6 +296,70 @@ section {
     animation: skeleton-loading 1.5s infinite;
 }
 
+/* Mobile-responsive player cards */
+.player-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .player-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .player-card {
+        min-height: 160px;
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .player-card .hero-icon {
+        width: 3rem;
+        height: 3rem;
+    }
+    
+    .player-card h4 {
+        font-size: 0.875rem;
+    }
+    
+    .player-card .text-sm {
+        font-size: 0.75rem;
+    }
+    
+    .player-card .text-xs {
+        font-size: 0.625rem;
+    }
+    
+    .player-card .stats .grid {
+        gap: 0.5rem;
+    }
+    
+    .player-card .stats .bg-gray-700\\/50 {
+        padding: 0.5rem;
+    }
+    
+    .player-card .text-xl {
+        font-size: 1rem;
+    }
+    
+    .player-card .text-lg {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .player-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .player-card {
+        min-height: 140px;
+        padding: 0.5rem;
+    }
+}
+
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
@@ -868,24 +932,33 @@ section {
     padding: 8px 12px;
 }
 
-.player-column { 
-    width: 25%; 
+/* Fixed table layout for consistent column widths */
+.game-stats-section table,
+.lane-economics-section table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Game Stats Table Columns */
+.game-stats-section .player-column { 
+    width: 180px;
     text-align: left !important;
+    padding-right: 8px;
 }
 
-.kda-column { 
-    width: 15%; 
+.game-stats-section .kda-column { 
+    width: 80px; 
     text-align: center;
 }
 
-.damage-column { 
-    width: 15%; 
-    text-align: center;
+.game-stats-section .damage-column { 
+    width: 100px; 
+    text-align: right;
 }
 
-.healing-column { 
-    width: 15%; 
-    text-align: center;
+.game-stats-section .healing-column { 
+    width: 100px; 
+    text-align: right;
 }
 
 /* Numeric cell alignment */
@@ -893,6 +966,23 @@ section {
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* Player name cell styles */
+.player-name-cell {
+    max-width: 180px;
+    overflow: hidden;
+}
+
+.player-name-cell .flex {
+    min-width: 0;
+}
+
+.player-name-cell span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 .player-name-cell {
@@ -910,15 +1000,25 @@ section {
     padding: 8px 12px;
 }
 
+/* Lane Economics Table Columns */
 .lane-economics-section .player-column {
-    width: 30%;
+    width: 180px;
     text-align: left !important;
+    padding-right: 8px;
 }
 
-.networth-column,
-.lasthits-column,
-.denies-column {
-    width: 20%;
+.lane-economics-section .networth-column {
+    width: 120px;
+    text-align: right;
+}
+
+.lane-economics-section .lasthits-column {
+    width: 80px;
+    text-align: right;
+}
+
+.lane-economics-section .denies-column {
+    width: 80px;
     text-align: right;
 }
 
@@ -1104,8 +1204,31 @@ section {
         min-width: 800px;
     }
     
-    .player-column { width: 35%; }
-    .kda-column, .damage-column, .healing-column { width: 18%; }
+    /* Mobile table adjustments */
+    .game-stats-section table,
+    .lane-economics-section table {
+        font-size: 0.75rem;
+    }
+    
+    .player-column { 
+        width: 120px;
+    }
+    
+    .kda-column { 
+        width: 60px;
+    }
+    
+    .damage-column, .healing-column { 
+        width: 70px;
+    }
+    
+    .networth-column {
+        width: 80px;
+    }
+    
+    .lasthits-column, .denies-column {
+        width: 50px;
+    }
     
     .stat-tooltip:hover::after {
         font-size: 0.65rem;
