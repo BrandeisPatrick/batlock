@@ -564,9 +564,11 @@ class MatchAnalyzer {
         return `
             <section class="historical-data-section animate-fadeInUp mb-8" style="animation-delay: 0.4s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">📊 Player Historical Performance</h2>
-                
+
                 <!-- Two-column layout wrapper -->
                 <div class="teams-container" id="teamsContainer">
+                    <button class="teams-scroll-btn teams-scroll-btn-left" id="teamsScrollLeft">&#9664;</button>
+                    <button class="teams-scroll-btn teams-scroll-btn-right" id="teamsScrollRight">&#9654;</button>
                     <!-- Two-column grid layout -->
                     <div class="teams-grid">
                         <!-- Team 1 Column -->
@@ -972,6 +974,9 @@ class MatchAnalyzer {
         
         // Add mobile tab functionality
         this.initializeTeamTabs();
+
+        // Add horizontal scroll controls for historical section
+        this.initializeHistoricalScroll();
         
     }
 
@@ -1692,6 +1697,25 @@ class MatchAnalyzer {
                     }
                 });
             });
+        });
+    }
+
+    /**
+     * Setup horizontal scrolling for historical player section
+     */
+    initializeHistoricalScroll() {
+        const container = document.getElementById('teamsContainer');
+        const leftBtn = document.getElementById('teamsScrollLeft');
+        const rightBtn = document.getElementById('teamsScrollRight');
+
+        if (!container || !leftBtn || !rightBtn) return;
+
+        leftBtn.addEventListener('click', () => {
+            container.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+
+        rightBtn.addEventListener('click', () => {
+            container.scrollBy({ left: 300, behavior: 'smooth' });
         });
     }
 }
