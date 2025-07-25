@@ -128,6 +128,7 @@ class PlayerProfile {
     calculateRecentForm() {
         if (!this.recentMatches || this.recentMatches.length === 0) return [];
         
+        // Deadlock API represents a win with 1 and a loss with 0
         return this.recentMatches.slice(0, 10).map(match =>
             Number(match.match_result) === 1 ? 'W' : 'L'
         );

@@ -543,7 +543,7 @@ class DeadlockAPIService {
             const kills = match.player_kills || match.kills || 0;
             const deaths = match.player_deaths || match.deaths || 0;
             const assists = match.player_assists || match.assists || 0;
-            const matchResult = Number(match.match_result);
+            const matchResult = Number(match.match_result); // 1 = win, 0 = loss
             const heroId = match.hero_id;
             
             // Win/loss tracking

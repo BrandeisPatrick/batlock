@@ -245,7 +245,7 @@ class PlayerSearch {
                     start_time: match.start_time
                 });
                 
-                const resultValue = Number(match.match_result);
+                const resultValue = Number(match.match_result); // 1 = win, 0 = loss
 
                 return {
                     matchId: match.match_id,
