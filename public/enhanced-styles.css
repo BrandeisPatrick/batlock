@@ -1358,6 +1358,8 @@ section {
 /* Two-column team layout for historical data */
 .teams-container {
     position: relative;
+    overflow-x: auto;
+    scroll-behavior: smooth;
 }
 
 /* Desktop grid layout */
@@ -1367,9 +1369,9 @@ section {
 
 @media (min-width: 1024px) {
     .teams-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
         gap: 2rem;
+        width: max-content;
     }
     
     .teams-tabs {
@@ -1379,6 +1381,12 @@ section {
 
 .team-column {
     position: relative;
+}
+
+@media (min-width: 1024px) {
+    .team-column {
+        min-width: 600px;
+    }
 }
 
 .team-header {
@@ -1913,5 +1921,34 @@ section {
     font-size: 0.75rem;
     font-weight: 600;
     white-space: nowrap;
+}
+
+/* Horizontal scroll buttons for historical section */
+.teams-scroll-btn {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(17, 24, 39, 0.8);
+    border: 1px solid rgba(75, 85, 99, 0.6);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.teams-scroll-btn-left {
+    left: 0.25rem;
+}
+
+.teams-scroll-btn-right {
+    right: 0.25rem;
+}
+
+@media (min-width: 1024px) {
+    .teams-scroll-btn {
+        display: block;
+    }
 }
 }
