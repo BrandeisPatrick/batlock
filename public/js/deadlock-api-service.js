@@ -5,6 +5,7 @@
 
 // Import hero mappings for better asset handling
 import { getHeroClassName, getHeroName } from '../hero_mapping/hero-mappings.js';
+import { accountIdToSteamId64 } from './bigint-utils.js';
 
 class DeadlockAPIService {
     constructor() {
@@ -154,8 +155,8 @@ class DeadlockAPIService {
             const playerCopy = { ...player };
             
             try {
-                // Convert 32-bit account ID to 64-bit Steam ID
-                const steamId64 = (BigInt(player.accountId) + BigInt('76561197960265728')).toString();
+                // Convert 32-bit account ID to 64-bit Steam ID with BigInt fallback
+                const steamId64 = accountIdToSteamId64(player.accountId);
                 
                 // Use Vercel serverless function
                 const response = await fetch(`/api/steam-user?steamids=${steamId64}`);
