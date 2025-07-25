@@ -103,7 +103,7 @@ class MatchAnalyzer {
         const team1AvgKDA = calculateTeamAverage(team1Stats, 'averageKDA');
 
         return `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Team 1 Stats -->
                 <div class="bg-gradient-to-br from-green-900/20 to-gray-800 rounded-lg p-6 border border-green-500/30">
                     <div class="team-header mb-4">
@@ -146,6 +146,7 @@ class MatchAnalyzer {
                     </div>
                 </div>
             </div>
+            <p class="text-xs text-gray-500 text-center mb-8">Statistics are averaged from each player's last 50 games.</p>
         `;
     }
 
