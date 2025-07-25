@@ -245,7 +245,29 @@ class PlayerSearch {
                     start_time: match.start_time
                 });
                 
-                const resultValue = Number(match.match_result); // 0 = win, 1 = loss
+                const resultValue = Number(match.match_result);
+
+                // Determine the player's team. Different fields may be present
+                // depending on the API version.
+                let teamValue = null;
+                if (match.team !== undefined) {
+                    teamValue = Number(match.team);
+                } else if (match.player_team !== undefined) {
+                    teamValue = Number(match.player_team);
+                } else if (match.player_slot !== undefined) {
+                    teamValue = Number(match.player_slot) <= 6 ? 0 : 1;
+                }
+
+                // If we know the player's team, compare it against the winning
+                // team to determine whether the player won.
+                let isWin = null;
+                if (teamValue !== null && !Number.isNaN(resultValue)) {
+                    isWin = teamValue === resultValue;
+                } else if (!Number.isNaN(resultValue)) {
+                    // Fallback to treating 0 as a win if team information is
+                    // missing. This preserves previous behaviour.
+                    isWin = resultValue === 0;
+                }
 
                 return {
                     matchId: match.match_id,
@@ -255,7 +277,7 @@ class PlayerSearch {
                     kills: match.player_kills || 0,
                     deaths: match.player_deaths || 0,
                     assists: match.player_assists || 0,
-                    result: resultValue === 0 ? 'win' : 'loss',
+                    result: isWin ? 'win' : 'loss',
                     startTime: new Date(match.start_time * 1000).toISOString(),
                     duration: match.match_duration_s || 0,
                     playerDamage: 0, // Not available in this endpoint

@@ -543,11 +543,26 @@ class DeadlockAPIService {
             const kills = match.player_kills || match.kills || 0;
             const deaths = match.player_deaths || match.deaths || 0;
             const assists = match.player_assists || match.assists || 0;
-            const matchResult = Number(match.match_result); // 0 = win, 1 = loss
+            const matchResult = Number(match.match_result); // winning team
+
+            // Determine player's team
+            let playerTeam = null;
+            if (match.team !== undefined) {
+                playerTeam = Number(match.team);
+            } else if (match.player_team !== undefined) {
+                playerTeam = Number(match.player_team);
+            } else if (match.player_slot !== undefined) {
+                playerTeam = Number(match.player_slot) <= 6 ? 0 : 1;
+            }
+
             const heroId = match.hero_id;
-            
-            // Win/loss tracking
-            if (matchResult === 0) {
+
+            // Win/loss tracking based on team
+            const playerWon = playerTeam !== null && !Number.isNaN(matchResult)
+                ? playerTeam === matchResult
+                : matchResult === 0;
+
+            if (playerWon) {
                 stats.wins++;
             } else {
                 stats.losses++;
@@ -555,7 +570,7 @@ class DeadlockAPIService {
 
             // Recent form (last 10 matches)
             if (index < 10) {
-                stats.recentForm.push(matchResult === 0 ? 'W' : 'L');
+                stats.recentForm.push(playerWon ? 'W' : 'L');
             }
 
             // KDA tracking
@@ -578,7 +593,7 @@ class DeadlockAPIService {
                 }
                 
                 stats.heroStats[heroId].matches++;
-                if (matchResult === 0) {
+                if (playerWon) {
                     stats.heroStats[heroId].wins++;
                 } else {
                     stats.heroStats[heroId].losses++;

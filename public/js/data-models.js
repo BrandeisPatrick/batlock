@@ -128,10 +128,22 @@ class PlayerProfile {
     calculateRecentForm() {
         if (!this.recentMatches || this.recentMatches.length === 0) return [];
         
-        // Deadlock API uses 0 for wins and 1 for losses
-        return this.recentMatches.slice(0, 10).map(match =>
-            Number(match.match_result) === 0 ? 'W' : 'L'
-        );
+        // Determine win/loss based on which team the player was on.
+        return this.recentMatches.slice(0, 10).map(match => {
+            const resultValue = Number(match.match_result);
+            let teamValue = null;
+            if (match.team !== undefined) {
+                teamValue = Number(match.team);
+            } else if (match.player_team !== undefined) {
+                teamValue = Number(match.player_team);
+            } else if (match.player_slot !== undefined) {
+                teamValue = Number(match.player_slot) <= 6 ? 0 : 1;
+            }
+            const playerWon = teamValue !== null && !Number.isNaN(resultValue)
+                ? teamValue === resultValue
+                : resultValue === 0;
+            return playerWon ? 'W' : 'L';
+        });
     }
 
     getHeroWinRate(heroId) {
