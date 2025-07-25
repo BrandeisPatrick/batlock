@@ -1405,6 +1405,36 @@ section {
     gap: 1rem;
 }
 
+@media (max-width: 768px) {
+    .historical-data-section .team-cards {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 220px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .historical-data-section .team-cards::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .historical-data-section .team-cards::-webkit-scrollbar-track {
+        background: var(--secondary-bg);
+        border-radius: 4px;
+    }
+
+    .historical-data-section .team-cards::-webkit-scrollbar-thumb {
+        background: var(--accent-cyan);
+        border-radius: 4px;
+    }
+
+    .historical-data-section .player-card {
+        min-width: 220px;
+    }
+}
+
 /* Mobile tab layout */
 .teams-tabs {
     display: block;
@@ -1457,7 +1487,7 @@ section {
 /* Player Historical Stats Grid Layout */
 .player-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1.5rem;
     padding: 1rem 0;
 }
