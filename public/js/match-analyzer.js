@@ -311,6 +311,9 @@ class MatchAnalyzer {
                 <!-- Lane Comparison Summary -->
                 <div class="mt-6 pt-6 border-t border-gray-600">
                     ${this.createLaneComparisonSummary(team0Players, team1Players)}
+                    <p class="text-xs text-gray-500 text-center mt-4">
+                        Lane Economics &amp; Farm stats should be collected from the data before the first tower is destroyed on either side.
+                    </p>
                 </div>
             </section>
         `;
