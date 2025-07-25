@@ -128,8 +128,8 @@ class PlayerProfile {
     calculateRecentForm() {
         if (!this.recentMatches || this.recentMatches.length === 0) return [];
         
-        return this.recentMatches.slice(0, 10).map(match => 
-            match.match_result === 1 ? 'W' : 'L'
+        return this.recentMatches.slice(0, 10).map(match =>
+            Number(match.match_result) === 1 ? 'W' : 'L'
         );
     }
 
