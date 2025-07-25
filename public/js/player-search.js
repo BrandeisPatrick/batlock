@@ -405,6 +405,28 @@ class PlayerSearch {
     }
 
     /**
+     * Gradually load fairness scores and update match cards
+     * @param {Array} matches - Array of match objects or IDs
+     */
+    async loadFairnessScores(matches) {
+        for (const m of matches) {
+            const matchId = typeof m === 'object' ? m.matchId : m;
+            try {
+                const score = await this.fetchFairnessScore(matchId);
+                const badge = document.querySelector(`.match-card[data-match-id="${matchId}"] .fairness-badge`);
+                if (badge) {
+                    badge.textContent = score !== null ? score : 'N/A';
+                }
+            } catch (err) {
+                console.error('Error loading fairness for', matchId, err);
+            }
+
+            // Small delay so scores appear progressively
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    }
+
+    /**
      * Create HTML for a match tab
      */
     async createMatchTab(matchData, index, isActive = false) {
@@ -415,9 +437,8 @@ class PlayerSearch {
         const resultIcon = matchData.result === 'win' ? '🏆' : '💀';
         const activeClass = isActive ? 'active' : '';
 
-        // Get fairness score for the match
-        const fairness = await this.fetchFairnessScore(matchData.matchId);
-        const fairnessDisplay = fairness !== null ? fairness : 'N/A';
+        // Fairness will be loaded asynchronously later
+        const fairnessDisplay = '...';
 
         // Format start time
         const matchDate = new Date(matchData.startTime);
@@ -591,6 +612,9 @@ class PlayerSearch {
                     }
                 });
             });
+
+            // Start loading fairness scores in the background
+            this.loadFairnessScores(matchHistory.matches);
         } else {
             matchTabsWrapper.innerHTML = `
                 <div class="text-center py-8 text-gray-400">
