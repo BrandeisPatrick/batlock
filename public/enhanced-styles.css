@@ -299,7 +299,7 @@ section {
 /* Mobile-responsive player cards */
 .player-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
 }
 
@@ -1409,7 +1409,7 @@ section {
     .historical-data-section .team-cards {
         display: grid;
         grid-auto-flow: column;
-        grid-auto-columns: 220px;
+        grid-auto-columns: 200px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         gap: 1rem;
@@ -1431,7 +1431,7 @@ section {
     }
 
     .historical-data-section .player-card {
-        min-width: 220px;
+        min-width: 200px;
     }
 }
 
@@ -1487,7 +1487,7 @@ section {
 /* Player Historical Stats Grid Layout */
 .player-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     padding: 1rem 0;
 }
