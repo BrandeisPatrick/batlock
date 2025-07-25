@@ -4,6 +4,7 @@
 
 import DeadlockAPIService from './deadlock-api-service.js';
 import { getHeroName, getHeroColor } from '../hero_mapping/hero-mappings.js';
+import { steamId64ToAccountId } from './bigint-utils.js';
 
 class PlayerSearch {
     constructor() {
@@ -170,9 +171,8 @@ class PlayerSearch {
             
             console.log(`Fetching recent matches for SteamID64: ${steamId64}`);
             
-            // Convert SteamID64 to account ID for Deadlock API
-            // SteamID64 to Account ID: subtract 76561197960265728
-            const accountId = BigInt(steamId64) - BigInt('76561197960265728');
+            // Convert SteamID64 to account ID for Deadlock API with BigInt fallback
+            const accountId = steamId64ToAccountId(steamId64);
             console.log(`Converted to account ID: ${accountId}`);
             
             // Call the Deadlock API directly since we know the correct endpoint format

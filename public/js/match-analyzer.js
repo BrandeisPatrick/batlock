@@ -3,7 +3,7 @@
  */
 
 import DeadlockAPIService from './deadlock-api-service.js';
-import { 
+import {
     HERO_ID_TO_NAME, 
     HERO_ID_TO_CLASS, 
     HERO_COLORS,
@@ -11,6 +11,7 @@ import {
     getHeroClassName,
     getHeroColor
 } from '../hero_mapping/hero-mappings.js';
+import { accountIdToSteamId64 } from './bigint-utils.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -595,7 +596,7 @@ class MatchAnalyzer {
     convertToSteamId(accountId) {
         if (!accountId) return null;
         try {
-            return (BigInt(accountId) + BigInt('76561197960265728')).toString();
+            return accountIdToSteamId64(accountId);
         } catch (error) {
             console.warn('Error converting to Steam ID:', error);
             return null;

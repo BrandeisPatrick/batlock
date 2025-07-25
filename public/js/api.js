@@ -1,5 +1,6 @@
 import API_CONFIG from '../config/api-config.js';
 import DeadlockAPIService from './deadlock-api-service.js';
+import { accountIdToSteamId64 } from './bigint-utils.js';
 
 // Simple request tracking
 let requestCount = 0;
@@ -11,8 +12,8 @@ let deadlockAPI = new DeadlockAPIService();
 // Steam Profile Name Fetching (using Vercel serverless function)
 async function getSteamProfileName(steamId) {
     try {
-        // Convert 32-bit account ID to 64-bit Steam ID
-        const steamId64 = (BigInt(steamId) + BigInt('76561197960265728')).toString();
+        // Convert 32-bit account ID to 64-bit Steam ID with BigInt fallback
+        const steamId64 = accountIdToSteamId64(steamId);
         
         // Use Vercel serverless function instead of CORS proxy
         const response = await fetch(`/api/steam-user?steamids=${steamId64}`);
