@@ -129,6 +129,7 @@ async function getPlayerStats(playerId) {
                     averageKills: stats.averageKills,
                     averageDeaths: stats.averageDeaths,
                     averageAssists: stats.averageAssists,
+                    kdaStdDev: stats.kdaStdDev,
                     recentForm: stats.recentForm,
                     heroStats: stats.heroStats,
                     matchesAnalyzed: playerData.matchesAnalyzed

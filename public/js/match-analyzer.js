@@ -465,6 +465,52 @@ class MatchAnalyzer {
     }
 
     /**
+     * Calculate overall fairness score comparing both teams
+     */
+    calculateFairnessScore(team0Players, team1Players) {
+        const avg = (players, field) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics[field] || 0);
+            return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+        };
+
+        const std = (players, field) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics[field] || 0);
+            if (values.length === 0) return 0;
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+            return Math.sqrt(variance);
+        };
+
+        const bigBrotherPenalty = (players) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
+            if (values.length === 0) return 0;
+            const avgKda = values.reduce((a, b) => a + b, 0) / values.length;
+            const maxKda = Math.max(...values);
+            return maxKda - avgKda;
+        };
+
+        const avgKDA0 = avg(team0Players, 'averageKDA');
+        const avgKDA1 = avg(team1Players, 'averageKDA');
+        const avgWR0 = avg(team0Players, 'winRate');
+        const avgWR1 = avg(team1Players, 'winRate');
+
+        const kdaDiff = Math.abs(avgKDA0 - avgKDA1);
+        const wrDiff = Math.abs(avgWR0 - avgWR1);
+        const stdPenalty = std(team0Players, 'kdaStdDev') + std(team1Players, 'kdaStdDev');
+        const bbPenalty = bigBrotherPenalty(team0Players) + bigBrotherPenalty(team1Players);
+
+        let score = 100;
+        score -= kdaDiff * 5;
+        score -= wrDiff;
+        score -= stdPenalty * 2;
+        score -= bbPenalty * 3;
+
+        if (score < 0) score = 0;
+        if (score > 100) score = 100;
+        return score.toFixed(1);
+    }
+
+    /**
      * Create Section 3: Historical Player Data (existing player cards)
      */
     async createHistoricalDataSection(team0Players, team1Players) {
@@ -876,12 +922,19 @@ class MatchAnalyzer {
         
         // Create match overview
         const overview = this.createMatchOverview(matchData);
-        
+
         // Prepare team data for the new sections
         const team0Players = [...allPlayersData.teams.team0]
             .sort((a, b) => a.playerSlot - b.playerSlot);
         const team1Players = [...allPlayersData.teams.team1]
             .sort((a, b) => a.playerSlot - b.playerSlot);
+
+        const fairness = this.calculateFairnessScore(team0Players, team1Players);
+        const fairnessSection = `
+            <div class="fairness-score text-center mb-6">
+                Fairness Score: <span class="text-yellow-400 font-bold">${fairness}</span>/100
+            </div>
+        `;
         
         
         // Create the new three-section layout
@@ -892,6 +945,7 @@ class MatchAnalyzer {
         
         const finalHTML = `
             ${overview}
+            ${fairnessSection}
             ${teamComparison}
             ${gameStatsSection}
             ${laneEconomicsSection}

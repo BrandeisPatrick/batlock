@@ -1845,8 +1845,19 @@ section {
         width: 50px;
     }
     
-    .stat-tooltip:hover::after {
-        font-size: 0.65rem;
-        padding: 6px 8px;
-    }
+.stat-tooltip:hover::after {
+    font-size: 0.65rem;
+    padding: 6px 8px;
+}
+
+.fairness-score {
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-weight: 600;
+    max-width: 260px;
+    margin-left: auto;
+    margin-right: auto;
+}
 }
