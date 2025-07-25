@@ -955,6 +955,18 @@ section {
     min-height: 200px;
 }
 
+/* Allow the historical section to expand on small screens */
+.historical-data-section {
+    overflow: visible;
+}
+
+@media (max-width: 768px) {
+    .historical-data-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 .game-stats-section::before,
 .lane-economics-section::before,
 .historical-data-section::before {
