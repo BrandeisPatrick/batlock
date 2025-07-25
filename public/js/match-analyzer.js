@@ -486,10 +486,9 @@ class MatchAnalyzer {
             return Math.sqrt(variance);
         };
 
-        // Penalize teams where one player's average KDA is far ahead of the rest
-        // Instead of comparing the highest KDA to the team's average, compare it
-        // to the second highest. This emphasises cases where a single player is
-        // carrying the team's stats by a wide margin.
+        // Penalize teams where one player's average KDA far exceeds everyone else
+        // Compare the top player's KDA to the second highest.  The gap is squared
+        // so that large differences result in a drastically lower fairness score.
         const bigBrotherPenalty = (players) => {
             const values = players
                 .filter(p => p.statistics)
@@ -499,7 +498,8 @@ class MatchAnalyzer {
             if (values.length < 2) return 0;
 
             const [highest, secondHighest] = values;
-            return highest - secondHighest;
+            const diff = highest - secondHighest;
+            return diff * diff;
         };
 
         const avgKDA0 = avg(team0Players, 'averageKDA');
