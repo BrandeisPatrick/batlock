@@ -543,11 +543,11 @@ class DeadlockAPIService {
             const kills = match.player_kills || match.kills || 0;
             const deaths = match.player_deaths || match.deaths || 0;
             const assists = match.player_assists || match.assists || 0;
-            const matchResult = Number(match.match_result);
+            const matchResult = Number(match.match_result); // 0 = win, 1 = loss
             const heroId = match.hero_id;
             
             // Win/loss tracking
-            if (matchResult === 1) {
+            if (matchResult === 0) {
                 stats.wins++;
             } else {
                 stats.losses++;
@@ -555,7 +555,7 @@ class DeadlockAPIService {
 
             // Recent form (last 10 matches)
             if (index < 10) {
-                stats.recentForm.push(matchResult === 1 ? 'W' : 'L');
+                stats.recentForm.push(matchResult === 0 ? 'W' : 'L');
             }
 
             // KDA tracking
@@ -578,7 +578,7 @@ class DeadlockAPIService {
                 }
                 
                 stats.heroStats[heroId].matches++;
-                if (matchResult === 1) {
+                if (matchResult === 0) {
                     stats.heroStats[heroId].wins++;
                 } else {
                     stats.heroStats[heroId].losses++;
