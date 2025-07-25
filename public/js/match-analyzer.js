@@ -146,7 +146,7 @@ class MatchAnalyzer {
                     </div>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 text-center mb-8">Statistics are averaged from each player's last 50 games.</p>
+            <p class="text-sm text-gray-500 text-center mb-8">Statistics are averaged from each player's last 50 games.</p>
         `;
     }
 
