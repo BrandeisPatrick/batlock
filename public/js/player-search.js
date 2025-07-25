@@ -245,6 +245,8 @@ class PlayerSearch {
                     start_time: match.start_time
                 });
                 
+                const resultValue = Number(match.match_result);
+
                 return {
                     matchId: match.match_id,
                     heroId: match.hero_id,
@@ -253,7 +255,7 @@ class PlayerSearch {
                     kills: match.player_kills || 0,
                     deaths: match.player_deaths || 0,
                     assists: match.player_assists || 0,
-                    result: match.match_result === 1 ? 'win' : 'loss',
+                    result: resultValue === 1 ? 'win' : 'loss',
                     startTime: new Date(match.start_time * 1000).toISOString(),
                     duration: match.match_duration_s || 0,
                     playerDamage: 0, // Not available in this endpoint
