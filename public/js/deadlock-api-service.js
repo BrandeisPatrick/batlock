@@ -530,6 +530,7 @@ class DeadlockAPIService {
             averageDeaths: 0,
             averageAssists: 0,
             averageKDA: 0,
+            kdaStdDev: 0,
             heroStats: {},
             recentForm: []
         };
@@ -537,6 +538,7 @@ class DeadlockAPIService {
         let totalKills = 0;
         let totalDeaths = 0;
         let totalAssists = 0;
+        const kdaValues = [];
 
         matches.forEach((match, index) => {
             // Support both API response formats
@@ -577,6 +579,8 @@ class DeadlockAPIService {
             totalKills += kills;
             totalDeaths += deaths;
             totalAssists += assists;
+            const matchKDA = this.calculateKDA(kills, deaths, assists);
+            kdaValues.push(matchKDA);
 
             // Hero-specific stats
             if (heroId) {
@@ -610,6 +614,12 @@ class DeadlockAPIService {
         stats.averageDeaths = Math.round((totalDeaths / stats.totalMatches) * 10) / 10;
         stats.averageAssists = Math.round((totalAssists / stats.totalMatches) * 10) / 10;
         stats.averageKDA = this.calculateKDA(totalKills, totalDeaths, totalAssists);
+
+        if (kdaValues.length > 0) {
+            const mean = stats.averageKDA;
+            const variance = kdaValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / kdaValues.length;
+            stats.kdaStdDev = Math.round(Math.sqrt(variance) * 100) / 100;
+        }
 
         // Calculate hero win rates
         Object.keys(stats.heroStats).forEach(heroId => {
