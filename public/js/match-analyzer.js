@@ -482,12 +482,20 @@ class MatchAnalyzer {
             return Math.sqrt(variance);
         };
 
+        // Penalize teams where one player's average KDA is far ahead of the rest
+        // Instead of comparing the highest KDA to the team's average, compare it
+        // to the second highest. This emphasises cases where a single player is
+        // carrying the team's stats by a wide margin.
         const bigBrotherPenalty = (players) => {
-            const values = players.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
-            if (values.length === 0) return 0;
-            const avgKda = values.reduce((a, b) => a + b, 0) / values.length;
-            const maxKda = Math.max(...values);
-            return maxKda - avgKda;
+            const values = players
+                .filter(p => p.statistics)
+                .map(p => p.statistics.averageKDA || 0)
+                .sort((a, b) => b - a); // descending order
+
+            if (values.length < 2) return 0;
+
+            const [highest, secondHighest] = values;
+            return highest - secondHighest;
         };
 
         const avgKDA0 = avg(team0Players, 'averageKDA');
