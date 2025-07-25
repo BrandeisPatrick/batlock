@@ -10,6 +10,7 @@ class PlayerSearch {
         this.deadlockAPI = new DeadlockAPIService();
         this.playerCache = new Map(); // Cache player name -> account ID mappings
         this.matchCache = new Map(); // Cache account ID -> recent matches (5 min TTL)
+        this.fairnessCache = new Map(); // Cache match ID -> fairness score
         this.CACHE_TTL = 5 * 60 * 1000; // 5 minutes
     }
 
@@ -337,6 +338,73 @@ class PlayerSearch {
     }
 
     /**
+     * Calculate overall fairness score comparing both teams
+     */
+    calculateFairnessScore(team0Players, team1Players) {
+        const avg = (players, field) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics[field] || 0);
+            return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+        };
+
+        const std = (players, field) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics[field] || 0);
+            if (values.length === 0) return 0;
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+            return Math.sqrt(variance);
+        };
+
+        const bigBrotherPenalty = (players) => {
+            const values = players.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
+            if (values.length === 0) return 0;
+            const avgKda = values.reduce((a, b) => a + b, 0) / values.length;
+            const maxKda = Math.max(...values);
+            return maxKda - avgKda;
+        };
+
+        const avgKDA0 = avg(team0Players, 'averageKDA');
+        const avgKDA1 = avg(team1Players, 'averageKDA');
+        const avgWR0 = avg(team0Players, 'winRate');
+        const avgWR1 = avg(team1Players, 'winRate');
+
+        const kdaDiff = Math.abs(avgKDA0 - avgKDA1);
+        const wrDiff = Math.abs(avgWR0 - avgWR1);
+        const stdPenalty = std(team0Players, 'kdaStdDev') + std(team1Players, 'kdaStdDev');
+        const bbPenalty = bigBrotherPenalty(team0Players) + bigBrotherPenalty(team1Players);
+
+        let score = 100;
+        score -= kdaDiff * 5;
+        score -= wrDiff;
+        score -= stdPenalty * 2;
+        score -= bbPenalty * 3;
+
+        if (score < 0) score = 0;
+        if (score > 100) score = 100;
+        return score.toFixed(1);
+    }
+
+    /**
+     * Fetch fairness score for a match (with caching)
+     */
+    async fetchFairnessScore(matchId) {
+        const cached = this.fairnessCache.get(matchId);
+        if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+            return cached.score;
+        }
+
+        try {
+            const data = await this.deadlockAPI.getAllPlayersFromMatch(matchId);
+            if (!data || !data.teams) return null;
+            const score = this.calculateFairnessScore(data.teams.team0, data.teams.team1);
+            this.fairnessCache.set(matchId, { score, timestamp: Date.now() });
+            return score;
+        } catch (err) {
+            console.error('Failed to fetch fairness score for', matchId, err);
+            return null;
+        }
+    }
+
+    /**
      * Create HTML for a match tab
      */
     async createMatchTab(matchData, index, isActive = false) {
@@ -346,7 +414,11 @@ class PlayerSearch {
         const resultClass = matchData.result === 'win' ? 'win-indicator' : 'loss-indicator';
         const resultIcon = matchData.result === 'win' ? '🏆' : '💀';
         const activeClass = isActive ? 'active' : '';
-        
+
+        // Get fairness score for the match
+        const fairness = await this.fetchFairnessScore(matchData.matchId);
+        const fairnessDisplay = fairness !== null ? fairness : 'N/A';
+
         // Format start time
         const matchDate = new Date(matchData.startTime);
         const timeAgo = this.getTimeAgo(matchDate);
@@ -373,9 +445,12 @@ class PlayerSearch {
                             <p class="match-time">${timeAgo}</p>
                         </div>
                     </div>
-                    <div class="match-result ${resultClass}">
-                        <span class="result-icon">${resultIcon}</span>
-                        <span class="result-text">${matchData.result?.toUpperCase() || 'N/A'}</span>
+                    <div class="header-right flex items-center gap-2">
+                        <div class="fairness-badge" title="Fairness Score">${fairnessDisplay}</div>
+                        <div class="match-result ${resultClass}">
+                            <span class="result-icon">${resultIcon}</span>
+                            <span class="result-text">${matchData.result?.toUpperCase() || 'N/A'}</span>
+                        </div>
                     </div>
                 </div>
                 
