@@ -290,7 +290,7 @@ class MatchAnalyzer {
             const card1 = player1 ? await this.createPerformanceCard(player1, 'red') : '';
 
             cards += `
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-4">
                     <div>${card0}</div>
                     <div>${card1}</div>
                 </div>
@@ -309,7 +309,7 @@ class MatchAnalyzer {
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 flex items-center space-x-2 border ${borderColor}">
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-2 flex items-center space-x-2 border ${borderColor}">
                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
@@ -476,7 +476,7 @@ class MatchAnalyzer {
             const card1 = player1 ? await this.createLaneEconomicsCard(player1, 'red') : '';
 
             cards += `
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-4">
                     <div>${card0}</div>
                     <div>${card1}</div>
                 </div>
@@ -495,7 +495,7 @@ class MatchAnalyzer {
         const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 flex items-center space-x-2 border ${borderColor}">
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-2 flex items-center space-x-2 border ${borderColor}">
                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>

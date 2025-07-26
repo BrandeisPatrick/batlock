@@ -310,8 +310,8 @@ section {
     }
     
     .player-card {
-        min-height: 160px;
-        padding: 0.75rem;
+        min-height: 120px;
+        padding: 0.5rem;
         font-size: 0.875rem;
     }
     
@@ -355,7 +355,7 @@ section {
     }
 
     .player-card {
-        min-height: 140px;
+        min-height: 100px;
         padding: 0.5rem;
     }
 }
