@@ -957,7 +957,7 @@ section {
 .game-stats-section,
 .lane-economics-section,
 .historical-data-section {
-    background: rgba(30, 41, 59, 0.9) !important;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(17, 24, 39, 0.9)) !important;
     backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
@@ -1005,6 +1005,15 @@ section {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     margin-top: 0.5rem;
     position: relative;
+}
+
+/* Gradient text for section titles */
+.section-title-gradient {
+    background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
 }
 
 /* Table styling for stats sections */
@@ -1546,7 +1555,7 @@ section {
 /* Add alternating row colors for better readability */
 .game-stats-section tbody tr:nth-child(even),
 .lane-economics-section tbody tr:nth-child(even) {
-    background-color: rgba(75, 85, 99, 0.1);
+    background-color: rgba(75, 85, 99, 0.15);
 }
 
 /* Performance table column alignment */
