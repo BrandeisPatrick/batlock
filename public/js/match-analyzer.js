@@ -12,6 +12,7 @@ import {
     getHeroColor
 } from '../hero_mapping/hero-mappings.js';
 import { accountIdToSteamId64 } from './bigint-utils.js';
+import { getTopCounterItems, getTopWinRateItems } from './item-recommendations.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -724,6 +725,53 @@ class MatchAnalyzer {
     }
 
     /**
+     * Create item effectiveness summary for a team
+     */
+    createItemEffectivenessSection(teamPlayers, enemyPlayers) {
+        const enemyHeroes = enemyPlayers.map(p => p.heroId).filter(Boolean);
+        const effectiveItems = new Set();
+        enemyHeroes.forEach(id => {
+            getTopCounterItems(id).forEach(item => effectiveItems.add(item));
+        });
+
+        const rows = teamPlayers.map(player => {
+            const items = player.items || [];
+            const effCount = items.filter(i => effectiveItems.has(i)).length;
+            const winRateItems = new Set(getTopWinRateItems(player.heroId));
+            const winCount = items.filter(i => winRateItems.has(i)).length;
+            return `
+                <tr class="border-b border-gray-600">
+                    <td class="py-2 px-2 text-left">${this.formatPlayerName(player)}</td>
+                    <td class="py-2 px-2 text-center">${effCount}</td>
+                    <td class="py-2 px-2 text-center">${winCount}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const teamLabel = teamPlayers[0] && teamPlayers[0].team === 0 ? 'Team 1' : 'Team 2';
+
+        return `
+            <section class="item-effectiveness-section bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">🛡️ Item Effectiveness - ${teamLabel}</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-600">
+                                <th class="text-left py-2 px-2">Player</th>
+                                <th class="text-center py-2 px-2">Vs Enemy Items</th>
+                                <th class="text-center py-2 px-2">Hero Win Rate Items</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        `;
+    }
+
+    /**
      * Convert account ID to Steam ID
      */
     convertToSteamId(accountId) {
@@ -1079,8 +1127,10 @@ class MatchAnalyzer {
         const gameStatsSection = await this.createGameStatsSection(team0Players, team1Players);
         const laneEconomicsSection = await this.createLaneEconomicsSection(team0Players, team1Players);
         const historicalDataSection = await this.createHistoricalDataSection(team0Players, team1Players);
+        const itemSectionTeam0 = this.createItemEffectivenessSection(team0Players, team1Players);
+        const itemSectionTeam1 = this.createItemEffectivenessSection(team1Players, team0Players);
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
-        
+
         const finalHTML = `
             ${overview}
             ${fairnessSection}
@@ -1088,6 +1138,8 @@ class MatchAnalyzer {
             ${gameStatsSection}
             ${laneEconomicsSection}
             ${historicalDataSection}
+            ${itemSectionTeam0}
+            ${itemSectionTeam1}
         `;
         
         container.innerHTML = finalHTML;
