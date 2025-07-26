@@ -306,8 +306,10 @@ class MatchAnalyzer {
     async createPerformanceCard(player, teamColor) {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
+        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         return `
-            <div class="bg-gray-700 rounded-lg p-3 flex items-center space-x-2">
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 flex items-center space-x-2 border ${borderColor}">
                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
