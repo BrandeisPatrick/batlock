@@ -305,13 +305,13 @@ section {
 
 @media (max-width: 768px) {
     .player-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .player-card {
-        min-height: 120px;
-        padding: 0.5rem;
+        min-height: 160px;
+        padding: 1rem;
         font-size: 0.875rem;
     }
     
@@ -362,8 +362,8 @@ section {
 
 @media (max-width: 640px) {
     .player-card {
-        flex-direction: row !important;
-        align-items: center;
+        flex-direction: column !important;
+        align-items: stretch;
         min-height: auto;
     }
 
