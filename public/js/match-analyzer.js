@@ -674,29 +674,19 @@ class MatchAnalyzer {
             <section class="historical-data-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.4s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">📊 Player Historical Performance</h2>
 
-                <!-- Two-column layout wrapper -->
-                <div class="teams-container" id="teamsContainer">
-                    <!-- Two-column grid layout -->
-                    <div class="teams-grid">
-                        <!-- Team 1 Column -->
-                        <div class="team-column">
-                            <div class="team-header team-header-green">
-                                <h4 class="text-lg font-semibold text-green-400">
-                                    Team 1 Historical Stats
-                                </h4>
-                            </div>
+                <!-- Tabbed layout for both desktop and mobile -->
+                <div class="teams-tabs" id="teamsContainer">
+                    <div class="tab-buttons">
+                        <button class="team-tab-btn team1-tab active" data-team="team1">Team 1</button>
+                        <button class="team-tab-btn team2-tab" data-team="team2">Team 2</button>
+                    </div>
+                    <div class="tab-panels">
+                        <div class="team-panel team1-panel active" data-team="team1">
                             <div class="team-cards player-stats-grid">
                                 ${team0Cards}
                             </div>
                         </div>
-
-                        <!-- Team 2 Column -->
-                        <div class="team-column">
-                            <div class="team-header team-header-red">
-                                <h4 class="text-lg font-semibold text-red-400">
-                                    Team 2 Historical Stats
-                                </h4>
-                            </div>
+                        <div class="team-panel team2-panel" data-team="team2">
                             <div class="team-cards player-stats-grid">
                                 ${team1Cards}
                             </div>
@@ -1582,56 +1572,21 @@ class MatchAnalyzer {
             team1Limited.push(null);
         }
         
-        // Two-column layout matching the main view
         return `
-            <div class="teams-container">
-                <!-- Desktop: Two-column grid layout -->
-                <div class="teams-grid">
-                    <!-- Team 1 Column -->
-                    <div class="team-column">
-                        <div class="team-header team-header-green">
-                            <h4 class="text-lg font-semibold text-green-400">
-                                Team 1
-                            </h4>
-                        </div>
-                        <div class="team-cards">
+            <div class="teams-tabs">
+                <div class="tab-buttons">
+                    <button class="team-tab-btn team1-tab active" data-team="team1">Team 1</button>
+                    <button class="team-tab-btn team2-tab" data-team="team2">Team 2</button>
+                </div>
+                <div class="tab-panels">
+                    <div class="team-panel team1-panel active" data-team="team1">
+                        <div class="team-cards player-stats-grid">
                             ${(await Promise.all(team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : Promise.resolve(this.createEmptyLoadingSlot('green', index + 1))))).join('')}
                         </div>
                     </div>
-                    
-                    <!-- Team 2 Column -->
-                    <div class="team-column">
-                        <div class="team-header team-header-red">
-                            <h4 class="text-lg font-semibold text-red-400">
-                                Team 2
-                            </h4>
-                        </div>
-                        <div class="team-cards">
+                    <div class="team-panel team2-panel" data-team="team2">
+                        <div class="team-cards player-stats-grid">
                             ${(await Promise.all(team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : Promise.resolve(this.createEmptyLoadingSlot('red', index + 1))))).join('')}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Mobile: Tab navigation -->
-                <div class="teams-tabs">
-                    <div class="tab-buttons">
-                        <button class="team-tab-btn team1-tab active" data-team="team1">
-                            Team 1
-                        </button>
-                        <button class="team-tab-btn team2-tab" data-team="team2">
-                            Team 2
-                        </button>
-                    </div>
-                    <div class="tab-panels">
-                        <div class="team-panel team1-panel active" data-team="team1">
-                            <div class="team-cards player-stats-grid">
-                                ${(await Promise.all(team0Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'green') : Promise.resolve(this.createEmptyLoadingSlot('green', index + 1))))).join('')}
-                            </div>
-                        </div>
-                        <div class="team-panel team2-panel" data-team="team2">
-                            <div class="team-cards player-stats-grid">
-                                ${(await Promise.all(team1Limited.map((player, index) => player ? this.createLoadingPlayerCard(player, 'red') : Promise.resolve(this.createEmptyLoadingSlot('red', index + 1))))).join('')}
-                            </div>
                         </div>
                     </div>
                 </div>
