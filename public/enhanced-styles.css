@@ -353,10 +353,27 @@ section {
     .player-stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .player-card {
         min-height: 140px;
         padding: 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .player-card {
+        flex-direction: row !important;
+        align-items: center;
+        min-height: auto;
+    }
+
+    .player-card .stats {
+        margin-top: 0;
+        width: 100%;
+    }
+
+    .player-card .stats .grid {
+        gap: 0.25rem;
     }
 }
 
