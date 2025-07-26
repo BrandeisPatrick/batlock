@@ -310,9 +310,9 @@ section {
     }
     
     .player-card {
-        min-height: 140px;
-        padding: 0.75rem;
-        font-size: 0.9rem;
+        min-height: 120px;
+        padding: 0.5rem;
+        font-size: 0.875rem;
     }
     
     .player-card .hero-icon {
@@ -355,14 +355,16 @@ section {
     }
 
     .player-card {
-        min-height: 140px;
-        padding: 0.75rem;
+        min-height: 100px;
+        padding: 0.5rem;
     }
 }
 
 @media (max-width: 640px) {
     .player-card {
-        min-height: 140px;
+        flex-direction: row !important;
+        align-items: center;
+        min-height: auto;
     }
 
     .player-card .stats {
