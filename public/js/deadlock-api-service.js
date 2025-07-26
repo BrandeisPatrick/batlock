@@ -105,7 +105,21 @@ class DeadlockAPIService {
      */
     async getPlayerProfile(playerId) {
         const url = `${this.baseUrl}/players/${playerId}`;
-        return await this.fetchWithCache(url);
+        const profileData = await this.fetchWithCache(url);
+
+        // Try to enrich the profile with the Steam display name
+        try {
+            const steamData = await this.getSteamUsers([playerId]);
+            const players = steamData?.response?.players;
+            if (players && players.length > 0) {
+                profileData.displayName = players[0].personaname;
+                profileData.personaname = players[0].personaname;
+            }
+        } catch (err) {
+            console.warn('Failed to fetch Steam display name', err);
+        }
+
+        return profileData;
     }
 
     /**

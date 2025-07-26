@@ -101,6 +101,8 @@ class PlayerProfile {
     constructor(rawData) {
         this.steamId = rawData.steam_id || rawData.account_id;
         this.playerName = rawData.player_name || rawData.name;
+        // Steam display name if available
+        this.displayName = rawData.displayName || rawData.personaname || null;
         this.avatar = rawData.avatar;
         this.profileUrl = rawData.profile_url;
         
