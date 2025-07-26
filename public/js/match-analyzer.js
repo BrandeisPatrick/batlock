@@ -158,8 +158,8 @@ class MatchAnalyzer {
         const gameStatsRows = await this.createGameStatsRows(team0Players, team1Players);
         const mobileCards = await this.createGameStatsCards(team0Players, team1Players);
         return `
-            <section class="game-stats-section animate-fadeInUp rounded-lg p-6 mb-8">
-                <h2 class="text-2xl font-bold section-title-gradient mb-6 text-center">🎮 Match Performance</h2>
+            <section class="game-stats-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">🎮 Match Performance</h2>
 
                 <!-- Desktop table -->
                 <div class="hidden md:block">
@@ -327,8 +327,8 @@ class MatchAnalyzer {
         const laneEconomicsRows = await this.createLaneEconomicsRows(team0Players, team1Players);
         const mobileCards = await this.createLaneEconomicsCards(team0Players, team1Players);
         return `
-            <section class="lane-economics-section animate-fadeInUp rounded-lg p-6 mb-8" style="animation-delay: 0.2s;">
-                <h2 class="text-2xl font-bold section-title-gradient mb-6 text-center">💰 Lane Economics & Farm</h2>
+            <section class="lane-economics-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.2s;">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">💰 Lane Economics & Farm</h2>
 
                 <!-- Lane Headers -->
                 <div class="grid grid-cols-2 gap-6 mb-4">
@@ -501,8 +501,8 @@ class MatchAnalyzer {
                     <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
                     <div class="text-xs text-gray-300 flex space-x-2">
                         <span>NW: ${this.formatNetWorth(player.netWorth || 0)}</span>
-                        <span>Last Hit: ${this.formatTableNumber(player.lastHits || 0)}</span>
-                        <span>Deny: ${this.formatTableNumber(player.denies || 0)}</span>
+                        <span>LH: ${this.formatTableNumber(player.lastHits || 0)}</span>
+                        <span>D: ${this.formatTableNumber(player.denies || 0)}</span>
                     </div>
                 </div>
             </div>
