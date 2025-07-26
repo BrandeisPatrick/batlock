@@ -110,6 +110,7 @@ function switchSearchMode(mode) {
         // Hide match analysis results when switching to player mode
         if (resultsDiv) {
             resultsDiv.classList.add('hidden');
+            resultsDiv.innerHTML = '';
         }
         console.log('Switched to player mode - match results hidden');
     }
