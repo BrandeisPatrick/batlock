@@ -609,6 +609,20 @@ class MatchAnalyzer {
             return Math.min(sd, 5); // cap the penalty
         };
 
+        // Heavy penalty when a single player's KDA greatly exceeds all players on the other team
+        const extremeKdaGapPenalty = (teamA, teamB) => {
+            const getMax = team => {
+                const values = team
+                    .filter(p => p.statistics)
+                    .map(p => p.statistics.averageKDA || 0);
+                return values.length ? Math.max(...values) : 0;
+            };
+            const maxA = getMax(teamA);
+            const maxB = getMax(teamB);
+            const diff = Math.abs(maxA - maxB);
+            return diff >= 0.5 ? diff * 20 : 0; // 0.5 gap or more is heavily penalized
+        };
+
         const avgKDA0 = avg(team0Players, 'averageKDA');
         const avgKDA1 = avg(team1Players, 'averageKDA');
         const avgWR0 = avg(team0Players, 'winRate');
@@ -626,12 +640,14 @@ class MatchAnalyzer {
 
         const dmgDiff = Math.abs(avgDMG0 - avgDMG1);
         const nwDiff  = Math.abs(avgNW0  - avgNW1);
+        const kdaGapPenalty = extremeKdaGapPenalty(team0Players, team1Players);
 
         let score = 100;
         score -= kdaDiff * 5;
         score -= wrDiff;
         score -= stdPenalty * 2;
         score -= bbPenalty * 3;
+        score -= kdaGapPenalty;
         score -= dmgDiff * 0.5;
         score -= nwDiff * 0.5;
 

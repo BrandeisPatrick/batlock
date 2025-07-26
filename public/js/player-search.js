@@ -354,13 +354,25 @@ class PlayerSearch {
             return Math.sqrt(variance);
         };
 
-        const bigBrotherPenalty = (players) => {
+       const bigBrotherPenalty = (players) => {
             const values = players.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
             if (values.length === 0) return 0;
             const mean = values.reduce((a, b) => a + b, 0) / values.length;
             const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
             const sd = Math.sqrt(variance);
             return Math.min(sd, 5);
+       };
+
+        // Heavy penalty when a single player's KDA greatly exceeds all players on the other team
+        const extremeKdaGapPenalty = (teamA, teamB) => {
+            const getMax = team => {
+                const values = team.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
+                return values.length ? Math.max(...values) : 0;
+            };
+            const maxA = getMax(teamA);
+            const maxB = getMax(teamB);
+            const diff = Math.abs(maxA - maxB);
+            return diff >= 0.5 ? diff * 20 : 0;
         };
 
         const avgKDA0 = avg(team0Players, 'averageKDA');
@@ -378,16 +390,18 @@ class PlayerSearch {
         const stdPenalty = std(team0Players, 'kdaStdDev') + std(team1Players, 'kdaStdDev');
         const bbPenalty = bigBrotherPenalty(team0Players) + bigBrotherPenalty(team1Players);
 
-        const dmgDiff = Math.abs(avgDMG0 - avgDMG1);
-        const nwDiff  = Math.abs(avgNW0  - avgNW1);
+       const dmgDiff = Math.abs(avgDMG0 - avgDMG1);
+       const nwDiff  = Math.abs(avgNW0  - avgNW1);
+        const kdaGapPenalty = extremeKdaGapPenalty(team0Players, team1Players);
 
-        let score = 100;
-        score -= kdaDiff * 5;
-        score -= wrDiff;
-        score -= stdPenalty * 2;
-        score -= bbPenalty * 3;
-        score -= dmgDiff * 0.5;
-        score -= nwDiff * 0.5;
+       let score = 100;
+       score -= kdaDiff * 5;
+       score -= wrDiff;
+       score -= stdPenalty * 2;
+       score -= bbPenalty * 3;
+        score -= kdaGapPenalty;
+       score -= dmgDiff * 0.5;
+       score -= nwDiff * 0.5;
 
         if (score < 0) score = 0;
         if (score > 100) score = 100;
