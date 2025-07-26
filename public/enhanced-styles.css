@@ -1649,7 +1649,7 @@ section {
 }
 
 .lane-economics-section .networth-column {
-    width: 100px;
+    width: 80px;
     text-align: right;
 }
 
@@ -1865,7 +1865,7 @@ section {
     }
     
     .networth-column {
-        width: 60px;
+        width: 50px;
     }
     
     .lasthits-column, .denies-column {
