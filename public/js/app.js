@@ -54,6 +54,10 @@ const popularPlayers = [
     {
         name: "Player Profile 7",
         url: "https://steamcommunity.com/profiles/76561198106577838"
+    },
+    {
+        name: "Player Profile 8",
+        url: "https://steamcommunity.com/profiles/76561199866750761/"
     }
 ];
 
