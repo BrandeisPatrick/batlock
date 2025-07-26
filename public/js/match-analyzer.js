@@ -156,37 +156,43 @@ class MatchAnalyzer {
      */
     async createGameStatsSection(team0Players, team1Players) {
         const gameStatsRows = await this.createGameStatsRows(team0Players, team1Players);
+        const mobileCards = await this.createGameStatsCards(team0Players, team1Players);
         return `
             <section class="game-stats-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">🎮 Match Performance</h2>
-                
-                <!-- Team Headers -->
-                <div class="grid grid-cols-2 gap-6 mb-4">
-                    <div class="text-center">
-                        <h3 class="text-lg font-semibold text-green-400">Team 1</h3>
+
+                <!-- Desktop table -->
+                <div class="hidden md:block">
+                    <div class="grid grid-cols-2 gap-6 mb-4">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-green-400">Team 1</h3>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-red-400">Team 2</h3>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <h3 class="text-lg font-semibold text-red-400">Team 2</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-600">
+                                    <th class="player-column text-left py-3 px-2">Player</th>
+                                    <th class="kda-column text-center py-3 px-2">K/D/A</th>
+                                    <th class="damage-column text-center py-3 px-2">Damage</th>
+                                    <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
+                                    <th class="kda-column text-center py-3 px-2">K/D/A</th>
+                                    <th class="damage-column text-center py-3 px-2">Damage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${gameStatsRows}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                
-                <!-- Stats Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-600">
-                                <th class="player-column text-left py-3 px-2">Player</th>
-                                <th class="kda-column text-center py-3 px-2">K/D/A</th>
-                                <th class="damage-column text-center py-3 px-2">Damage</th>
-                                <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
-                                <th class="kda-column text-center py-3 px-2">K/D/A</th>
-                                <th class="damage-column text-center py-3 px-2">Damage</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${gameStatsRows}
-                        </tbody>
-                    </table>
+
+                <!-- Mobile cards -->
+                <div class="md:hidden space-y-4">
+                    ${mobileCards}
                 </div>
             </section>
         `;
@@ -267,6 +273,51 @@ class MatchAnalyzer {
         }
         
         return rows;
+    }
+
+    /**
+     * Create a mobile friendly card layout for player stats
+     */
+    async createGameStatsCards(team0Players, team1Players) {
+        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        let cards = '';
+
+        for (let i = 0; i < maxPlayers; i++) {
+            const player0 = team0Players[i];
+            const player1 = team1Players[i];
+
+            const card0 = player0 ? await this.createPerformanceCard(player0, 'green') : '';
+            const card1 = player1 ? await this.createPerformanceCard(player1, 'red') : '';
+
+            cards += `
+                <div class="grid grid-cols-2 gap-2">
+                    <div>${card0}</div>
+                    <div>${card1}</div>
+                </div>
+            `;
+        }
+
+        return cards;
+    }
+
+    /**
+     * Create a single performance card used on mobile
+     */
+    async createPerformanceCard(player, teamColor) {
+        const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
+        const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+        return `
+            <div class="bg-gray-700 rounded-lg p-3 flex items-center space-x-2">
+                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
+                    ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
+                    <p class="text-xs text-gray-300">K/D/A: ${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</p>
+                    <p class="text-xs text-gray-300">Dmg: ${this.formatNumber(player.playerDamage || 0)}</p>
+                </div>
+            </div>
+        `;
     }
 
     /**
