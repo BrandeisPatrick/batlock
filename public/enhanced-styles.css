@@ -1600,15 +1600,15 @@ section {
 }
 
 /* Game Stats Table Columns */
-.game-stats-section .player-column { 
-    width: 140px;
-    max-width: 140px;
+.game-stats-section .player-column {
+    width: 120px;
+    max-width: 120px;
     text-align: left !important;
     padding-right: 8px;
 }
 
 .player-name-cell {
-    max-width: 140px;
+    max-width: 120px;
     overflow: hidden;
 }
 
@@ -1633,7 +1633,7 @@ section {
 
 /* Player name cell styles */
 .player-name-cell {
-    max-width: 180px;
+    max-width: 120px;
     overflow: hidden;
 }
 
@@ -1653,7 +1653,7 @@ section {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px;
+    max-width: 120px;
 }
 
 /* Lane Economics table improvements */
@@ -1665,8 +1665,8 @@ section {
 
 /* Lane Economics Table Columns */
 .lane-economics-section .player-column {
-    width: 140px;
-    max-width: 140px;
+    width: 120px;
+    max-width: 120px;
     text-align: left !important;
     padding-right: 8px;
 }
