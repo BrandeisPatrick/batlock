@@ -724,6 +724,75 @@ class MatchAnalyzer {
     }
 
     /**
+     * Create item build effectiveness section comparing purchased items
+     */
+    async createItemBuildSection(team0Players, team1Players) {
+        const enemyHeroesTeam0 = team1Players.map(p => p.heroId).filter(Boolean);
+        const enemyHeroesTeam1 = team0Players.map(p => p.heroId).filter(Boolean);
+
+        const [counter0, counter1] = await Promise.all([
+            this.apiService.getCounterItemsForHeroes(enemyHeroesTeam0, 10),
+            this.apiService.getCounterItemsForHeroes(enemyHeroesTeam1, 10)
+        ]);
+
+        const allPlayers = [...team0Players, ...team1Players];
+        const heroWinItemsMap = {};
+        await Promise.all(allPlayers.map(async (p) => {
+            if (!heroWinItemsMap[p.heroId]) {
+                heroWinItemsMap[p.heroId] = await this.apiService.getHeroTopWinRateItems(p.heroId, 10);
+            }
+        }));
+
+        const createRows = (players, counterItems, teamColor) => {
+            return players.map(p => {
+                const items = p.items || [];
+                const effectiveCount = items.filter(it => counterItems.includes(it)).length;
+                const winItems = heroWinItemsMap[p.heroId] || [];
+                const winCount = items.filter(it => winItems.includes(it)).length;
+                const name = this.formatPlayerName(p);
+                const color = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+                return `
+                    <tr class="border-b border-gray-700">
+                        <td class="py-2 px-2 ${color}">${name}</td>
+                        <td class="py-2 px-2 text-center">${effectiveCount}/${counterItems.length}</td>
+                        <td class="py-2 px-2 text-center">${winCount}/${winItems.length}</td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        const counterIcons0 = counter0.map(id => `<img src="${this.apiService.getItemAssetUrl(id)}" class="w-6 h-6" alt="${id}">`).join('');
+        const counterIcons1 = counter1.map(id => `<img src="${this.apiService.getItemAssetUrl(id)}" class="w-6 h-6" alt="${id}">`).join('');
+
+        const rowsTeam0 = createRows(team0Players, counter0, 'green');
+        const rowsTeam1 = createRows(team1Players, counter1, 'red');
+
+        return `
+            <section class="item-build-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.3s;">
+                <h2 class="text-2xl font-bold text-white mb-6 text-center">🔨 Item Build Effectiveness</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-green-400 mb-2">Team 1 Counter Items</h3>
+                        <div class="flex flex-wrap gap-1 mb-4">${counterIcons0}</div>
+                        <table class="w-full text-sm">
+                            <thead><tr><th class="text-left py-2">Player</th><th class="py-2">Counter</th><th class="py-2">Meta</th></tr></thead>
+                            <tbody>${rowsTeam0}</tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-400 mb-2">Team 2 Counter Items</h3>
+                        <div class="flex flex-wrap gap-1 mb-4">${counterIcons1}</div>
+                        <table class="w-full text-sm">
+                            <thead><tr><th class="text-left py-2">Player</th><th class="py-2">Counter</th><th class="py-2">Meta</th></tr></thead>
+                            <tbody>${rowsTeam1}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    /**
      * Convert account ID to Steam ID
      */
     convertToSteamId(accountId) {
@@ -1075,18 +1144,20 @@ class MatchAnalyzer {
         `;
         
         
-        // Create the new three-section layout
+        // Create the sections
         const gameStatsSection = await this.createGameStatsSection(team0Players, team1Players);
         const laneEconomicsSection = await this.createLaneEconomicsSection(team0Players, team1Players);
+        const itemBuildSection = await this.createItemBuildSection(team0Players, team1Players);
         const historicalDataSection = await this.createHistoricalDataSection(team0Players, team1Players);
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
-        
+
         const finalHTML = `
             ${overview}
             ${fairnessSection}
             ${teamComparison}
             ${gameStatsSection}
             ${laneEconomicsSection}
+            ${itemBuildSection}
             ${historicalDataSection}
         `;
         

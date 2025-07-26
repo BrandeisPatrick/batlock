@@ -514,6 +514,33 @@ class DeadlockAPIService {
     }
 
     /**
+     * Get top counter items for a set of enemy heroes
+     * @param {number[]} heroIds - Array of enemy hero IDs
+     * @param {number} limit - Number of items to return
+     * @returns {Promise<Array>} Array of counter item IDs
+     */
+    async getCounterItemsForHeroes(heroIds = [], limit = 10) {
+        const params = new URLSearchParams({
+            heroes: heroIds.join(','),
+            limit: limit
+        });
+        const url = `${this.baseUrl}/analytics/counter-items?${params.toString()}`;
+        return await this.fetchWithCache(url);
+    }
+
+    /**
+     * Get top win rate items for a hero
+     * @param {number} heroId - Hero ID
+     * @param {number} limit - Number of items to return
+     * @returns {Promise<Array>} Array of item IDs
+     */
+    async getHeroTopWinRateItems(heroId, limit = 10) {
+        const params = new URLSearchParams({ limit: limit });
+        const url = `${this.baseUrl}/builds/${heroId}/top-win-rate-items?${params.toString()}`;
+        return await this.fetchWithCache(url);
+    }
+
+    /**
      * Calculate KDA ratio
      */
     calculateKDA(kills, deaths, assists) {
