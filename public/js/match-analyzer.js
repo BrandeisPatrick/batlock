@@ -671,7 +671,7 @@ class MatchAnalyzer {
         const team1Cards = (await Promise.all(team1CardPromises)).join('');
         
         return `
-            <section class="historical-data-section animate-fadeInUp mb-8" style="animation-delay: 0.4s;">
+            <section class="historical-data-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.4s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">📊 Player Historical Performance</h2>
 
                 <!-- Two-column layout wrapper -->
@@ -689,7 +689,7 @@ class MatchAnalyzer {
                                 ${team0Cards}
                             </div>
                         </div>
-                        
+
                         <!-- Team 2 Column -->
                         <div class="team-column">
                             <div class="team-header team-header-red">
@@ -703,6 +703,8 @@ class MatchAnalyzer {
                         </div>
                     </div>
                 </div>
+
+                <p class="text-xs text-gray-500 text-center mt-6">Statistics are averaged from each player's last 50 games.</p>
             </section>
         `;
     }
