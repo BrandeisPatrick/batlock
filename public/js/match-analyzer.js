@@ -325,10 +325,11 @@ class MatchAnalyzer {
      */
     async createLaneEconomicsSection(team0Players, team1Players) {
         const laneEconomicsRows = await this.createLaneEconomicsRows(team0Players, team1Players);
+        const mobileCards = await this.createLaneEconomicsCards(team0Players, team1Players);
         return `
             <section class="lane-economics-section animate-fadeInUp bg-gray-800 rounded-lg p-6 mb-8" style="animation-delay: 0.2s;">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">💰 Lane Economics & Farm</h2>
-                
+
                 <!-- Lane Headers -->
                 <div class="grid grid-cols-2 gap-6 mb-4">
                     <div class="text-center">
@@ -339,25 +340,32 @@ class MatchAnalyzer {
                     </div>
                 </div>
                 
-                <!-- Economics Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-600">
-                                <th class="player-column text-left py-3 px-2">Player</th>
-                                <th class="networth-column text-right py-3 px-2">Net Worth</th>
-                                <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
-                                <th class="denies-column text-right py-3 px-2">Denies</th>
-                                <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
-                                <th class="networth-column text-right py-3 px-2">Net Worth</th>
-                                <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
-                                <th class="denies-column text-right py-3 px-2">Denies</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${laneEconomicsRows}
-                        </tbody>
-                    </table>
+                <!-- Desktop table -->
+                <div class="hidden md:block">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-600">
+                                    <th class="player-column text-left py-3 px-2">Player</th>
+                                    <th class="networth-column text-right py-3 px-2">Net Worth</th>
+                                    <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
+                                    <th class="denies-column text-right py-3 px-2">Denies</th>
+                                    <th class="player-column text-left py-3 px-2 border-l border-gray-600">Player</th>
+                                    <th class="networth-column text-right py-3 px-2">Net Worth</th>
+                                    <th class="lasthits-column text-right py-3 px-2">Last Hits</th>
+                                    <th class="denies-column text-right py-3 px-2">Denies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${laneEconomicsRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="md:hidden space-y-4">
+                    ${mobileCards}
                 </div>
                 
                 <!-- Lane Comparison Summary -->
@@ -449,6 +457,56 @@ class MatchAnalyzer {
         }
         
         return rows;
+    }
+
+    /**
+     * Create a mobile friendly card layout for lane economics
+     */
+    async createLaneEconomicsCards(team0Players, team1Players) {
+        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        let cards = '';
+
+        for (let i = 0; i < maxPlayers; i++) {
+            const player0 = team0Players[i];
+            const player1 = team1Players[i];
+
+            const card0 = player0 ? await this.createLaneEconomicsCard(player0, 'green') : '';
+            const card1 = player1 ? await this.createLaneEconomicsCard(player1, 'red') : '';
+
+            cards += `
+                <div class="grid grid-cols-2 gap-2">
+                    <div>${card0}</div>
+                    <div>${card1}</div>
+                </div>
+            `;
+        }
+
+        return cards;
+    }
+
+    /**
+     * Create single lane economics card used on mobile
+     */
+    async createLaneEconomicsCard(player, teamColor) {
+        const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
+        const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
+        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
+        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
+        return `
+            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-3 flex items-center space-x-2 border ${borderColor}">
+                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
+                    ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
+                    <div class="text-xs text-gray-300 flex space-x-2">
+                        <span>NW: ${this.formatNetWorth(player.netWorth || 0)}</span>
+                        <span>LH: ${this.formatTableNumber(player.lastHits || 0)}</span>
+                        <span>D: ${this.formatTableNumber(player.denies || 0)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     /**
