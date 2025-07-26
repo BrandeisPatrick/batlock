@@ -357,9 +357,10 @@ class PlayerSearch {
         const bigBrotherPenalty = (players) => {
             const values = players.filter(p => p.statistics).map(p => p.statistics.averageKDA || 0);
             if (values.length === 0) return 0;
-            const avgKda = values.reduce((a, b) => a + b, 0) / values.length;
-            const maxKda = Math.max(...values);
-            return maxKda - avgKda;
+            const mean = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+            const sd = Math.sqrt(variance);
+            return Math.min(sd, 5);
         };
 
         const avgKDA0 = avg(team0Players, 'averageKDA');
@@ -369,14 +370,24 @@ class PlayerSearch {
 
         const kdaDiff = Math.abs(avgKDA0 - avgKDA1);
         const wrDiff = Math.abs(avgWR0 - avgWR1);
+        const avgDMG0 = avg(team0Players, 'damagePerMinute');
+        const avgDMG1 = avg(team1Players, 'damagePerMinute');
+        const avgNW0  = avg(team0Players, 'netWorthPerMinute');
+        const avgNW1  = avg(team1Players, 'netWorthPerMinute');
+
         const stdPenalty = std(team0Players, 'kdaStdDev') + std(team1Players, 'kdaStdDev');
         const bbPenalty = bigBrotherPenalty(team0Players) + bigBrotherPenalty(team1Players);
+
+        const dmgDiff = Math.abs(avgDMG0 - avgDMG1);
+        const nwDiff  = Math.abs(avgNW0  - avgNW1);
 
         let score = 100;
         score -= kdaDiff * 5;
         score -= wrDiff;
         score -= stdPenalty * 2;
         score -= bbPenalty * 3;
+        score -= dmgDiff * 0.5;
+        score -= nwDiff * 0.5;
 
         if (score < 0) score = 0;
         if (score > 100) score = 100;
