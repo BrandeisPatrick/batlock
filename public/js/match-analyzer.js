@@ -12,7 +12,7 @@ import {
     getHeroColor
 } from '../hero_mapping/hero-mappings.js';
 import { accountIdToSteamId64 } from './bigint-utils.js';
-import { getTopCounterItems, getTopWinRateItems } from './item-recommendations.js';
+import { getTopCounterItems, getTopWinRateItems, getTopEffectiveItems } from './item-recommendations.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -734,6 +734,16 @@ class MatchAnalyzer {
             getTopCounterItems(id).forEach(item => effectiveItems.add(item));
         });
 
+        const topItems = getTopEffectiveItems(enemyHeroes, 10);
+        const topItemsList = topItems.map(item => {
+            const icon = this.apiService.getItemAssetUrl(item);
+            const name = this.formatItemName(item);
+            return `<div class="flex items-center space-x-1 m-1">
+                        <img src="${icon}" alt="${name}" class="w-6 h-6">
+                        <span class="text-xs">${name}</span>
+                    </div>`;
+        }).join('');
+
         const rows = teamPlayers.map(player => {
             const items = player.items || [];
             const effCount = items.filter(i => effectiveItems.has(i)).length;
@@ -753,6 +763,9 @@ class MatchAnalyzer {
         return `
             <section class="item-effectiveness-section bg-gray-800 rounded-lg p-6 mb-8">
                 <h2 class="text-2xl font-bold text-white mb-4 text-center">🛡️ Item Effectiveness - ${teamLabel}</h2>
+                <div class="flex flex-wrap justify-center mb-4">
+                    ${topItemsList}
+                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
@@ -858,6 +871,17 @@ class MatchAnalyzer {
     formatTableNumber(value) {
         if (typeof value !== 'number' || isNaN(value)) return '0';
         return Math.round(value).toString();
+    }
+
+    /**
+     * Convert item ID to a human readable name
+     */
+    formatItemName(itemId) {
+        if (!itemId) return '';
+        return itemId.replace(/^item_/, '')
+            .split('_')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
     }
 
     /**
