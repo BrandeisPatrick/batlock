@@ -643,17 +643,11 @@ class MatchAnalyzer {
         const nwDiff  = Math.abs(avgNW0  - avgNW1);
         const kdaGapPenalty = extremeKdaGapPenalty(team0Players, team1Players);
 
-        let score = 100;
-        score -= kdaDiff * 5;
-        score -= wrDiff;
-        score -= stdPenalty * 2;
-        score -= bbPenalty * 3;
-        score -= kdaGapPenalty;
-        score -= dmgDiff * 0.5;
-        score -= nwDiff * 0.5;
+        let score = 10;
+        score -= kdaDiff * 14; // very sensitive to KDA difference
 
         if (score < 0) score = 0;
-        if (score > 100) score = 100;
+        if (score > 10) score = 10;
         return score.toFixed(1);
     }
 
@@ -1118,7 +1112,7 @@ class MatchAnalyzer {
         const fairness = this.calculateFairnessScore(team0Players, team1Players);
         const fairnessSection = `
             <div class="fairness-score text-center mb-6">
-                Fairness Score: <span class="text-yellow-400 font-bold">${fairness}</span>/100
+                Fairness Score: <span class="text-yellow-400 font-bold">${fairness}</span>/10
             </div>
         `;
         

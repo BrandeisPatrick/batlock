@@ -394,17 +394,11 @@ class PlayerSearch {
        const nwDiff  = Math.abs(avgNW0  - avgNW1);
         const kdaGapPenalty = extremeKdaGapPenalty(team0Players, team1Players);
 
-       let score = 100;
-       score -= kdaDiff * 5;
-       score -= wrDiff;
-       score -= stdPenalty * 2;
-       score -= bbPenalty * 3;
-        score -= kdaGapPenalty;
-       score -= dmgDiff * 0.5;
-       score -= nwDiff * 0.5;
+       let score = 10;
+       score -= kdaDiff * 14; // very sensitive to KDA difference
 
         if (score < 0) score = 0;
-        if (score > 100) score = 100;
+        if (score > 10) score = 10;
         return score.toFixed(1);
     }
 
