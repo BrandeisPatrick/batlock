@@ -25,3 +25,18 @@ export function getTopCounterItems(heroId) {
 export function getTopWinRateItems(heroId) {
     return HERO_TOP_WINRATE_ITEMS[heroId] || [];
 }
+
+// Get the top items effective against a list of hero IDs
+export function getTopEffectiveItems(heroIds, limit = 10) {
+    const itemCounts = {};
+    heroIds.forEach(id => {
+        const items = getTopCounterItems(id);
+        items.forEach(item => {
+            itemCounts[item] = (itemCounts[item] || 0) + 1;
+        });
+    });
+    return Object.entries(itemCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([item]) => item);
+}
