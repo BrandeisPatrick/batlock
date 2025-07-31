@@ -1397,7 +1397,36 @@ section {
 
 @media (min-width: 1024px) {
     .teams-grid {
+        display: flex;
+        gap: 2rem;
+        width: max-content;
+    }
+
+    .teams-tabs {
         display: none;
+    }
+
+    .teams-grid .team-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .teams-grid .team-cards::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .teams-grid .team-cards::-webkit-scrollbar-track {
+        background: var(--secondary-bg);
+        border-radius: 3px;
+    }
+
+    .teams-grid .team-cards::-webkit-scrollbar-thumb {
+        background: var(--accent-cyan);
+        border-radius: 3px;
     }
 }
 
