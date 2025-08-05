@@ -26,6 +26,23 @@ body {
     min-height: 100vh;
 }
 
+/* Responsive layout for larger screens */
+.responsive-container {
+    max-width: 64rem;
+}
+
+@media (min-width: 1280px) {
+    .responsive-container {
+        max-width: 80rem;
+    }
+}
+
+@media (min-width: 1536px) {
+    .responsive-container {
+        max-width: 96rem;
+    }
+}
+
 /* Animated progress bars */
 .progress-bar {
     position: relative;
