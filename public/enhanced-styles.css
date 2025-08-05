@@ -117,6 +117,11 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    min-height: 160px;
 }
 
 .player-card::before {
@@ -156,6 +161,16 @@ body {
 
 .player-card.team-red:hover {
     border-color: rgba(244, 63, 94, 0.5);
+}
+
+.player-card .hero-icon {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+}
+
+.player-card .stats {
+    flex: 1;
 }
 
 /* Rich stat line styling */
@@ -359,23 +374,23 @@ section {
     animation: skeleton-loading 1.5s infinite;
 }
 
-/* Mobile-responsive player cards */
+/* Responsive player card layout */
 .player-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
 }
 
-/* Wide screen layout enhancements */
 @media (min-width: 1024px) {
     .player-stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1.5rem;
     }
 
-    .player-card {
+    .player-card:not(.stacked) {
         flex-direction: row;
         align-items: center;
+        gap: 1.5rem;
         min-height: 220px;
         padding: 2rem;
     }
@@ -385,88 +400,23 @@ section {
         height: 5rem;
     }
 
-    .player-card .stats {
-        margin-top: 0;
-        margin-left: 1.5rem;
-        flex: 1;
-    }
-
-    .player-card .stats .grid {
-        gap: 1.25rem;
-    }
 }
 
 @media (max-width: 768px) {
-    .player-stats-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
     .player-card {
-        min-height: 160px;
-        padding: 1rem;
         font-size: 0.875rem;
     }
-    
-    .player-card .hero-icon {
-        width: 3rem;
-        height: 3rem;
-    }
-    
+
     .player-card h4 {
         font-size: 0.875rem;
     }
-    
+
     .player-card .text-sm {
         font-size: 0.75rem;
     }
-    
+
     .player-card .text-xs {
         font-size: 0.625rem;
-    }
-    
-    .player-card .stats .grid {
-        gap: 0.5rem;
-    }
-    
-    .player-card .stats .bg-gray-700\\/50 {
-        padding: 0.5rem;
-    }
-    
-    .player-card .text-xl {
-        font-size: 1rem;
-    }
-    
-    .player-card .text-lg {
-        font-size: 0.875rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .player-stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .player-card {
-        min-height: 100px;
-        padding: 0.5rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .player-card {
-        flex-direction: column !important;
-        align-items: stretch;
-        min-height: auto;
-    }
-
-    .player-card .stats {
-        margin-top: 0;
-        width: 100%;
-    }
-
-    .player-card .stats .grid {
-        gap: 0.25rem;
     }
 }
 

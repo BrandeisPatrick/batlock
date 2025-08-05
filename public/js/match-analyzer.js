@@ -308,11 +308,11 @@ class MatchAnalyzer {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
         return `
-            <div class="player-card team-${teamColor} rounded-lg p-2 flex items-center space-x-2">
-                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
+            <div class="player-card team-${teamColor} rounded-lg">
+                <div class="hero-icon rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="stats flex-1 min-w-0">
                     <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
                     <p class="text-xs text-gray-300">K/D/A: ${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</p>
                     <p class="text-xs text-gray-300">Dmg: ${this.formatNumber(player.playerDamage || 0)}</p>
@@ -538,11 +538,11 @@ class MatchAnalyzer {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
         return `
-            <div class="player-card team-${teamColor} rounded-lg p-2 flex items-center space-x-2">
-                <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
+            <div class="player-card team-${teamColor} rounded-lg">
+                <div class="hero-icon rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="stats flex-1 min-w-0">
                     <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
                     <div class="text-xs text-gray-300 flex space-x-2">
                         <span>NW: ${this.formatNetWorth(player.netWorth || 0)}</span>
@@ -1119,12 +1119,12 @@ class MatchAnalyzer {
 
         if (!stats) {
             return `
-                <div class="player-card team-${teamColor} rounded-lg sm:p-4 p-3 min-h-[160px] sm:min-h-[180px] flex flex-col justify-between">
+                <div class="player-card stacked team-${teamColor} rounded-lg">
                     <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
-                        <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
+                        <div class="hero-icon rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center border border-gray-600">
                             <span class="text-sm sm:text-base font-bold text-gray-300">H${player.heroId}</span>
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="stats flex-1 min-w-0">
                             <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
                             <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
                                 <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
@@ -1148,14 +1148,14 @@ class MatchAnalyzer {
         const kdaColor = `performance-${kdaLevel}`;
 
         return `
-            <div class="player-card team-${teamColor} rounded-lg sm:p-4 p-3 min-h-[160px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
+            <div class="player-card stacked team-${teamColor} rounded-lg transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
-                    <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border flex-shrink-0" 
+                    <div class="hero-icon rounded-lg overflow-hidden border"
                          style="border-color: ${this.getHeroColor(player.heroId)};">
                         ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-sm font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="stats flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
                         <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
                             <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
@@ -1171,7 +1171,7 @@ class MatchAnalyzer {
                 </div>
                 
                 <!-- Bottom: Stats grid with responsive sizing -->
-                <div class="stats space-y-2 sm:space-y-3">
+                <div class="stats-block space-y-2 sm:space-y-3">
                     <!-- Primary stats row -->
                     <div class="grid grid-cols-2 gap-2 sm:gap-3 text-center">
                         <div class="bg-gray-700/50 rounded-lg p-2 sm:p-3">
@@ -1809,26 +1809,25 @@ class MatchAnalyzer {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
 
         return `
-            <div id="player-card-${player.accountId}" class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-between transition-all duration-300">
+            <div id="player-card-${player.accountId}" class="player-card stacked team-${teamColor} rounded-lg transition-all duration-300">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
                     <!-- Enhanced hero icon matching the final design -->
-                    <div class="hero-icon w-16 h-16 rounded-lg overflow-hidden border flex-shrink-0" 
-                         style="border-color: ${this.getHeroColor(player.heroId)};">
+                    <div class="hero-icon rounded-lg overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                         ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-lg font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="stats flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
                         <div class="stat-line text-sm text-gray-300 mt-1">
                             <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
-                        <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                            <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
                         </div>
                         <p class="text-xs text-gray-500">Loading...</p>
                     </div>
                 </div>
-                
+
                 <!-- Bottom: Loading placeholder stats grid -->
-                <div class="stats space-y-3">
+                <div class="stats-block space-y-3">
                     <!-- Primary stats row with loading animation -->
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div class="bg-gray-700/50 rounded-lg p-3">
@@ -1909,7 +1908,7 @@ class MatchAnalyzer {
      */
     createEmptyLoadingSlot(teamColor, slotNumber) {
         return `
-            <div class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-center items-center opacity-50">
+            <div class="player-card stacked team-${teamColor} rounded-lg opacity-50 flex justify-center items-center">
                 <div class="text-gray-500 text-center">
                     <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
                     <p class="text-sm">Empty</p>
@@ -1923,7 +1922,7 @@ class MatchAnalyzer {
      */
     createEmptyPlayerSlot(teamColor, slotNumber) {
         return `
-            <div class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-center items-center opacity-50">
+            <div class="player-card stacked team-${teamColor} rounded-lg opacity-50 flex justify-center items-center">
                 <div class="text-gray-500 text-center">
                     <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
                     <p class="text-sm">Empty</p>
