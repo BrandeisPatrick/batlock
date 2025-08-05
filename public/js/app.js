@@ -28,34 +28,42 @@ try {
 // Player profiles for quick selection
 const popularPlayers = [
     {
+        emoji: "🏎️",
         name: "M Vestappen",
         url: "https://steamcommunity.com/profiles/76561198148166542/"
     },
     {
+        emoji: "🍳",
         name: "Anthony Bourdain Swag",
         url: "https://steamcommunity.com/id/TheDolanizor"
     },
     {
+        emoji: "🐸",
         name: "Frog",
         url: "https://steamcommunity.com/profiles/76561199836706201"
     },
     {
+        emoji: "🗑️",
         name: "I'm Garbage",
         url: "https://steamcommunity.com/profiles/76561198152972921"
     },
     {
+        emoji: "💊",
         name: "Pepto-Bismol",
         url: "https://steamcommunity.com/id/fisting_300_bucks"
     },
     {
+        emoji: "🐮",
         name: "Mooble",
         url: "https://steamcommunity.com/id/2Krucial"
     },
     {
+        emoji: "🚨",
         name: "weeweewoowoo",
         url: "https://steamcommunity.com/profiles/76561198106577838"
     },
     {
+        emoji: "🦇",
         name: "Bat",
         url: "https://steamcommunity.com/profiles/76561199866750761/"
     }
