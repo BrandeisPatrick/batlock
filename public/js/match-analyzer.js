@@ -307,10 +307,8 @@ class MatchAnalyzer {
     async createPerformanceCard(player, teamColor) {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-2 flex items-center space-x-2 border ${borderColor}">
+            <div class="player-card team-${teamColor} rounded-lg p-2 flex items-center space-x-2">
                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
@@ -493,10 +491,8 @@ class MatchAnalyzer {
     async createLaneEconomicsCard(player, teamColor) {
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-2 flex items-center space-x-2 border ${borderColor}">
+            <div class="player-card team-${teamColor} rounded-lg p-2 flex items-center space-x-2">
                 <div class="hero-icon w-8 h-8 rounded overflow-hidden border" style="border-color: ${this.getHeroColor(player.heroId)};">
                     ${player.heroId && heroImageUrl ? `<img src="${heroImageUrl}" alt="${this.getHeroName(player.heroId)}" class="w-full h-full object-cover">` : ''}
                 </div>
@@ -1049,8 +1045,6 @@ class MatchAnalyzer {
      */
     async createHistoricalPlayerCard(player, teamColor) {
         const stats = player.statistics;
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
         
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
@@ -1058,14 +1052,17 @@ class MatchAnalyzer {
 
         if (!stats) {
             return `
-                <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg sm:p-4 p-3 border ${borderColor} min-h-[160px] sm:min-h-[180px] flex flex-col justify-between">
+                <div class="player-card team-${teamColor} rounded-lg sm:p-4 p-3 min-h-[160px] sm:min-h-[180px] flex flex-col justify-between">
                     <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
                         <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-600">
                             <span class="text-sm sm:text-base font-bold text-gray-300">H${player.heroId}</span>
                         </div>
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
-                            <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
+                            <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
+                                <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                                <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                            </div>
                         </div>
                     </div>
                     <p class="text-center text-gray-500 text-xs sm:text-sm">Loading stats...</p>
@@ -1084,7 +1081,7 @@ class MatchAnalyzer {
         const kdaColor = `performance-${kdaLevel}`;
 
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg sm:p-4 p-3 border ${borderColor} min-h-[160px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
+            <div class="player-card team-${teamColor} rounded-lg sm:p-4 p-3 min-h-[160px] sm:min-h-[180px] flex flex-col justify-between transition-all duration-300 hover:transform hover:scale-105">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center sm:space-x-3 space-x-2 mb-3">
                     <div class="hero-icon w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden border flex-shrink-0" 
@@ -1093,9 +1090,12 @@ class MatchAnalyzer {
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
-                        <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
+                        <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
+                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                            <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                        </div>
                         <p class="text-xs text-gray-500 hidden sm:block">${player.totalGames || 0} games</p>
-                        ${player.accountId && this.getSteamProfileUrl(player.accountId) ? 
+                        ${player.accountId && this.getSteamProfileUrl(player.accountId) ?
                             `<a href="${this.getSteamProfileUrl(player.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors mt-1 items-center hidden sm:flex" title="Steam">
                                 <i class="fab fa-steam mr-1"></i><span class="hidden md:inline">Profile</span>
                             </a>` : ''
@@ -1596,7 +1596,7 @@ class MatchAnalyzer {
                     };
                     
                     // Update the specific player card
-                    this.updatePlayerCard(enhancedPlayer);
+                    await this.updatePlayerCard(enhancedPlayer);
                     
                     completedPlayers++;
                     updateProgress(completedPlayers, totalPlayers);
@@ -1739,14 +1739,12 @@ class MatchAnalyzer {
      * Create a loading placeholder player card with consistent layout
      */
     async createLoadingPlayerCard(player, teamColor) {
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
         const textColor = teamColor === 'green' ? 'text-green-400' : 'text-red-400';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
         
         const heroImageUrl = await this.getHeroThumbnailUrl(player.heroId);
 
         return `
-            <div id="player-card-${player.accountId}" class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-between transition-all duration-300">
+            <div id="player-card-${player.accountId}" class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-between transition-all duration-300">
                 <!-- Top: Player info with hero icon -->
                 <div class="flex items-center space-x-4 mb-4">
                     <!-- Enhanced hero icon matching the final design -->
@@ -1756,7 +1754,10 @@ class MatchAnalyzer {
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
-                        <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        <div class="stat-line text-sm text-gray-300 mt-1">
+                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                        <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                        </div>
                         <p class="text-xs text-gray-500">Loading...</p>
                     </div>
                 </div>
@@ -1812,12 +1813,12 @@ class MatchAnalyzer {
     /**
      * Update a specific player card with loaded data
      */
-    updatePlayerCard(player) {
+    async updatePlayerCard(player) {
         const cardElement = document.getElementById(`player-card-${player.accountId}`);
         if (!cardElement) return;
-        
+
         const teamColor = player.team === 0 ? 'green' : 'red';
-        const newCardHTML = this.createPlayerCard(player, teamColor);
+        const newCardHTML = await this.createHistoricalPlayerCard(player, teamColor);
         
         // Create a temporary container to parse the new HTML
         const tempDiv = document.createElement('div');
@@ -1842,11 +1843,8 @@ class MatchAnalyzer {
      * Create an empty loading slot for missing players during initial load
      */
     createEmptyLoadingSlot(teamColor, slotNumber) {
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
-        
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-center items-center opacity-50">
+            <div class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-center items-center opacity-50">
                 <div class="text-gray-500 text-center">
                     <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
                     <p class="text-sm">Empty</p>
@@ -1859,11 +1857,8 @@ class MatchAnalyzer {
      * Create an empty player slot for missing players
      */
     createEmptyPlayerSlot(teamColor, slotNumber) {
-        const borderColor = teamColor === 'green' ? 'border-green-500/30' : 'border-red-500/30';
-        const gradientFrom = teamColor === 'green' ? 'from-green-900/10' : 'from-red-900/10';
-        
         return `
-            <div class="player-card bg-gradient-to-br ${gradientFrom} to-gray-800 rounded-lg p-5 border ${borderColor} min-h-[200px] flex flex-col justify-center items-center opacity-50">
+            <div class="player-card team-${teamColor} rounded-lg p-5 min-h-[200px] flex flex-col justify-center items-center opacity-50">
                 <div class="text-gray-500 text-center">
                     <p class="text-lg font-semibold mb-2">Player Slot ${slotNumber}</p>
                     <p class="text-sm">Empty</p>
