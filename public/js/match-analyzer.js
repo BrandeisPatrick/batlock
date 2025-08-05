@@ -12,7 +12,7 @@ import {
     getHeroColor
 } from '../hero_mapping/hero-mappings.js';
 import { accountIdToSteamId64 } from './bigint-utils.js';
-import { getTopCounterItems, getTopWinRateItems, getTopEffectiveItems } from './item-recommendations.js';
+import { getTopWinRateItems, getTopEffectiveItems } from './item-recommendations.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -787,14 +787,15 @@ class MatchAnalyzer {
     /**
      * Create item effectiveness panel content for a single team
      */
-    createItemEffectivenessPanel(teamPlayers, enemyPlayers) {
+    async createItemEffectivenessPanel(teamPlayers, enemyPlayers) {
         const enemyHeroes = enemyPlayers.map(p => p.heroId).filter(Boolean);
         const effectiveItems = new Set();
-        enemyHeroes.forEach(id => {
-            getTopCounterItems(id).forEach(item => effectiveItems.add(item));
-        });
+        for (const id of enemyHeroes) {
+            const items = await getTopWinRateItems(id);
+            items.forEach(item => effectiveItems.add(item));
+        }
 
-        const topItems = getTopEffectiveItems(enemyHeroes, 10);
+        const topItems = await getTopEffectiveItems(enemyHeroes, 10);
         const topItemsList = topItems.map(item => {
             const icon = this.apiService.getItemAssetUrl(item);
             const name = this.formatItemName(item);
@@ -804,10 +805,10 @@ class MatchAnalyzer {
                     </div>`;
         }).join('');
 
-        const rows = teamPlayers.map(player => {
+        const rowsArray = await Promise.all(teamPlayers.map(async player => {
             const items = player.items || [];
             const effCount = items.filter(i => effectiveItems.has(i)).length;
-            const winRateItems = new Set(getTopWinRateItems(player.heroId));
+            const winRateItems = new Set(await getTopWinRateItems(player.heroId));
             const winCount = items.filter(i => winRateItems.has(i)).length;
             return `
                 <tr class="border-b border-gray-600">
@@ -816,7 +817,8 @@ class MatchAnalyzer {
                     <td class="py-2 px-2 text-center">${winCount}</td>
                 </tr>
             `;
-        }).join('');
+        }));
+        const rows = rowsArray.join('');
 
         return `
             <div class="flex flex-wrap justify-center mb-4">
@@ -842,9 +844,9 @@ class MatchAnalyzer {
     /**
      * Create tabbed item effectiveness section for both teams
      */
-    createItemEffectivenessSection(team0Players, team1Players) {
-        const team0Content = this.createItemEffectivenessPanel(team0Players, team1Players);
-        const team1Content = this.createItemEffectivenessPanel(team1Players, team0Players);
+    async createItemEffectivenessSection(team0Players, team1Players) {
+        const team0Content = await this.createItemEffectivenessPanel(team0Players, team1Players);
+        const team1Content = await this.createItemEffectivenessPanel(team1Players, team0Players);
 
         return `
             <section class="item-effectiveness-section bg-gray-800 rounded-lg p-6 mb-8">
@@ -1236,7 +1238,7 @@ class MatchAnalyzer {
         const gameStatsSection = await this.createGameStatsSection(team0Players, team1Players);
         const laneEconomicsSection = await this.createLaneEconomicsSection(team0Players, team1Players);
         const historicalDataSection = await this.createHistoricalDataSection(team0Players, team1Players);
-        const itemEffectivenessSection = this.createItemEffectivenessSection(team0Players, team1Players);
+        const itemEffectivenessSection = await this.createItemEffectivenessSection(team0Players, team1Players);
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
 
         const finalHTML = `
