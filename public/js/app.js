@@ -32,31 +32,31 @@ const popularPlayers = [
         url: "https://steamcommunity.com/profiles/76561198148166542/"
     },
     {
-        name: "TheDolanizor",
+        name: "Anthony Bourdain Swag",
         url: "https://steamcommunity.com/id/TheDolanizor"
     },
     {
-        name: "Player Profile 3",
+        name: "Frog",
         url: "https://steamcommunity.com/profiles/76561199836706201"
     },
     {
-        name: "Player Profile 4", 
+        name: "I'm Garbage",
         url: "https://steamcommunity.com/profiles/76561198152972921"
     },
     {
-        name: "fisting_300_bucks",
+        name: "Pepto-Bismol",
         url: "https://steamcommunity.com/id/fisting_300_bucks"
     },
     {
-        name: "2Krucial",
+        name: "Mooble",
         url: "https://steamcommunity.com/id/2Krucial"
     },
     {
-        name: "Player Profile 7",
+        name: "weeweewoowoo",
         url: "https://steamcommunity.com/profiles/76561198106577838"
     },
     {
-        name: "Player Profile 8",
+        name: "Bat",
         url: "https://steamcommunity.com/profiles/76561199866750761/"
     }
 ];
