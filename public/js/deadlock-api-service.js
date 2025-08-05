@@ -123,6 +123,29 @@ class DeadlockAPIService {
     }
 
     /**
+     * Fetch a player's current rank
+     * @param {string} playerId - The player's Steam ID
+     * @returns {Promise<number|null>} Numeric rank value or null if unavailable
+     */
+    async getPlayerRank(playerId) {
+        const url = `${this.baseUrl}/players/${playerId}/rank`;
+        try {
+            const data = await this.fetchWithCache(url);
+            // Some endpoints may return { rank: X } while others return the number directly
+            if (typeof data === 'number') {
+                return data;
+            }
+            if (data && typeof data.rank !== 'undefined') {
+                return data.rank;
+            }
+            return data?.rank_tier ?? data?.rankTier ?? null;
+        } catch (err) {
+            console.warn(`Failed to fetch rank for ${playerId}`, err);
+            return null;
+        }
+    }
+
+    /**
      * Get player match history with pagination
      * @param {string} playerId - The player's Steam ID
      * @param {number} limit - Number of matches to fetch (default: 50)

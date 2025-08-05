@@ -99,10 +99,20 @@ class MatchAnalyzer {
             return values.length > 0 ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
         };
 
+        // Calculate average rank for each team using player rank data
+        const calculateTeamRank = (teamStats) => {
+            const ranks = teamStats
+                .map(p => p.rank)
+                .filter(r => r !== undefined && r !== null);
+            return ranks.length > 0 ? (ranks.reduce((a, b) => a + b, 0) / ranks.length).toFixed(2) : 0;
+        };
+
         const team0AvgWR = calculateTeamAverage(team0Stats, 'winRate');
         const team0AvgKDA = calculateTeamAverage(team0Stats, 'averageKDA');
+        const team0AvgRank = calculateTeamRank(team0Stats);
         const team1AvgWR = calculateTeamAverage(team1Stats, 'winRate');
         const team1AvgKDA = calculateTeamAverage(team1Stats, 'averageKDA');
+        const team1AvgRank = calculateTeamRank(team1Stats);
 
         return `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -111,11 +121,12 @@ class MatchAnalyzer {
                     <div class="team-header mb-4">
                         <h3 class="text-xl font-bold text-green-400">Team 1</h3>
                         <div class="team-stats text-sm text-gray-300 mt-1">
-                            <span class="win-rate text-green-300 font-semibold">${team0AvgWR}% WR</span> • 
-                            <span class="avg-kda text-cyan-300 font-semibold">${team0AvgKDA} KDA</span>
+                            <span class="win-rate text-green-300 font-semibold">${team0AvgWR}% WR</span> •
+                            <span class="avg-kda text-cyan-300 font-semibold">${team0AvgKDA} KDA</span> •
+                            <span class="avg-rank text-purple-300 font-semibold">${team0AvgRank} Rank</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="text-center stat-display">
                             <p class="text-2xl font-bold text-green-400">${team0AvgWR}%</p>
                             <p class="text-xs text-gray-400 uppercase tracking-wide">Win Rate</p>
@@ -123,6 +134,10 @@ class MatchAnalyzer {
                         <div class="text-center stat-display">
                             <p class="text-2xl font-bold text-cyan-400">${team0AvgKDA}</p>
                             <p class="text-xs text-gray-400 uppercase tracking-wide">KDA Ratio</p>
+                        </div>
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-purple-400">${team0AvgRank}</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Avg Rank</p>
                         </div>
                     </div>
                 </div>
@@ -132,11 +147,12 @@ class MatchAnalyzer {
                     <div class="team-header mb-4">
                         <h3 class="text-xl font-bold text-red-400">Team 2</h3>
                         <div class="team-stats text-sm text-gray-300 mt-1">
-                            <span class="win-rate text-red-300 font-semibold">${team1AvgWR}% WR</span> • 
-                            <span class="avg-kda text-orange-300 font-semibold">${team1AvgKDA} KDA</span>
+                            <span class="win-rate text-red-300 font-semibold">${team1AvgWR}% WR</span> •
+                            <span class="avg-kda text-orange-300 font-semibold">${team1AvgKDA} KDA</span> •
+                            <span class="avg-rank text-purple-300 font-semibold">${team1AvgRank} Rank</span>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="text-center stat-display">
                             <p class="text-2xl font-bold text-red-400">${team1AvgWR}%</p>
                             <p class="text-xs text-gray-400 uppercase tracking-wide">Win Rate</p>
@@ -144,6 +160,10 @@ class MatchAnalyzer {
                         <div class="text-center stat-display">
                             <p class="text-2xl font-bold text-orange-400">${team1AvgKDA}</p>
                             <p class="text-xs text-gray-400 uppercase tracking-wide">KDA Ratio</p>
+                        </div>
+                        <div class="text-center stat-display">
+                            <p class="text-2xl font-bold text-purple-400">${team1AvgRank}</p>
+                            <p class="text-xs text-gray-400 uppercase tracking-wide">Avg Rank</p>
                         </div>
                     </div>
                 </div>
@@ -1646,7 +1666,18 @@ class MatchAnalyzer {
                     
                     // Fetch detailed player statistics
                     const playerStats = await apiService.getPlayerMatchHistory(player.accountId, 50, 0, true);
-                    
+
+                    // Fetch player rank from API
+                    let playerRank = null;
+                    try {
+                        playerRank = await apiService.getPlayerRank(player.accountId);
+                        if (typeof playerRank === 'string') {
+                            playerRank = parseFloat(playerRank);
+                        }
+                    } catch (e) {
+                        playerRank = null;
+                    }
+
                     const enhancedPlayer = {
                         ...player,
                         totalGames: playerStats.totalMatches || 0,
@@ -1657,7 +1688,8 @@ class MatchAnalyzer {
                             averageDeaths: 0,
                             averageAssists: 0,
                             recentForm: []
-                        }
+                        },
+                        rank: playerRank
                     };
                     
                     // Update the specific player card
@@ -1684,6 +1716,7 @@ class MatchAnalyzer {
                             averageAssists: 0,
                             recentForm: []
                         },
+                        rank: null,
                         error: error.message
                     };
                 }
