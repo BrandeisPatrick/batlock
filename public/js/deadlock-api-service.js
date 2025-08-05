@@ -505,6 +505,22 @@ class DeadlockAPIService {
     }
 
     /**
+     * Get top win rate items for a hero
+     * @param {number} heroId - The hero ID
+     * @param {number} limit - Number of items to return
+     * @returns {Promise<Object|Array>} API response data
+     */
+    async getHeroTopItems(heroId, limit = 10) {
+        const url = `${this.baseUrl}/heroes/${heroId}/items?limit=${limit}&order=desc&sort=win_rate`;
+        try {
+            return await this.fetchWithCache(url);
+        } catch (error) {
+            console.warn(`Failed to fetch top items for hero ${heroId}:`, error);
+            return [];
+        }
+    }
+
+    /**
      * Get item asset URL
      * @param {string} itemId - The item ID
      * @returns {string} Asset URL

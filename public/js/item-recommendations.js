@@ -1,40 +1,39 @@
-// Basic item recommendation data for demonstration purposes
-// Keyed by hero ID. Values are arrays of item IDs/names.
-export const HERO_COUNTER_ITEMS = {
-    // Infernus
-    1: ['item_coolant_bomb', 'item_barrier_generator', 'item_flash_net'],
-    // Seven
-    2: ['item_power_dampener', 'item_shield_breaker', 'item_charge_coil'],
-    // Vindicta
-    3: ['item_reflector', 'item_static_trap', 'item_detoxifier']
-};
+import DeadlockAPIService from './deadlock-api-service.js';
 
-export const HERO_TOP_WINRATE_ITEMS = {
-    // Infernus
-    1: ['item_flame_blade', 'item_reflector', 'item_heal_pack'],
-    // Seven
-    2: ['item_speed_boots', 'item_energy_bar', 'item_targeting_computer'],
-    // Vindicta
-    3: ['item_shrapnel', 'item_precision_scope', 'item_flash_net']
-};
+const apiService = new DeadlockAPIService();
 
-export function getTopCounterItems(heroId) {
-    return HERO_COUNTER_ITEMS[heroId] || [];
+/**
+ * Fetch top win rate items for a specific hero from the Deadlock API
+ * @param {number} heroId - The hero ID
+ * @param {number} limit - Max number of items to retrieve
+ * @returns {Promise<string[]>} Array of item IDs
+ */
+export async function getTopWinRateItems(heroId, limit = 10) {
+    if (!heroId) return [];
+    try {
+        const data = await apiService.getHeroTopItems(heroId, limit);
+        const items = Array.isArray(data) ? data : (data.items || []);
+        return items.slice(0, limit).map(item => item.item_id || item.id || item.itemId);
+    } catch (err) {
+        console.error(`Failed to fetch top win rate items for hero ${heroId}`, err);
+        return [];
+    }
 }
 
-export function getTopWinRateItems(heroId) {
-    return HERO_TOP_WINRATE_ITEMS[heroId] || [];
-}
-
-// Get the top items effective against a list of hero IDs
-export function getTopEffectiveItems(heroIds, limit = 10) {
+/**
+ * Aggregate top win rate items across multiple enemy heroes
+ * @param {number[]} heroIds - List of enemy hero IDs
+ * @param {number} limit - Number of aggregated items to return
+ * @returns {Promise<string[]>} Array of item IDs
+ */
+export async function getTopEffectiveItems(heroIds, limit = 10) {
     const itemCounts = {};
-    heroIds.forEach(id => {
-        const items = getTopCounterItems(id);
-        items.forEach(item => {
+    for (const id of heroIds) {
+        const items = await getTopWinRateItems(id, limit);
+        for (const item of items) {
             itemCounts[item] = (itemCounts[item] || 0) + 1;
-        });
-    });
+        }
+    }
     return Object.entries(itemCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, limit)
