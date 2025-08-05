@@ -26,11 +26,11 @@ export function getTopWinRateItems(heroId) {
     return HERO_TOP_WINRATE_ITEMS[heroId] || [];
 }
 
-// Get the top items effective against a list of hero IDs
+// Get the top win rate items against a list of hero IDs
 export function getTopEffectiveItems(heroIds, limit = 10) {
     const itemCounts = {};
     heroIds.forEach(id => {
-        const items = getTopCounterItems(id);
+        const items = getTopWinRateItems(id);
         items.forEach(item => {
             itemCounts[item] = (itemCounts[item] || 0) + 1;
         });
