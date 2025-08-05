@@ -319,7 +319,8 @@ class PlayerSearch {
                 winRate: 0,
                 averageKDA: 0,
                 averageKills: 0,
-                averageDamage: 0
+                averageDeaths: 0,
+                averageAssists: 0
             };
         }
 
@@ -327,13 +328,13 @@ class PlayerSearch {
         const totalKills = matches.reduce((sum, m) => sum + (m.kills || 0), 0);
         const totalDeaths = matches.reduce((sum, m) => sum + (m.deaths || 0), 0);
         const totalAssists = matches.reduce((sum, m) => sum + (m.assists || 0), 0);
-        const totalDamage = matches.reduce((sum, m) => sum + (m.playerDamage || 0), 0);
 
         return {
             winRate: Math.round((wins / matches.length) * 100),
             averageKDA: totalDeaths > 0 ? Math.round(((totalKills + totalAssists) / totalDeaths) * 100) / 100 : totalKills + totalAssists,
             averageKills: Math.round((totalKills / matches.length) * 10) / 10,
-            averageDamage: Math.round(totalDamage / matches.length)
+            averageDeaths: Math.round((totalDeaths / matches.length) * 10) / 10,
+            averageAssists: Math.round((totalAssists / matches.length) * 10) / 10
         };
     }
 
@@ -572,8 +573,8 @@ class PlayerSearch {
                     <div class="text-xs text-gray-400">Avg Kills</div>
                 </div>
                 <div class="bg-gray-700/50 rounded-lg p-3">
-                    <div class="text-lg font-bold text-purple-400">${this.formatNumber(stats.averageDamage || 0)}</div>
-                    <div class="text-xs text-gray-400">Avg Damage</div>
+                    <div class="text-lg font-bold text-purple-400">${stats.averageKills || 0}/${stats.averageDeaths || 0}/${stats.averageAssists || 0}</div>
+                    <div class="text-xs text-gray-400">Avg K/D/A</div>
                 </div>
             </div>
         `;
