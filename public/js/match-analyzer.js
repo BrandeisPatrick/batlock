@@ -1065,7 +1065,10 @@ class MatchAnalyzer {
                         </div>
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
-                            <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
+                            <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
+                                <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                                <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                            </div>
                         </div>
                     </div>
                     <p class="text-center text-gray-500 text-xs sm:text-sm">Loading stats...</p>
@@ -1093,9 +1096,12 @@ class MatchAnalyzer {
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
-                        <p class="text-xs sm:text-sm text-gray-400">${player.kills}/${player.deaths}/${player.assists}</p>
+                        <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
+                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                            <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                        </div>
                         <p class="text-xs text-gray-500 hidden sm:block">${player.totalGames || 0} games</p>
-                        ${player.accountId && this.getSteamProfileUrl(player.accountId) ? 
+                        ${player.accountId && this.getSteamProfileUrl(player.accountId) ?
                             `<a href="${this.getSteamProfileUrl(player.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors mt-1 items-center hidden sm:flex" title="Steam">
                                 <i class="fab fa-steam mr-1"></i><span class="hidden md:inline">Profile</span>
                             </a>` : ''
@@ -1756,7 +1762,10 @@ class MatchAnalyzer {
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
-                        <p class="text-sm text-gray-400">Match: ${player.kills}/${player.deaths}/${player.assists}</p>
+                        <div class="stat-line text-sm text-gray-300 mt-1">
+                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
+                        <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                        </div>
                         <p class="text-xs text-gray-500">Loading...</p>
                     </div>
                 </div>

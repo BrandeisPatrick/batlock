@@ -26,6 +26,23 @@ body {
     min-height: 100vh;
 }
 
+/* Responsive layout for larger screens */
+.responsive-container {
+    max-width: 64rem;
+}
+
+@media (min-width: 1280px) {
+    .responsive-container {
+        max-width: 80rem;
+    }
+}
+
+@media (min-width: 1536px) {
+    .responsive-container {
+        max-width: 96rem;
+    }
+}
+
 /* Animated progress bars */
 .progress-bar {
     position: relative;
@@ -121,6 +138,28 @@ body {
     transform: translateY(-4px) scale(1.02);
     box-shadow: var(--shadow-xl);
     border-color: rgba(34, 211, 238, 0.3);
+}
+
+/* Rich stat line styling */
+.stat-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.stat-line .label {
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.stat-line .value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@media (min-width: 1024px) {
+    .stat-line {
+        gap: 1rem;
+    }
 }
 
 /* Enhanced glass effect components */
@@ -307,6 +346,36 @@ section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
+}
+
+/* Wide screen layout enhancements */
+@media (min-width: 1024px) {
+    .player-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .player-card {
+        flex-direction: row;
+        align-items: center;
+        min-height: 220px;
+        padding: 2rem;
+    }
+
+    .player-card .hero-icon {
+        width: 5rem;
+        height: 5rem;
+    }
+
+    .player-card .stats {
+        margin-top: 0;
+        margin-left: 1.5rem;
+        flex: 1;
+    }
+
+    .player-card .stats .grid {
+        gap: 1.25rem;
+    }
 }
 
 @media (max-width: 768px) {
