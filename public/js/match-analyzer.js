@@ -785,9 +785,9 @@ class MatchAnalyzer {
     }
 
     /**
-     * Create item effectiveness summary for a team
+     * Create item effectiveness panel content for a single team
      */
-    createItemEffectivenessSection(teamPlayers, enemyPlayers) {
+    createItemEffectivenessPanel(teamPlayers, enemyPlayers) {
         const enemyHeroes = enemyPlayers.map(p => p.heroId).filter(Boolean);
         const effectiveItems = new Set();
         enemyHeroes.forEach(id => {
@@ -818,27 +818,48 @@ class MatchAnalyzer {
             `;
         }).join('');
 
-        const teamLabel = teamPlayers[0] && teamPlayers[0].team === 0 ? 'Team 1' : 'Team 2';
+        return `
+            <div class="flex flex-wrap justify-center mb-4">
+                ${topItemsList}
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-600">
+                            <th class="text-left py-2 px-2">Player</th>
+                            <th class="text-center py-2 px-2">Vs Enemy Items</th>
+                            <th class="text-center py-2 px-2">Hero Win Rate Items</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    /**
+     * Create tabbed item effectiveness section for both teams
+     */
+    createItemEffectivenessSection(team0Players, team1Players) {
+        const team0Content = this.createItemEffectivenessPanel(team0Players, team1Players);
+        const team1Content = this.createItemEffectivenessPanel(team1Players, team0Players);
 
         return `
             <section class="item-effectiveness-section bg-gray-800 rounded-lg p-6 mb-8">
-                <h2 class="text-2xl font-bold text-white mb-4 text-center">🛡️ Item Effectiveness - ${teamLabel}</h2>
-                <div class="flex flex-wrap justify-center mb-4">
-                    ${topItemsList}
+                <h2 class="text-2xl font-bold text-white mb-4 text-center">🛡️ Item Effectiveness</h2>
+                <div class="tab-buttons">
+                    <button class="team-tab-btn team1-tab active" data-team="team1">Team 1</button>
+                    <button class="team-tab-btn team2-tab" data-team="team2">Team 2</button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-gray-600">
-                                <th class="text-left py-2 px-2">Player</th>
-                                <th class="text-center py-2 px-2">Vs Enemy Items</th>
-                                <th class="text-center py-2 px-2">Hero Win Rate Items</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
+                <div class="tab-panels">
+                    <div class="team-panel team1-panel active" data-team="team1">
+                        ${team0Content}
+                    </div>
+                    <div class="team-panel team2-panel" data-team="team2">
+                        ${team1Content}
+                    </div>
                 </div>
             </section>
         `;
@@ -1215,8 +1236,7 @@ class MatchAnalyzer {
         const gameStatsSection = await this.createGameStatsSection(team0Players, team1Players);
         const laneEconomicsSection = await this.createLaneEconomicsSection(team0Players, team1Players);
         const historicalDataSection = await this.createHistoricalDataSection(team0Players, team1Players);
-        const itemSectionTeam0 = this.createItemEffectivenessSection(team0Players, team1Players);
-        const itemSectionTeam1 = this.createItemEffectivenessSection(team1Players, team0Players);
+        const itemEffectivenessSection = this.createItemEffectivenessSection(team0Players, team1Players);
         const teamComparison = this.createTeamComparison(team0Players, team1Players);
 
         const finalHTML = `
@@ -1226,8 +1246,7 @@ class MatchAnalyzer {
             ${gameStatsSection}
             ${laneEconomicsSection}
             ${historicalDataSection}
-            ${itemSectionTeam0}
-            ${itemSectionTeam1}
+            ${itemEffectivenessSection}
         `;
         
         container.innerHTML = finalHTML;
@@ -1914,32 +1933,26 @@ class MatchAnalyzer {
     }
 
     /**
-     * Initialize mobile team tab functionality
+     * Initialize tab functionality for team-based sections
      */
     initializeTeamTabs() {
-        const tabButtons = document.querySelectorAll('.team-tab-btn');
-        const teamPanels = document.querySelectorAll('.team-panel');
-        
-        if (tabButtons.length === 0) return; // No tabs found
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const targetTeam = e.currentTarget.dataset.team;
-                
-                // Update button states
-                tabButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                
-                e.currentTarget.classList.add('active');
-                
-                // Update panel visibility
-                teamPanels.forEach(panel => {
-                    if (panel.dataset.team === targetTeam) {
-                        panel.classList.add('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
+        const tabContainers = document.querySelectorAll('.tab-buttons');
+
+        tabContainers.forEach(container => {
+            const buttons = container.querySelectorAll('.team-tab-btn');
+            const panelsContainer = container.nextElementSibling;
+            const panels = panelsContainer ? panelsContainer.querySelectorAll('.team-panel') : [];
+
+            buttons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const targetTeam = e.currentTarget.dataset.team;
+
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    panels.forEach(panel => {
+                        panel.classList.toggle('active', panel.dataset.team === targetTeam);
+                    });
+
+                    e.currentTarget.classList.add('active');
                 });
             });
         });
