@@ -383,82 +383,118 @@ class MatchAnalyzer {
     }
 
     /**
+     * Determine lane index from player slot
+     */
+    getLaneIndex(player) {
+        if (!player || player.playerSlot === undefined) return 0;
+        // Player slots are 1-6 for team 1 and 7-12 for team 2
+        const normalizedSlot = (player.playerSlot - 1) % 6; // 0-5
+        return Math.floor(normalizedSlot / 2); // 0,1,2 lanes
+    }
+
+    /**
+     * Group players into lanes based on their slot
+     */
+    groupPlayersByLane(players) {
+        const lanes = [[], [], []];
+        players.forEach(player => {
+            const laneIndex = this.getLaneIndex(player);
+            lanes[laneIndex].push(player);
+        });
+        return lanes;
+    }
+
+    /**
      * Create rows for the lane economics table
      */
     async createLaneEconomicsRows(team0Players, team1Players) {
-        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        const lanes0 = this.groupPlayersByLane(team0Players);
+        const lanes1 = this.groupPlayersByLane(team1Players);
+        const laneNames = ['Top Lane', 'Mid Lane', 'Bottom Lane'];
         let rows = '';
-        
-        for (let i = 0; i < maxPlayers; i++) {
-            const player0 = team0Players[i];
-            const player1 = team1Players[i];
 
-            const player0HeroImageUrl = player0 ? await this.getHeroThumbnailUrl(player0.heroId) : null;
-            const player1HeroImageUrl = player1 ? await this.getHeroThumbnailUrl(player1.heroId) : null;
-            
+        for (let lane = 0; lane < laneNames.length; lane++) {
             rows += `
-                <tr class="border-b border-gray-700 hover:bg-gray-700/30">
-                    <!-- Team 1 Player -->
-                    <td class="player-column player-name-cell py-3 px-2">
-                        ${player0 ? `
-                            <div class="flex items-center space-x-1">
-                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
-                                     style="border-color: ${this.getHeroColor(player0.heroId)};">
-                                    ${player0.heroId && player0HeroImageUrl ? `<img src="${player0HeroImageUrl}" alt="${this.getHeroName(player0.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-green-400 font-medium text-sm">${this.formatPlayerName(player0)}</span>
-                                    ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ? 
-                                        `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam"></i>
-                                        </a>` : ''
-                                    }
-                                </div>
-                            </div>
-                        ` : '<span class="text-gray-500">Empty Slot</span>'}
-                    </td>
-                    <td class="networth-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.netWorth || 0, 'networth', this.formatPlayerName(player0))}">${this.formatNetWorth(player0.netWorth || 0)}</span>` : '-'}
-                    </td>
-                    <td class="lasthits-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.lastHits || 0, 'lasthits', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.lastHits || 0)}</span>` : '-'}
-                    </td>
-                    <td class="denies-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.denies || 0, 'denies', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.denies || 0)}</span>` : '-'}
-                    </td>
-                    
-                    <!-- Team 2 Player -->
-                    <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
-                        ${player1 ? `
-                            <div class="flex items-center space-x-1">
-                                <div class="hero-icon w-6 h-6 rounded overflow-hidden border" 
-                                     style="border-color: ${this.getHeroColor(player1.heroId)};">
-                                    ${player1.heroId && player1HeroImageUrl ? `<img src="${player1HeroImageUrl}" alt="${this.getHeroName(player1.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-red-400 font-medium text-sm">${this.formatPlayerName(player1)}</span>
-                                    ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ? 
-                                        `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
-                                            <i class="fab fa-steam"></i>
-                                        </a>` : ''
-                                    }
-                                </div>
-                            </div>
-                        ` : '<span class="text-gray-500">Empty Slot</span>'}
-                    </td>
-                    <td class="networth-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.netWorth || 0, 'networth', this.formatPlayerName(player1))}">${this.formatNetWorth(player1.netWorth || 0)}</span>` : '-'}
-                    </td>
-                    <td class="lasthits-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.lastHits || 0, 'lasthits', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.lastHits || 0)}</span>` : '-'}
-                    </td>
-                    <td class="denies-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.denies || 0, 'denies', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.denies || 0)}</span>` : '-'}
-                    </td>
+                <tr class="bg-gray-700/50">
+                    <td colspan="8" class="text-center text-gray-400 font-semibold py-2">${laneNames[lane]}</td>
                 </tr>
             `;
+
+            const lanePlayers0 = lanes0[lane];
+            const lanePlayers1 = lanes1[lane];
+            const maxPlayers = Math.max(lanePlayers0.length, lanePlayers1.length, 2);
+
+            for (let i = 0; i < maxPlayers; i++) {
+                const player0 = lanePlayers0[i];
+                const player1 = lanePlayers1[i];
+
+                const player0HeroImageUrl = player0 ? await this.getHeroThumbnailUrl(player0.heroId) : null;
+                const player1HeroImageUrl = player1 ? await this.getHeroThumbnailUrl(player1.heroId) : null;
+
+                rows += `
+                    <tr class="border-b border-gray-700 hover:bg-gray-700/30">
+                        <!-- Team 1 Player -->
+                        <td class="player-column player-name-cell py-3 px-2">
+                            ${player0 ? `
+                                <div class="flex items-center space-x-1">
+                                    <div class="hero-icon w-6 h-6 rounded overflow-hidden border"
+                                         style="border-color: ${this.getHeroColor(player0.heroId)};">
+                                        ${player0.heroId && player0HeroImageUrl ? `<img src="${player0HeroImageUrl}" alt="${this.getHeroName(player0.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-green-400 font-medium text-sm">${this.formatPlayerName(player0)}</span>
+                                        ${player0.accountId && this.getSteamProfileUrl(player0.accountId) ?
+                                            `<a href="${this.getSteamProfileUrl(player0.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                                <i class="fab fa-steam"></i>
+                                            </a>` : ''
+                                        }
+                                    </div>
+                                </div>
+                            ` : '<span class="text-gray-500">Empty Slot</span>'}
+                        </td>
+                        <td class="networth-column numeric-cell py-3 px-2">
+                            ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.netWorth || 0, 'networth', this.formatPlayerName(player0))}">${this.formatNetWorth(player0.netWorth || 0)}</span>` : '-'}
+                        </td>
+                        <td class="lasthits-column numeric-cell py-3 px-2">
+                            ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.lastHits || 0, 'lasthits', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.lastHits || 0)}</span>` : '-'}
+                        </td>
+                        <td class="denies-column numeric-cell py-3 px-2">
+                            ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.denies || 0, 'denies', this.formatPlayerName(player0))}">${this.formatTableNumber(player0.denies || 0)}</span>` : '-'}
+                        </td>
+
+                        <!-- Team 2 Player -->
+                        <td class="player-column player-name-cell py-3 px-2 border-l border-gray-600">
+                            ${player1 ? `
+                                <div class="flex items-center space-x-1">
+                                    <div class="hero-icon w-6 h-6 rounded overflow-hidden border"
+                                         style="border-color: ${this.getHeroColor(player1.heroId)};">
+                                        ${player1.heroId && player1HeroImageUrl ? `<img src="${player1HeroImageUrl}" alt="${this.getHeroName(player1.heroId)}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gradient-to-br flex items-center justify-center text-xs font-bold" style="background: linear-gradient(135deg, #374151, #1f2937);">?</div>'}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-red-400 font-medium text-sm">${this.formatPlayerName(player1)}</span>
+                                        ${player1.accountId && this.getSteamProfileUrl(player1.accountId) ?
+                                            `<a href="${this.getSteamProfileUrl(player1.accountId)}" target="_blank" rel="noopener noreferrer" class="text-xs text-cyan-400 hover:text-cyan-300 transition-colors" title="View Steam Profile">
+                                                <i class="fab fa-steam"></i>
+                                            </a>` : ''
+                                        }
+                                    </div>
+                                </div>
+                            ` : '<span class="text-gray-500">Empty Slot</span>'}
+                        </td>
+                        <td class="networth-column numeric-cell py-3 px-2">
+                            ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.netWorth || 0, 'networth')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.netWorth || 0, 'networth', this.formatPlayerName(player1))}">${this.formatNetWorth(player1.netWorth || 0)}</span>` : '-'}
+                        </td>
+                        <td class="lasthits-column numeric-cell py-3 px-2">
+                            ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.lastHits || 0, 'lasthits')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.lastHits || 0, 'lasthits', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.lastHits || 0)}</span>` : '-'}
+                        </td>
+                        <td class="denies-column numeric-cell py-3 px-2">
+                            ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.denies || 0, 'denies')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.denies || 0, 'denies', this.formatPlayerName(player1))}">${this.formatTableNumber(player1.denies || 0)}</span>` : '-'}
+                        </td>
+                    </tr>
+                `;
+            }
         }
-        
+
         return rows;
     }
 
@@ -466,22 +502,32 @@ class MatchAnalyzer {
      * Create a mobile friendly card layout for lane economics
      */
     async createLaneEconomicsCards(team0Players, team1Players) {
-        const maxPlayers = Math.max(team0Players.length, team1Players.length, 6);
+        const lanes0 = this.groupPlayersByLane(team0Players);
+        const lanes1 = this.groupPlayersByLane(team1Players);
+        const laneNames = ['Top Lane', 'Mid Lane', 'Bottom Lane'];
         let cards = '';
 
-        for (let i = 0; i < maxPlayers; i++) {
-            const player0 = team0Players[i];
-            const player1 = team1Players[i];
+        for (let lane = 0; lane < laneNames.length; lane++) {
+            const lanePlayers0 = lanes0[lane];
+            const lanePlayers1 = lanes1[lane];
+            const maxPlayers = Math.max(lanePlayers0.length, lanePlayers1.length, 2);
 
-            const card0 = player0 ? await this.createLaneEconomicsCard(player0, 'green') : '';
-            const card1 = player1 ? await this.createLaneEconomicsCard(player1, 'red') : '';
+            cards += `<h4 class="text-center text-gray-300 font-semibold">${laneNames[lane]}</h4>`;
 
-            cards += `
-                <div class="grid grid-cols-2 gap-4">
-                    <div>${card0}</div>
-                    <div>${card1}</div>
-                </div>
-            `;
+            for (let i = 0; i < maxPlayers; i++) {
+                const player0 = lanePlayers0[i];
+                const player1 = lanePlayers1[i];
+
+                const card0 = player0 ? await this.createLaneEconomicsCard(player0, 'green') : '';
+                const card1 = player1 ? await this.createLaneEconomicsCard(player1, 'red') : '';
+
+                cards += `
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <div>${card0}</div>
+                        <div>${card1}</div>
+                    </div>
+                `;
+            }
         }
 
         return cards;
