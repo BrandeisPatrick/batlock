@@ -12,7 +12,7 @@ import {
     getHeroColor
 } from '../hero_mapping/hero-mappings.js';
 import { accountIdToSteamId64 } from './bigint-utils.js';
-import { getTopCounterItems, getTopWinRateItems, getTopEffectiveItems } from './item-recommendations.js';
+import { getTopWinRateItems, getTopEffectiveItems } from './item-recommendations.js';
 
 // Match Analyzer Component
 class MatchAnalyzer {
@@ -791,7 +791,7 @@ class MatchAnalyzer {
         const enemyHeroes = enemyPlayers.map(p => p.heroId).filter(Boolean);
         const effectiveItems = new Set();
         enemyHeroes.forEach(id => {
-            getTopCounterItems(id).forEach(item => effectiveItems.add(item));
+            getTopWinRateItems(id).forEach(item => effectiveItems.add(item));
         });
 
         const topItems = getTopEffectiveItems(enemyHeroes, 10);
