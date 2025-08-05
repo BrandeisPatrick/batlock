@@ -238,10 +238,10 @@ class MatchAnalyzer {
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
                     <td class="kda-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="font-mono">${player0.kills || 0}/${player0.deaths || 0}/${player0.assists || 0}</span>` : '-'}
+                        ${player0 ? this.formatKDA(player0) : '-'}
                     </td>
                     <td class="damage-column numeric-cell py-3 px-2">
-                        ${player0 ? `<span class="performance-${this.getPerformanceLevel(player0.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.playerDamage || 0, 'damage', this.formatPlayerName(player0))}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
+                        ${player0 ? `<span class="text-orange-400 font-semibold performance-${this.getPerformanceLevel(player0.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player0.playerDamage || 0, 'damage', this.formatPlayerName(player0))}">${this.formatNumber(player0.playerDamage || 0)}</span>` : '-'}
                     </td>
                     
                     <!-- Team 2 Player -->
@@ -264,10 +264,10 @@ class MatchAnalyzer {
                         ` : '<span class="text-gray-500">Empty Slot</span>'}
                     </td>
                     <td class="kda-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="font-mono">${player1.kills || 0}/${player1.deaths || 0}/${player1.assists || 0}</span>` : '-'}
+                        ${player1 ? this.formatKDA(player1) : '-'}
                     </td>
                     <td class="damage-column numeric-cell py-3 px-2">
-                        ${player1 ? `<span class="performance-${this.getPerformanceLevel(player1.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.playerDamage || 0, 'damage', this.formatPlayerName(player1))}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
+                        ${player1 ? `<span class="text-orange-400 font-semibold performance-${this.getPerformanceLevel(player1.playerDamage || 0, 'damage')} stat-tooltip enhanced-stat" data-tooltip="${this.createStatTooltip(player1.playerDamage || 0, 'damage', this.formatPlayerName(player1))}">${this.formatNumber(player1.playerDamage || 0)}</span>` : '-'}
                     </td>
                 </tr>
             `;
@@ -314,8 +314,8 @@ class MatchAnalyzer {
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold ${textColor} truncate">${this.formatPlayerName(player)}</p>
-                    <p class="text-xs text-gray-300">K/D/A: ${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</p>
-                    <p class="text-xs text-gray-300">Dmg: ${this.formatNumber(player.playerDamage || 0)}</p>
+                    <p class="text-xs text-gray-300">K/D/A: ${this.formatKDA(player)}</p>
+                    <p class="text-xs text-gray-300">Dmg: <span class="text-orange-400 font-semibold">${this.formatNumber(player.playerDamage || 0)}</span></p>
                 </div>
             </div>
         `;
@@ -925,6 +925,22 @@ class MatchAnalyzer {
     }
 
     /**
+     * Format K/D/A with color-coded values
+     */
+    formatKDA(player) {
+        const kills = player?.kills || 0;
+        const deaths = player?.deaths || 0;
+        const assists = player?.assists || 0;
+        return `
+            <span class="font-mono inline-flex items-center gap-2">
+                <span class="kda-badge kda-kills">${kills}</span>
+                <span class="kda-badge kda-deaths">${deaths}</span>
+                <span class="kda-badge kda-assists">${assists}</span>
+            </span>
+        `;
+    }
+
+    /**
      * Format numbers for display (e.g., 12000 -> 12K)
      */
     formatNumber(num) {
@@ -1127,8 +1143,8 @@ class MatchAnalyzer {
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
                             <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
-                                <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
-                                <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                                <span><span class="label">K/D/A:</span> <span class="value">${this.formatKDA(player)}</span></span>
+                                <span><span class="label">Dmg:</span> <span class="value text-orange-400 font-semibold">${this.formatNumber(player.playerDamage || 0)}</span></span>
                             </div>
                         </div>
                     </div>
@@ -1158,8 +1174,8 @@ class MatchAnalyzer {
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate text-sm sm:text-base">${this.formatPlayerName(player)}</h4>
                         <div class="stat-line text-xs sm:text-sm text-gray-300 mt-1">
-                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
-                            <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                            <span><span class="label">K/D/A:</span> <span class="value">${this.formatKDA(player)}</span></span>
+                            <span><span class="label">Dmg:</span> <span class="value text-orange-400 font-semibold">${this.formatNumber(player.playerDamage || 0)}</span></span>
                         </div>
                         <p class="text-xs text-gray-500 hidden sm:block">${player.totalGames || 0} games</p>
                         ${player.accountId && this.getSteamProfileUrl(player.accountId) ?
@@ -1820,8 +1836,8 @@ class MatchAnalyzer {
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold ${textColor} truncate">${this.formatPlayerName(player)}</h4>
                         <div class="stat-line text-sm text-gray-300 mt-1">
-                            <span><span class="label">K/D/A:</span> <span class="value">${player.kills || 0}/${player.deaths || 0}/${player.assists || 0}</span></span>
-                        <span><span class="label">Dmg:</span> <span class="value">${this.formatNumber(player.playerDamage || 0)}</span></span>
+                            <span><span class="label">K/D/A:</span> <span class="value">${this.formatKDA(player)}</span></span>
+                            <span><span class="label">Dmg:</span> <span class="value text-orange-400 font-semibold">${this.formatNumber(player.playerDamage || 0)}</span></span>
                         </div>
                         <p class="text-xs text-gray-500">Loading...</p>
                     </div>
