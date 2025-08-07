@@ -515,6 +515,122 @@ class PlayerSearch {
     }
 
     /**
+     * Render hero build item statistics with tabs
+     * @param {Object} heroStats - Player hero statistics object
+     */
+    async renderHeroItemStats(heroStats) {
+        const section = document.getElementById('heroStatsSection');
+        const tabsContainer = document.getElementById('heroStatsTabs');
+        const contentContainer = document.getElementById('heroStatsContent');
+        const sortSelect = document.getElementById('heroSortSelect');
+
+        if (!section || !tabsContainer || !contentContainer || !sortSelect) return;
+
+        const renderTabs = async (sort = 'matches') => {
+            let heroes = Object.entries(heroStats).map(([heroId, stats]) => ({
+                heroId: parseInt(heroId),
+                ...stats
+            }));
+
+            if (sort === 'hero') {
+                heroes.sort((a, b) => getHeroName(a.heroId).localeCompare(getHeroName(b.heroId)));
+            } else {
+                heroes.sort((a, b) => b.matches - a.matches);
+            }
+
+            tabsContainer.innerHTML = heroes.map((h, i) => `
+                <button class="hero-tab px-3 py-1 rounded-md text-sm ${i === 0 ? 'bg-cyan-600' : 'bg-gray-700'}" data-hero="${h.heroId}">
+                    ${getHeroName(h.heroId)}
+                </button>
+            `).join('');
+
+            const loadTab = async (heroId) => {
+                contentContainer.innerHTML = '<p class="text-center text-gray-400 text-sm">Loading...</p>';
+                try {
+                    const buildData = await this.deadlockAPI.getHeroBuild(heroId);
+                    const items = buildData?.items || [];
+                    if (items.length === 0) {
+                        contentContainer.innerHTML = '<p class="text-center text-gray-400 text-sm">No item data available.</p>';
+                        return;
+                    }
+
+                    const rows = items.map(item => {
+                        const itemId = item.itemId || item.item || item.id || '';
+                        const icon = this.deadlockAPI.getItemAssetUrl(itemId);
+                        const name = this.formatItemName(itemId);
+                        const winRate = item.winRate ?? item.win_rate ?? 0;
+                        const usageRate = item.usageRate ?? item.pickRate ?? item.pick_rate ?? 0;
+                        const confidence = item.confidence ?? 0;
+                        return `
+                            <tr class="border-b border-gray-700">
+                                <td class="py-2 px-2 text-left">
+                                    <div class="flex items-center space-x-2">
+                                        <img src="${icon}" alt="${name}" class="w-6 h-6">
+                                        <span>${name}</span>
+                                    </div>
+                                </td>
+                                <td class="py-2 px-2 text-center">${Math.round(winRate * 100) / 100}%</td>
+                                <td class="py-2 px-2 text-center">${Math.round(usageRate * 100) / 100}%</td>
+                                <td class="py-2 px-2 text-center">${Math.round(confidence * 100) / 100}%</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    contentContainer.innerHTML = `
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-600">
+                                        <th class="text-left py-2 px-2">Item</th>
+                                        <th class="text-center py-2 px-2">Win Rate</th>
+                                        <th class="text-center py-2 px-2">Usage Rate</th>
+                                        <th class="text-center py-2 px-2">Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('Error loading hero build', err);
+                    contentContainer.innerHTML = '<p class="text-center text-red-400 text-sm">Failed to load item stats.</p>';
+                }
+            };
+
+            const tabButtons = tabsContainer.querySelectorAll('.hero-tab');
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabButtons.forEach(b => b.classList.remove('bg-cyan-600'));
+                    btn.classList.add('bg-cyan-600');
+                    loadTab(btn.dataset.hero);
+                });
+            });
+
+            if (tabButtons[0]) {
+                await loadTab(tabButtons[0].dataset.hero);
+            }
+        };
+
+        await renderTabs('matches');
+
+        sortSelect.addEventListener('change', async (e) => {
+            await renderTabs(e.target.value);
+        });
+
+        section.classList.remove('hidden');
+    }
+
+    /**
+     * Format item ID to human-readable name
+     */
+    formatItemName(itemId) {
+        return itemId
+            .replace(/^item_/, '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    /**
      * Render player search results
      */
     async renderPlayerSearchResults(playerData, matchHistory) {
@@ -643,7 +759,12 @@ class PlayerSearch {
                 </div>
             `;
         }
-        
+
+        // Render hero item stats if available
+        if (matchHistory.statistics && matchHistory.statistics.heroStats) {
+            await this.renderHeroItemStats(matchHistory.statistics.heroStats);
+        }
+
         // Show the results section
         console.log('Showing player search results section');
         playerSearchResults.classList.remove('hidden');
