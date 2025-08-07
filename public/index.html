@@ -87,13 +87,21 @@
                         <!-- Player info will be populated here -->
                     </div>
 
-                    <!-- Match tabs container -->
+                    <!-- Matches/Stats tabs -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-white mb-4">Recent Matches</h3>
-                        <div class="match-tabs-container">
-                            <div id="matchTabsWrapper" class="match-tabs-wrapper">
-                                <!-- Match tabs will be populated here -->
+                        <div class="search-mode-toggle bg-gray-800 rounded-lg p-1 flex mb-4">
+                            <button id="recentMatchesTab" class="search-mode-btn active px-4 py-2 rounded-md font-medium transition-all duration-200">Recent Matches</button>
+                            <button id="playerStatsTab" class="search-mode-btn px-4 py-2 rounded-md font-medium transition-all duration-200">Stats</button>
+                        </div>
+                        <div id="recentMatchesSection">
+                            <div class="match-tabs-container">
+                                <div id="matchTabsWrapper" class="match-tabs-wrapper">
+                                    <!-- Match tabs will be populated here -->
+                                </div>
                             </div>
+                        </div>
+                        <div id="playerStatsSection" class="hidden">
+                            <div id="heroStatsContainer" class="overflow-x-auto"></div>
                         </div>
                     </div>
                 </div>
