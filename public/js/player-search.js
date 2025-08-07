@@ -526,11 +526,19 @@ class PlayerSearch {
         const playerInfoCard = document.getElementById('playerInfoCard');
         const matchTabsWrapper = document.getElementById('matchTabsWrapper');
         const playerSearchResults = document.getElementById('playerSearchResults');
+        const heroStatsContainer = document.getElementById('heroStatsContainer');
+        const recentMatchesTab = document.getElementById('recentMatchesTab');
+        const playerStatsTab = document.getElementById('playerStatsTab');
+        const recentMatchesSection = document.getElementById('recentMatchesSection');
+        const playerStatsSection = document.getElementById('playerStatsSection');
         
         console.log('DOM elements found:', {
             playerInfoCard: !!playerInfoCard,
             matchTabsWrapper: !!matchTabsWrapper,
-            playerSearchResults: !!playerSearchResults
+            playerSearchResults: !!playerSearchResults,
+            heroStatsContainer: !!heroStatsContainer,
+            recentMatchesTab: !!recentMatchesTab,
+            playerStatsTab: !!playerStatsTab
         });
         
         if (!playerInfoCard || !matchTabsWrapper || !playerSearchResults) {
@@ -643,17 +651,89 @@ class PlayerSearch {
                 </div>
             `;
         }
-        
+
+        // Render hero statistics
+        this.renderHeroStats(stats);
+
+        // Setup tab toggles
+        if (recentMatchesTab && playerStatsTab && recentMatchesSection && playerStatsSection) {
+            recentMatchesTab.addEventListener('click', () => {
+                recentMatchesTab.classList.add('active');
+                playerStatsTab.classList.remove('active');
+                recentMatchesSection.classList.remove('hidden');
+                playerStatsSection.classList.add('hidden');
+            });
+            playerStatsTab.addEventListener('click', () => {
+                playerStatsTab.classList.add('active');
+                recentMatchesTab.classList.remove('active');
+                playerStatsSection.classList.remove('hidden');
+                recentMatchesSection.classList.add('hidden');
+            });
+        }
+
         // Show the results section
         console.log('Showing player search results section');
         playerSearchResults.classList.remove('hidden');
         console.log('playerSearchResults classList after removing hidden:', playerSearchResults.classList.toString());
-        
+
         // Scroll to results
         console.log('Scrolling to results');
         playerSearchResults.scrollIntoView({ behavior: 'smooth' });
         
         console.log('=== renderPlayerSearchResults COMPLETE ===');
+    }
+
+    /**
+     * Render hero statistics table
+     */
+    renderHeroStats(stats) {
+        const container = document.getElementById('heroStatsContainer');
+        if (!container) return;
+
+        const heroStats = stats?.heroStats || {};
+        const totalMatches = stats?.totalMatches || 0;
+        const entries = Object.entries(heroStats);
+
+        if (entries.length === 0) {
+            container.innerHTML = `<p class="text-center text-gray-400">No hero statistics available.</p>`;
+            return;
+        }
+
+        entries.sort((a, b) => b[1].matches - a[1].matches);
+
+        const rows = entries.map(([heroId, data]) => {
+            const heroName = getHeroName(Number(heroId)) || `Hero ${heroId}`;
+            const winRate = data.winRate || 0;
+            const pickRate = totalMatches ? Math.round((data.matches / totalMatches) * 100) : 0;
+            const avgKills = (data.totalKills / data.matches).toFixed(1);
+            const avgDeaths = (data.totalDeaths / data.matches).toFixed(1);
+            const avgAssists = (data.totalAssists / data.matches).toFixed(1);
+            return `
+                <tr class="text-center">
+                    <td class="py-2 px-4 text-left">${heroName}</td>
+                    <td class="py-2 px-4">${winRate}%</td>
+                    <td class="py-2 px-4">${pickRate}%</td>
+                    <td class="py-2 px-4">${avgKills}/${avgDeaths}/${avgAssists}</td>
+                    <td class="py-2 px-4">${data.matches}</td>
+                </tr>`;
+        }).join('');
+
+        container.innerHTML = `
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-gray-300">
+                        <th class="py-2 px-4 text-left">Hero</th>
+                        <th class="py-2 px-4">Win Rate</th>
+                        <th class="py-2 px-4">Pick Rate</th>
+                        <th class="py-2 px-4">K/D/A</th>
+                        <th class="py-2 px-4">Matches</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                </tbody>
+            </table>
+        `;
     }
 
     /**
