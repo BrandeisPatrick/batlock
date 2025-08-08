@@ -18,18 +18,26 @@
             <p class="text-gray-400 mt-2">Enter a match ID to compare team performance from players' last 50 games.</p>
         </header>
 
-        <main>
-            <!-- Search Mode Toggle -->
-            <div class="flex justify-center mb-6">
-                <div class="search-mode-toggle bg-gray-800 rounded-lg p-1 flex">
-                    <button id="matchSearchTab" class="search-mode-btn active px-4 py-2 rounded-md font-medium transition-all duration-200">
-                        🎯 Search by Match ID
-                    </button>
-                    <button id="playerSearchTab" class="search-mode-btn px-4 py-2 rounded-md font-medium transition-all duration-200">
-                        👤 Search by Player
-                    </button>
+        <div class="flex gap-6">
+            <!-- Sidebar -->
+            <aside class="w-64 hidden md:block">
+                <nav class="space-y-2">
+                    <button class="w-full text-left px-4 py-2 rounded-md bg-gray-800 hover:bg-gray-700">📦 Item Stats</button>
+                    <button class="w-full text-left px-4 py-2 rounded-md bg-gray-800 hover:bg-gray-700">🦸 Hero Stats</button>
+                </nav>
+            </aside>
+            <main class="flex-1">
+                <!-- Search Mode Toggle -->
+                <div class="flex justify-center mb-6">
+                    <div class="search-mode-toggle bg-gray-800 rounded-lg p-1 flex">
+                        <button id="matchSearchTab" class="search-mode-btn active px-4 py-2 rounded-md font-medium transition-all duration-200">
+                            🎯 Search by Match ID
+                        </button>
+                        <button id="playerSearchTab" class="search-mode-btn px-4 py-2 rounded-md font-medium transition-all duration-200">
+                            👤 Search by Player
+                        </button>
+                    </div>
                 </div>
-            </div>
 
             <!-- Match ID Search Section -->
             <div id="matchSearchSection" class="search-section">
@@ -121,8 +129,9 @@
                 <!-- Progressive loading content will be populated here -->
             </div>
 
-        </main>
-    </div>
+          </main>
+        </div>
+      </div>
 
     <script type="module" src="js/chart-plugins.js"></script>
     <script type="module" src="js/data-models.js"></script>
